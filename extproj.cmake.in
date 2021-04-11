@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 3.6)
+
+project(${EXT_PROJ_NAME}-download NONE)
+
+include(ExternalProject)
+ExternalProject_Add(${EXT_PROJ_NAME}-download
+                    PREFIX       "${EXT_PROJ_PREFIX}"
+                    TMP_DIR      "${EXT_PROJ_TMP_DIR}"
+                    SOURCE_DIR   "${EXT_PROJ_SOURCE_DIR}"
+                    DOWNLOAD_DIR "${EXT_PROJ_SOURCE_DIR}"
+                    STAMP_DIR    "${EXT_PROJ_TMP_DIR}/${EXT_PROJ_NAME}-stamp"
+                    BINARY_DIR   "${EXT_PROJ_TMP_DIR}/${EXT_PROJ_NAME}-build"
+                    INSTALL_DIR  "${EXT_PROJ_INSTALL_DIR}"
+                    CMAKE_ARGS   "-DCMAKE_INSTALL_PREFIX=${EXT_PROJ_INSTALL_DIR}"
+                    CMAKE_ARGS   "-DBUILD_SHARED_LIBS=ON"
+                    CMAKE_ARGS   "-DCMAKE_BUILD_TYPE=Release"
+                    CMAKE_ARGS   "-DCMAKE_CXX_FLAGS=-fPIC"
+                    CMAKE_ARGS   "-DCMAKE_EXPORT_COMPILE_COMMANDS=YES"
+                    CMAKE_ARGS   "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}"
+                    CMAKE_ARGS   "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                    ${EXT_PROJ_UNPARSED_ARGUMENTS}
+                    )
