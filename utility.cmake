@@ -105,6 +105,14 @@ function(add_git_3rd_project name url tag)
     )
 endfunction()
 
+function(add_url_3rd_project name url)
+  cmake_parse_arguments("" "" "" "" ${ARGN})
+  add_3rd_project(${name}
+    URL ${url}
+    ${ARGN}
+    )
+endfunction()
+
 # downloaded dependencies.
 function(require_package pkg url tag)
   set(pkg_FOUND ${pkg}_FOUND)
@@ -130,6 +138,19 @@ function(fetch_git_3rd_project name url tag)
     INSTALL_COMMAND  "${CMAKE_COMMAND} -E echo do nothing in install step"
     )
 endfunction()
+
+function(fetch_url_3rd_project name url)
+  cmake_parse_arguments("" "" "" "" ${ARGN})
+  add_3rd_project(${name}
+    URL ${url}
+    ${ARGN}
+    CONFIGURE_COMMAND "${CMAKE_COMMAND} -E echo do nothing in configure step"
+    BUILD_COMMAND  "${CMAKE_COMMAND} -E echo do nothing in build step"
+    TEST_COMMAND  "${CMAKE_COMMAND} -E echo do nothing in test step"
+    INSTALL_COMMAND  "${CMAKE_COMMAND} -E echo do nothing in install step"
+    )
+endfunction()
+
 
 function(fetch_package pkg url tag)
   cmake_parse_arguments("" "" "" "" ${ARGN})
