@@ -1,5 +1,9 @@
 if (NOT DEFINED IGL_DIR)
-  set(IGL_DIR ${PROJECT_SOURCE_DIR}/3rd/libigl)
+  if (EXISTS ${PROJECT_SOURCE_DIR}/3rd/libigl)
+    set(IGL_DIR ${PROJECT_SOURCE_DIR}/3rd/libigl)
+  elseif(EXISTS ${PROJECT_SOURCE_DIR}/3rd/igl)
+    set(IGL_DIR ${PROJECT_SOURCE_DIR}/3rd/igl)
+  endif()
 endif()
 
 if (EXISTS ${IGL_DIR})
