@@ -7,7 +7,6 @@ endif()
 
 function(code_format)
   file(GLOB_RECURSE FORMAT_SOURCES ${ARGN})
-  message(STATUS "code to be formatted: ${FORMAT_SOURCES}")
   add_custom_target(code-format-inplace
     COMMAND clang-format -i ${FORMAT_SOURCES}
     )

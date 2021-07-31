@@ -7,7 +7,6 @@ endif()
 
 function(code_tidy)
   file(GLOB_RECURSE TIDY_SOURCES ${ARGN})
-  message(STATUS "code to be tidied: ${TIDY_SOURCES}")
   add_custom_target(code-tidy-inplace
     COMMAND clang-tidy
     --export-fixes=${CMAKE_BINARY_DIR}/clang-tidy-fix.yml

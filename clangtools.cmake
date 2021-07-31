@@ -1,2 +1,0 @@
-include(clangformat)
-include(clangtidy)
