@@ -14,6 +14,7 @@ if (EXISTS ${IGL_DIR})
       INTERFACE
       ${IGL_DIR}/include
       ${IGL_DIR}/external/libigl-imgui
+      ${IGL_DIR}/external/
       )
     if (NOT TARGET Eigen3::Eigen)
       require_git_package(Eigen3   "ssh://git@ryon.ren:10022/mirrors/eigen3.git"   "3.3.9")
