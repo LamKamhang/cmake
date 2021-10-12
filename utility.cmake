@@ -162,11 +162,15 @@ endmacro()
 
 # maxima code to fortran
 function(add_mac2f90 name)
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${name}.f90
-    COMMAND "maxima" --userdir=${CMAKE_CURRENT_SOURCE_DIR} -b ${name}.mac --very-quiet
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.mac
-    VERBATIM
-    )
-  add_library(${name} ${CMAKE_CURRENT_BINARY_DIR}/${name}.f90)
+  if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90)
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${name}.f90
+      COMMAND "maxima" --userdir=${CMAKE_CURRENT_SOURCE_DIR} -b ${name}.mac --very-quiet
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.mac
+      VERBATIM
+      )
+    add_library(${name} ${CMAKE_CURRENT_BINARY_DIR}/${name}.f90)
+  else()
+    add_library(${name} ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90)
+  endif()
 endfunction()
