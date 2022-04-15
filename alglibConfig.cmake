@@ -21,11 +21,13 @@ if (NOT TARGET alglib)
     PATHS
     /usr/include/
     /usr/include/libalglib
-    ${ALGLIB_DIR}
+    ${PROJECT_SOURCE_DIR}/3rd/include/alglib
     )
 
   find_library(ALGLIB_LIBRARIES
     NAMES alglib
+    PATHS
+    ${PROJECT_SOURCE_DIR}/lib
     )
   if (${ALGLIB_LIBRARIES} MATCHES "NOTFOUND")
     message("\n*NOT* using ALGLIB.\n")
