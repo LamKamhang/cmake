@@ -27,7 +27,7 @@ if (NOT TARGET alglib)
   find_library(ALGLIB_LIBRARIES
     NAMES alglib
     PATHS
-    ${PROJECT_SOURCE_DIR}/lib
+    ${PROJECT_SOURCE_DIR}/3rd/lib
     )
   if (${ALGLIB_LIBRARIES} MATCHES "NOTFOUND")
     message("\n*NOT* using ALGLIB.\n")
