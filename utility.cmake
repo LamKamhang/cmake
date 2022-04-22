@@ -68,7 +68,7 @@ function(add_3rd_project name)
     INSTALL_DIR
     )
   set(multiValueArgs "")
-  set(options DO_NOT_BUILD)
+  set(options DO_NOT_BUILD GENERATE_TARGET)
   cmake_parse_arguments("EXT_PROJ" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
   message(STATUS "Downloading/updating ${name}")
   set(EXT_PROJ_NAME ${name})
@@ -104,13 +104,31 @@ function(add_3rd_project name)
     .
     RESULT_VARIABLE result
     WORKING_DIRECTORY ${EXT_PROJ_CACHE_DIR}
+  )
+  if (EXT_PROJ_GENERATE_TARGET)
+    add_custom_target(
+      config_${name}
+      COMMAND ${CMAKE_COMMAND}
+      -G "${CMAKE_GENERATOR}"
+      -D "CMAKE_MAKE_PROGRAM:FILE=${CMAKE_MAKE_PROGRAM}"
+      .
+      WORKING_DIRECTORY ${EXT_PROJ_CACHE_DIR}
     )
+  endif()
   if(result)
     message(FATAL_ERROR "CMake step for ${name} failed: ${result}")
   endif()
   execute_process(COMMAND ${CMAKE_COMMAND} --build . -j24
     RESULT_VARIABLE result
-    WORKING_DIRECTORY  ${EXT_PROJ_CACHE_DIR})
+    WORKING_DIRECTORY ${EXT_PROJ_CACHE_DIR})
+  if (EXT_PROJ_GENERATE_TARGET)
+    add_custom_target(
+      fetch_${name}
+      COMMAND ${CMAKE_COMMAND} --build . -j24
+      WORKING_DIRECTORY ${EXT_PROJ_CACHE_DIR}
+    )
+    add_dependencies(fetch_${name} config_${name})
+  endif()
   if(result)
     message(FATAL_ERROR "Build step for ${name} failed: ${result}")
   else ()
