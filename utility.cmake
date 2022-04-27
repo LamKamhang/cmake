@@ -189,12 +189,12 @@ endmacro()
 function(add_mac2f90 target name)
   if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90)
     add_custom_command(
-      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${name}.f90
+      OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90
       COMMAND "maxima" --userdir=${CMAKE_CURRENT_SOURCE_DIR} -b ${name}.mac --very-quiet
       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.mac
       VERBATIM
       )
-    add_library(${target} ${CMAKE_CURRENT_BINARY_DIR}/${name}.f90)
+    add_library(${target} ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90)
   else()
     add_library(${target} ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90)
   endif()
