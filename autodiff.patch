@@ -1,0 +1,11 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index bd8d10f..0f1ab10 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ # The minimum required cmake version
+-cmake_minimum_required(VERSION 3.22)
++cmake_minimum_required(VERSION 3.10)
+
+ # Add cmake modules of this project to the module path
+ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
