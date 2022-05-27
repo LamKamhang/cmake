@@ -191,6 +191,9 @@ function(add_mac2f90 target name)
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90
     COMMAND "maxima" --userdir=${CMAKE_CURRENT_SOURCE_DIR} -b ${name}.mac --very-quiet
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/chaos_function.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/hj_flatten.mac
+    ${CMAKE_CURRENT_SOURCE_DIR}/hj_fortran2.mac
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     VERBATIM
   )
