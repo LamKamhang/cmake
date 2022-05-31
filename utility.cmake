@@ -187,15 +187,14 @@ endmacro()
 
 # maxima code to fortran
 function(add_mac2f90 target name)
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90
-    COMMAND "maxima" --userdir=${CMAKE_CURRENT_SOURCE_DIR} -b ${name}.mac --very-quiet
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.mac
-    ${CMAKE_CURRENT_SOURCE_DIR}/chaos_function.mac
-    ${CMAKE_CURRENT_SOURCE_DIR}/hj_flatten.mac
-    ${CMAKE_CURRENT_SOURCE_DIR}/hj_fortran2.mac
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    VERBATIM
-  )
+  if (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90)
+    add_custom_command(
+      OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90
+      COMMAND maxima --userdir=${PROJECT_SOURCE_DIR}/scripts/maxima
+      -b ${PROJECT_SOURCE_DIR}/scripts/maxima/${name}.mac --very-quiet
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      VERBATIM
+    )
+  endif()
   add_library(${target} ${CMAKE_CURRENT_SOURCE_DIR}/${name}.f90)
 endfunction()
