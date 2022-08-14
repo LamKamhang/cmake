@@ -1,3 +1,13 @@
+macro(DEBUG_MSG)
+  if (DEBUG_MODE)
+    message("[DEBUG] ${ARGV}")
+  endif()
+endmacro()
+
+macro(ERROR_MSG)
+  message(FATAL_ERROR "${ARGV}")
+endmacro()
+
 function(ASSERT_EQUAL)
   if(NOT ARGC EQUAL 2)
     message(FATAL_ERROR "assertion failed: invalid argument count: ${ARGC}")

@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.12)
+
+project(@EP_NAME@-config NONE)
+include(ExternalProject)
+ExternalProject_Add(
+  @EP_NAME@
+  # Directory Options
+  PREFIX         @EP_PREFIX@
+  TMP_DIR        @EP_TMP_DIR@
+  STAMP_DIR      @EP_STAMP_DIR@
+  LOG_DIR        @EP_LOG_DIR@
+  DOWNLOAD_DIR   @EP_SOURCE_DIR@
+  SOURCE_DIR     @EP_SOURCE_DIR@
+  BINARY_DIR     @EP_BINARY_DIR@
+  INSTALL_DIR    @EP_INSTALL_DIR@
+  # Other arguments
+  CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=@EP_INSTALL_DIR@"
+  CMAKE_ARGS "-DCMAKE_BUILD_TYPE=@EP_BUILD_TYPE@"
+  @EP_ARGS@
+  )
