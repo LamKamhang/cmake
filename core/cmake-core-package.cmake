@@ -1,4 +1,3 @@
-# set(DEBUG_MODE True)
 set(_CORE_PACKAGE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 set(EXTERNAL_PROJECT_BASE_DIR ${CMAKE_SOURCE_DIR}/3rd)
 # Top level:
@@ -51,9 +50,16 @@ endfunction()
 
 # https://cmake.org/cmake/help/latest/module/ExternalProject.html
 function(add_external_project PKG)
-  set(options DOWNLOAD_ONLY BUILD_SHARED)
+  DEBUG_MSG("AddExternalProject.Argv: ${ARGV}")
+  DEBUG_MSG("AddExternalProject.Argc: ${ARGC}")
+  DEBUG_MSG("AddExternalProject.Argn: ${ARGN}")
+
+  set(options DOWNLOAD_ONLY BUILD_STATIC GENERATE_TARGET
+    GENERATE_TARGET_ONLY)
   set(oneValueArgs
-    BUILD_TYPE PREFIX TMP_DIR STAMP_DIR LOG_DIR DOWNLOAD_DIR SOURCE_DIR BINARY_DIR INSTALL_DIR)
+    BUILD_TYPE
+    PREFIX TMP_DIR STAMP_DIR LOG_DIR
+    DOWNLOAD_DIR SOURCE_DIR BINARY_DIR INSTALL_DIR)
   set(multiValueArgs "")
   cmake_parse_arguments(EP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -62,6 +68,9 @@ function(add_external_project PKG)
     set(EP_BUILD_TYPE release)
   else()
     string(TOLOWER ${EP_BUILD_TYPE} EP_BUILD_TYPE)
+  endif()
+  if (EP_GENERATE_TARGET_ONLY)
+    set(EP_GENERATE_TARGET True)
   endif()
   # TODO. add version/tag/hash to impl version isolation
   set(EP_NAME ${PKG})
@@ -105,7 +114,7 @@ function(add_external_project PKG)
       INSTALL_COMMAND   "${CMAKE_COMMAND} -E echo do nothing in install step"
       ${EP_ARGS})
   endif()
-  if (EP_BUILD_SHARED)
+  if (NOT EP_BUILD_STATIC)
     set(EP_ARGS ${EP_ARGS}
       CMAKE_ARGS "-DCMAKE_SHARED_LIBS=ON"
       # https://cmake.org/cmake/help/latest/prop_tgt/POSITION_INDEPENDENT_CODE.html
@@ -127,17 +136,32 @@ function(add_external_project PKG)
     ERROR_MSG("Cmake Config step for ${EP_NAME} Failed: ${result}")
   endif()
   # TODO. how to configure jobs?
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} --build ${EP_TMP_DIR}/build-config -j12
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${EP_TMP_DIR}
-    )
-  if (result)
-    ERROR_MSG("Cmake Build step for ${EP_NAME} Failed: ${result}")
+  set(EXEC
+    COMMAND ${CMAKE_COMMAND} --build ${EP_TMP_DIR}/build-config -j12)
+
+  if (NOT EP_GENERATE_TARGET_ONLY)
+    execute_process(
+      ${EXEC}
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY ${EP_TMP_DIR}
+      )
+    if (result)
+      ERROR_MSG("Cmake Build step for ${EP_NAME} Failed: ${result}")
+    endif()
+    # export SOURCE_DIR and INSTALL_DIR to parent_scope.
+    set(PKG_SOURCE_DIR ${EP_SOURCE_DIR} PARENT_SCOPE)
+    set(PKG_INSTALL_DIR ${EP_INSTALL_DIR} PARENT_SCOPE)
   endif()
 
-  set(PKG_SOURCE_DIR ${EP_SOURCE_DIR} PARENT_SCOPE)
-  set(PKG_INSTALL_DIR ${EP_INSTALL_DIR} PARENT_SCOPE)
+  if (EP_GENERATE_TARGET)
+    add_custom_target(
+      update_${EP_NAME} ${EXEC}
+      WORKING_DIRECTORY ${EP_TMP_DIR}
+      )
+    if (TARGET update_all3rd)
+      add_dependencies(update_all3rd update_${EP_NAME})
+    endif()
+  endif()
 endfunction()
 
 function(verify_enhance_arguments)
@@ -150,11 +174,11 @@ function(require_package PackageName)
   DEBUG_MSG("PackageName.Argn: ${ARGN}")
 
   set(options REQUIRED NOT_REQUIRED
-    DOWNLOAD_ONLY SUBDIR_ONLY DISABLE_FIND_PKG_FIRST
-    USE_SUBDIR
+    DISABLE_FIND_PKG_FIRST IMPORT_AS_SUBDIR
+    SUBDIR_ONLY # this will trigger DISABLE_FIND_PKG_FIRST and IMPORT_AS_SUBDIR
     )
   set(oneValueArgs "")
-  set(multiValueArgs ENHANCE)
+  set(multiValueArgs EP_ARGS)
   cmake_parse_arguments(PKG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   # prepare FIND_PACKAGE_ARGS.
@@ -162,7 +186,7 @@ function(require_package PackageName)
     ERROR_MSG("[require_package]: Cannot specify REQUIRED and NOT_REQUIRED at the same time!")
   endif()
 
-  if (DEFINED PKG_ENHANCE)
+  if (DEFINED PKG_EP_ARGS)
     set(HAS_SECOND_STAGE True)
   endif()
 
@@ -173,14 +197,17 @@ function(require_package PackageName)
   endif()
   DEBUG_MSG("FIND.PKG.ARGS: ${FIND_PACKAGE_ARGS}")
 
-  # NOTE: default behavior is to find package first.
-  set(TRY_FIND_PACKAGE_FIRST True)
-  if (PKG_DOWNLOAD_ONLY OR PKG_SUBDIR_ONLY OR PKG_DISABLE_FIND_PKG_FIRST)
-    set(TRY_FIND_PACKAGE_FIRST False)
+  if (PKG_SUBDIR_ONLY)
+    set(PKG_DISABLE_FIND_PKG_FIRST True)
+    set(PKG_IMPORT_AS_SUBDIR True)
   endif()
-  DEBUG_MSG("Current.First.Stage: ${TRY_FIND_PACKAGE_FIRST}")
 
-  if (TRY_FIND_PACKAGE_FIRST)
+  # NOTE: default behavior is to find package first.
+  if (PKG_DOWNLOAD_ONLY OR PKG_IMPORT_AS_SUBDIR)
+    set(PKG_DISABLE_FIND_PKG_FIRST True)
+  endif()
+
+  if (NOT PKG_DISABLE_FIND_PKG_FIRST)
     do_find_package(${PackageName} ${FIND_PACKAGE_ARGS})
     # If PKG is found or is not required, then return.
     if (PKG_FOUND)
@@ -191,23 +218,36 @@ function(require_package PackageName)
     endif()
   endif()
 
-  # TODO. prepare ENHANCE_ARGS.
-  set(PKG_ENHANCE_ARGS ${PKG_ENHANCE})
-  if (PKG_DOWNLOAD_ONLY OR SUBDIR_ONLY)
-    set(PKG_ENHANCE_ARGS ${PKG_ENHANCE_ARGS} DOWNLOAD_ONLY)
+  # TODO. prepare EP_ARGS
+  if (PKG_IMPORT_AS_SUBDIR)
+    set(PKG_EP_ARGS ${PKG_EP_ARGS} DOWNLOAD_ONLY)
   endif()
-  verify_enhance_arguments(${PKG_ENHANCE_ARGS})
+  verify_enhance_arguments(${PKG_EP_ARGS})
 
   # fall through to use ExternalProject_Add.
-  DEBUG_MSG("Enhance.args: ${PKG_ENHANCE_ARGS}")
-  add_external_project(${PackageName} ${PKG_ENHANCE_ARGS})
+  DEBUG_MSG("add_external_project.args: ${PKG_EP_ARGS}")
+  add_external_project(${PackageName} ${PKG_EP_ARGS})
 
-  if (PKG_USE_SUBDIR)
+  if (PKG_IMPORT_AS_SUBDIR)
     ASSERT_DEFINED(${EP_SOURCE_DIR})
     ASSERT_EXISTS(${EP_SOURCE_DIR})
     add_subdirectory(${EP_SOURCE_DIR})
   else()
     # TODO. set cmake_module_path/cmake_prefix_path.
     do_find_package(${PackageName} ${FIND_PACKAGE_ARGS} REQUIRED)
+  endif()
+endfunction()
+
+function(add_package name url)
+  cmake_parse_arguments(AP "" "GIT_TAG" "" ${ARGN})
+  if (NOT DEFINED AP_GIT_TAG)
+    add_external_project(
+      ${name} URL ${url} ${AP_UNPARSED_ARGUMENTS}
+      )
+  else()
+    add_external_project(
+      ${name}
+      GIT_REPOSITORY ${url} ${ARGN}
+      )
   endif()
 endfunction()

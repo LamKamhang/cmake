@@ -5,6 +5,7 @@ project(cmake-package)
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../../)
 include(utility)
 # example1, same with find_package.
+set(DEBUG_MODE TRUE)
 require_package(OpenMP 4.2) # identical to find_package(OpenMP 4.2 REQUIRED)
 require_package(Eigen3 3.0 NOT_REQUIRED) # identical to find_package(OpenMP 5.0)
 require_package(Eigen3 3.0 REQUIRED)
