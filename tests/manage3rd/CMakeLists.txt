@@ -64,6 +64,9 @@ add_package(libigl-imgui "ssh://git@ryon.ren:10022/mirrors/libigl-imgui.git" GIT
   SOURCE_DIR "${CMAKE_SOURCE_DIR}/3rd/libigl/external/libigl-imgui"
   DOWNLOAD_ONLY
   )
+add_dependencies(update_ImGuizmo update_libigl)
+add_dependencies(update_libigl-imgui update_libigl)
+
 add_package(glm "git@github.com:g-truc/glm.git" GIT_TAG "6ad79aae" DOWNLOAD_ONLY) # 2021.9.2
 add_package(benchmark "git@github.com:google/benchmark.git" GIT_TAG "v1.5.6" DOWNLOAD_ONLY)
 add_package(ceres-solver "git@github.com:ceres-solver/ceres-solver.git" GIT_TAG "09ec499"
