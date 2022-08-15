@@ -15,21 +15,3 @@ require_package(Eigen3 REQUIRED)
 # example2: import as submodule
 # first find the source.
 require_package(Eigen3 IMPORT_AS_SUBMODULE)
-
-# function to register package.
-# DO NOT execute_process!
-configure_package(Eigen3
-  # Provide some easy preset.
-  # like: DOWNLOAD_ONLY
-  # Configure dir structure
-  # Some ExternalProject_Add args.
-  # Out_VAL:
-  # EP_SOURCE_DIR, EP_CONFIGURE_DIR,
-  )
-
-# run the default target.
-install_package(Eigen3)
-# run update and patch.
-update_package(Eigen3)
-# run build
-build_package(Eigen3)
