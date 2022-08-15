@@ -1,5 +1,158 @@
 set(_CORE_PACKAGE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 set(EXTERNAL_PROJECT_BASE_DIR ${CMAKE_SOURCE_DIR}/3rd)
+
+function(get_default_ep_source_dir outdir name) # [prefix]
+  if (NOT (ARGC EQUAL 2 OR ARGC EQUAL 3))
+    ERROR_MSG("get_default_ep_source_dir <outdir> <name> [prefix]")
+  endif()
+
+  if (ARGC EQUAL 2)
+    set(base_dir ${EXTERNAL_PROJECT_BASE_DIR})
+  else()
+    set(base_dir ${ARGV2})
+  endif()
+  set(${outdir} ${base_dir}/${name} PARENT_SCOPE)
+endfunction()
+
+function(get_default_ep_config_dir outdir name) # [prefix]
+  if (NOT (ARGC EQUAL 2 OR ARGC EQUAL 3))
+    ERROR_MSG("get_default_ep_config_dir <outdir> <name> [prefix]")
+  endif()
+
+  if (ARGC EQUAL 2)
+    set(base_dir ${EXTERNAL_PROJECT_BASE_DIR})
+  else()
+    set(base_dir ${ARGV2})
+  endif()
+  set(${outdir} ${base_dir}/.cache/.ep_config/${name} PARENT_SCOPE)
+endfunction()
+
+function(get_default_ep_install_dir outdir name) # [build-type [prefix]]
+  if (NOT (ARGC EQUAL 2 OR ARGC EQUAL 3 OR ARGC EQUAL 4))
+    ERROR_MSG("get_default_ep_install_dir <outdir> <name> [build-type [prefix]]!")
+  endif()
+  set(base_dir ${EXTERNAL_PROJECT_BASE_DIR})
+  if (ARGC EQUAL 2)
+    set(build_type release)
+  else()
+    string(TOLOWER ${ARGV2} build_type)
+  endif()
+  if (ARGC EQUAL 4)
+    set(base_dir ${ARGV3})
+  endif()
+  set(${outdir} ${base_dir}/install/${build_type}/${name} PARENT_SCOPE)
+endfunction()
+
+# https://cmake.org/cmake/help/latest/module/ExternalProject.html
+function(configure_extproj name)
+  DEBUG_MSG("configure-extproj: ARGV: ${ARGV}")
+  DEBUG_MSG("configure-extproj: ARGC: ${ARGC}")
+  DEBUG_MSG("configure-extproj: ARGN: ${ARGN}")
+
+  # provide some preset.
+  set(options DOWNLOAD_ONLY BUILD_STATIC
+    OUT_SOURCE_DIR OUT_INSTALL_DIR OUT_CONFIG_DIR
+    )
+  set(oneValueArgs
+    BUILD_TYPE
+    PREFIX TMP_DIR STAMP_DIR LOG_DIR
+    DOWNLOAD_DIR SOURCE_DIR BINARY_DIR INSTALL_DIR
+    )
+  set(multiValueArgs STEP_TARGETS)
+  cmake_parse_arguments(EP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  # configure some arguments.
+  if (NOT DEFINED EP_BUILD_TYPE)
+    set(EP_BUILD_TYPE release)
+  else()
+    # NOTE: string(TOLOWER <string> <output_variable>)
+    string(TOLOWER ${EP_BUILD_TYPE} EP_BUILD_TYPE)
+  endif()
+  set(EP_NAME ${name})
+
+  # NOTE: DO NOT ALLOW TO ReDefine these DIRS:
+  ASSERT_NOT_DEFINED(
+    EP_TMP_DIR EP_STAMP_DIR EP_LOG_DIR EP_BINARY_DIR
+    EP_STEP_TARGETS
+    )
+  if (NOT DEFINED EP_PREFIX)
+    set(EP_PREFIX ${EXTERNAL_PROJECT_BASE_DIR})
+  endif()
+  get_filename_component(EP_PREFIX ${EP_PREFIX} ABSOLUTE
+    BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
+  get_default_ep_config_dir(EP_CONFIG_DIR ${EP_NAME} ${EP_PREFIX})
+  set(EP_TMP_DIR ${EP_CONFIG_DIR}/tmp)
+  set(EP_STAMP_DIR ${EP_CONFIG_DIR}/stamp)
+  set(EP_LOG_DIR ${EP_CONFIG_DIR}/log)
+  if ((NOT DEFINED EP_DOWNLOAD_DIR) AND (NOT DEFINED EP_SOURCE_DIR))
+    get_default_ep_source_dir(EP_SOURCE_DIR ${EP_NAME} ${EP_PREFIX})
+  elseif(NOT DEFINED EP_SOURCE_DIR)
+    set(EP_SOURCE_DIR ${EP_DOWNLOAD_DIR})
+  endif()
+  set(EP_BINARY_DIR ${EP_CONFIG_DIR}/build-${EP_BUILD_TYPE})
+  if (NOT DEFINED EP_INSTALL_DIR)
+    get_default_ep_install_dir(EP_INSTALL_DIR
+      ${EP_NAME} ${EP_BUILD_TYPE} ${EP_PREFIX})
+  endif()
+  set(EP_STEP_TARGETS update patch build install)
+
+  # TODO. refine arguments.
+  set(EP_ARGS ${EP_UNPARSED_ARGUMENTS})
+  # prepare preset.
+  if (EP_DOWNLOAD_ONLY)
+    set(EchoCMD "${CMAKE_COMMAND} -E echo do nothing.")
+    set(EP_ARGS
+      CONFIGURE_COMMAND ${EchoCMD}
+      BUILD_COMMAND     ${EchoCMD}
+      TEST_COMMAND      ${EchoCMD}
+      INSTALL_COMMAND   ${EchoCMD}
+      ${EP_ARGS})
+  endif()
+
+  if (NOT EP_BUILD_STATIC)
+    set(EP_ARGS ${EP_ARGS}
+      CMAKE_ARGS "-DCMAKE_SHARED_LIBS=ON"
+      # https://cmake.org/cmake/help/latest/prop_tgt/POSITION_INDEPENDENT_CODE.html
+      # flags **-fPIC** will be automatically set.
+      )
+  endif()
+
+  # configure the exrproj
+  configure_file(${_CORE_PACKAGE_BASE_DIR}/extproj.cmake.in
+    ${EP_CONFIG_DIR}/CMakeLists.txt @ONLY)
+  execute_process(
+    COMMAND ${CMAKE_COMMAND}
+    -G ${CMAKE_GENERATOR}
+    -S ${EP_CONFIG_DIR}
+    -B ${EP_TMP_DIR}/build
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${EP_CONFIG_DIR}
+    )
+  if (result)
+    ERROR_MSG("Configure ExternalProject(${EP_NAME}) Failed: ${result}")
+  endif()
+  # TODO. maybe register these in some file is better.
+  if (EP_OUT_SOURCE_DIR)
+    set(EP_SOURCE_DIR ${EP_SOURCE_DIR} PARENT_SCOPE)
+  endif()
+  if (EP_OUT_INSTALL_DIR)
+    set(EP_INSTALL_DIR ${EP_INSTALL_DIR} PARENT_SCOPE)
+  endif()
+  if (EP_OUT_CONFIG_DIR)
+    set(EP_CONFIG_DIR ${EP_CONFIG_DIR} PARENT_SCOPE)
+  endif()
+endfunction()
+
+function(update_extproj name)
+
+endfunction()
+
+
+
+function(install_extproj name)
+
+endfunction()
+
 # Top level:
 # Enhanced version of find_package with externalproject_add.
 #
