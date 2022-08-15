@@ -111,7 +111,7 @@ gt_add_package(OsqpEigen "git@github.com:robotology/osqp-eigen.git" GIT_TAG "v0.
 gt_add_package(osqp-cpp "git@github.com:google/osqp-cpp.git" GIT_TAG "origin/master" DOWNLOAD_ONLY)
 gt_add_package(alglib "git@github.com:LamKamhang/alglib-cmake-wrapper.git" GIT_TAG "origin/master")
 gt_add_package(wechat-uos "https://aur.archlinux.org/wechat-uos.git" GIT_TAG "ae476e0" DOWNLOAD_ONLY)
-gt_add_package(ifopt "git@github.com:ethz-adrl/ifopt.git" GIT_TAG "2.1.3")
+gt_add_package(ifopt "git@github.com:ethz-adrl/ifopt.git" GIT_TAG "2.1.3" DOWNLOAD_ONLY)
 gt_add_package(bogus "https://bitbucket.org/gdaviet/so-bogus.git" GIT_TAG "origin/master"
   CMAKE_ARGS "-DTESTS=OFF"
   CMAKE_ARGS "-DAPPS=OFF"

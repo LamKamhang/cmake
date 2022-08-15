@@ -104,6 +104,10 @@ function(add_external_project PKG)
     set(EP_INSTALL_DIR ${EP_PREFIX}/install/${EP_BUILD_TYPE}/${EP_NAME})
   endif()
 
+  if (NOT DEFINED EP_STEP_TARGETS)
+    set(EP_STEP_TARGETS update patch build install)
+  endif()
+
   # TODO. CHECK UNPARSED_ARGUMENTS.
   set(EP_ARGS ${EP_UNPARSED_ARGUMENTS})
   if (EP_DOWNLOAD_ONLY)
@@ -139,6 +143,7 @@ function(add_external_project PKG)
   set(EXEC
     COMMAND ${CMAKE_COMMAND} --build ${EP_TMP_DIR}/build-config -j12)
 
+  # TODO. GENERATE_TARGET_ONLY only for manage3rd.
   if (NOT EP_GENERATE_TARGET_ONLY)
     execute_process(
       ${EXEC}
@@ -229,12 +234,24 @@ function(require_package PackageName)
   add_external_project(${PackageName} ${PKG_EP_ARGS})
 
   if (PKG_IMPORT_AS_SUBDIR)
-    ASSERT_DEFINED(${EP_SOURCE_DIR})
-    ASSERT_EXISTS(${EP_SOURCE_DIR})
-    add_subdirectory(${EP_SOURCE_DIR})
+    ASSERT_DEFINED(PKG_SOURCE_DIR)
+    ASSERT_EXISTS(${PKG_SOURCE_DIR})
+    add_subdirectory(${PKG_SOURCE_DIR})
   else()
     # TODO. set cmake_module_path/cmake_prefix_path.
+    ASSERT_DEFINED(PKG_INSTALL_DIR)
+    ASSERT_EXISTS(${PKG_INSTALL_DIR})
+    set(BKP_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+    set(BKP_CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
+    DEBUG_MSG("Before.Current.Module: ${CMAKE_MODULE_PATH}")
+    DEBUG_MSG("Before.Current.Prefix: ${CMAKE_PREFIX_PATH}")
+    set(CMAKE_MODULE_PATH ${PKG_INSTALL_DIR} ${CMAKE_MODULE_PATH})
+    set(CMAKE_PREFIX_PATH ${PKG_INSTALL_DIR} ${CMAKE_PREFIX_PATH})
     do_find_package(${PackageName} ${FIND_PACKAGE_ARGS} REQUIRED)
+    set(CMAKE_MODULE_PATH ${BKP_CMAKE_MODULE_PATH})
+    set(CMAKE_PREFIX_PATH ${BKP_CMAKE_PREFIX_PATH})
+    DEBUG_MSG("After.Current.Module: ${CMAKE_MODULE_PATH}")
+    DEBUG_MSG("After.Current.Prefix: ${CMAKE_PREFIX_PATH}")
   endif()
 endfunction()
 
