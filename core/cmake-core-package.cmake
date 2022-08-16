@@ -307,6 +307,102 @@ function(is_version out v)
   set(${out} ${_} PARENT_SCOPE)
 endfunction()
 
+
+function(infer_version_from_tag out tag)
+  DEBUG_MSG("Test.Case: ${tag}")
+  if (${tag} MATCHES "^[^0-9]*([0-9]+[0-9.]*)$")
+    is_version(_ ${CMAKE_MATCH_1})
+    if (_)
+      DEBUG_MSG("infer.version: ${CMAKE_MATCH_1}")
+      set(${out} ${CMAKE_MATCH_1} PARENT_SCOPE)
+    else()
+      unset(${out} PARENT_SCOPE)
+    endif()
+  else()
+    unset(${out} PARENT_SCOPE)
+  endif()
+endfunction()
+
+# FIXME. Not fully test.
+function(infer_args_from_uri out_args uri)
+  cmake_parse_arguments("" "NO_VERSION" "" "" ${ARGN})
+  DEBUG_MSG("Current.uri: ${uri}")
+  # split uri to url#tag
+  if (${uri} MATCHES "^([^# ]+)(#[^ ]+)?$")
+    set(url ${CMAKE_MATCH_1})
+    if (CMAKE_MATCH_2) # if has #xxxxx
+      string(SUBSTRING ${CMAKE_MATCH_2} 1 -1 tag)
+      # tag@version pick out version
+      if (${tag} MATCHES "([^@]*)(@[0-9.]*)?")
+        set(tag ${CMAKE_MATCH_1})
+        if (NOT _NO_VERSION)
+          if (CMAKE_MATCH_2) # if has @version.
+            string(SUBSTRING ${CMAKE_MATCH_2} 1 -1 version)
+          else() # infer version from tag.
+            infer_version_from_tag(version ${tag})
+          endif()
+        endif()
+      else()
+        ERROR_MSG("Unvalid tag format: ${tag}")
+      endif()
+    endif()
+  else()
+    ERROR_MSG("UnValid URI Format: ${uri}")
+  endif()
+
+  DEBUG_MSG("tag: ${tag}")
+  DEBUG_MSG("version: ${version}")
+
+  # infer scheme from url.
+  if (${url} MATCHES ".*\\.git$")
+    set(out GIT_REPOSITORY ${url})
+    set(type git)
+  else()
+    if (${url} MATCHES "git@")
+      set(out GIT_REPOSITORY ${url})
+      set(type git)
+    # scheme:path
+    elseif (${url} MATCHES "^([^: ]+):(.*)$")
+      string(TOLOWER ${CMAKE_MATCH_1} scheme)
+      set(path ${CMAKE_MATCH_2})
+      DEBUG_MSG("Current.Match.Scheme: ${scheme}")
+      DEBUG_MSG("Current.Match.Path: ${path}")
+      if (scheme STREQUAL "rom")
+        if (${path} MATCHES "([^/]+)$")
+          set(out GIT_REPOSITORY
+            ssh://git@ryon.ren:10022/mirrors/${CMAKE_MATCH_1})
+          set(type git)
+        else()
+          ERROR_MSG("Unable to infer repo name: ${path}")
+        endif()
+      elseif(scheme STREQUAL "gh")
+        set(out GIT_REPOSITORY https://github.com/${path})
+        set(type git)
+      else() # FIXME. svn, cvs...
+        set(out URL ${url})
+      endif()
+    else()
+      ERROR_MSG("Unknown: ${uri}")
+    endif()
+  endif()
+
+  if (tag)
+    if (${type} STREQUAL git)
+      set(out ${out} GIT_TAG ${tag})
+    else()
+      set(out ${out} URL_HASH ${tag})
+    endif()
+  endif()
+
+  if (version)
+    set(out ${out} VERSION ${version})
+  endif()
+
+  DEBUG_MSG("Current.Prepare.args: ${out}")
+
+  set(${out_args} ${out} PARENT_SCOPE)
+endfunction()
+
 function(prepare_arguments out_find_package_args out_extproj_args name)
   set(options EXACT QUIET REQUIRED GLOBAL CONFIG NO_MODULE
     NO_POLICY_SCOPE BYPASS_PROVIDER
@@ -348,18 +444,33 @@ function(prepare_arguments out_find_package_args out_extproj_args name)
   set(${out_extproj_args} ${extproj_args} PARENT_SCOPE)
 endfunction()
 
-function(_require_package2 name version)
-  require_package(${name} VERSION ${version} ${ARGN})
+# HACK: override ARGN
+function(_hack_version_argn out version)
+  set(${out} VERSION ${version} ${ARGN} PARENT_SCOPE)
 endfunction()
 
-function(require_package name) # [version]
+# HACK: override ARGN
+function(_hack_uri_argn out uri)
+  cmake_parse_arguments("" "DOWNLOAD_ONLY" "VERSION" "" ${ARGN})
+  if (DEFINED _VERSION OR _DOWNLOAD_ONLY)
+    infer_args_from_uri(args ${uri} NO_VERSION)
+  else()
+    infer_args_from_uri(args ${uri})
+  endif()
+  set(${out} ${args} ${ARGN} PARENT_SCOPE)
+endfunction()
+
+function(require_package name) # [version/uri]
   if (NOT ARGC EQUAL 1)
     is_version(out ${ARGV1})
     if (out)
-      _require_package2(${ARGV})
-      return()
+      _hack_version_argn(ARGN ${ARGN})
+    elseif (${ARGV1} MATCHES "[@:/#]")
+      _hack_uri_argn(ARGN ${ARGN})
     endif()
   endif()
+
+  DEBUG_MSG("RequirePackage.Args: ${name};${ARGN}")
 
   set(options FIND_FIRST_OFF REQUIRED NOT_REQUIRED
     IMPORT_AS_SUBDIR EXPORT_PM_TARGET EXCLUDE_FROM_ALL
@@ -421,31 +532,10 @@ function(require_package name) # [version]
   endif()
 endfunction()
 
-function(is_url out url)
-  # FIXME. simply check only.
-  if (${url} MATCHES "://" OR ${url} MATCHES "@")
-    set(${out} True PARENT_SCOPE)
-  else()
-    unset(${out} PARENT_SCOPE)
-  endif()
-endfunction()
-
-# TODO. not correctly to handle different download method.
-function(_add_package name url)
-  cmake_parse_arguments(PKG "" "GIT_TAG" "" ${ARGN})
-  if (DEFINED PKG_GIT_TAG)
-    add_package(${name} GIT_REPOSITORY ${url} ${ARGN})
-  else()
-    add_package(${name} URL ${url} ${ARGN})
-  endif()
-endfunction()
-
 function(add_package name)
   if (NOT ARGC EQUAL 1)
-    is_url(out ${ARGV1})
-    if (out)
-      _add_package(${ARGV})
-      return()
+    if (${ARGV1} MATCHES "[@:/#]")
+      _hack_uri_argn(ARGN ${ARGN})
     endif()
   endif()
 
@@ -453,7 +543,7 @@ function(add_package name)
     UPDATE_NOW BUILD_NOW INSTALL_NOW
     )
   cmake_parse_arguments(PKG "${options}" "" "" ${ARGN})
-  configure_extproj(${ARGV} OUT_CONFIG_DIR)
+  configure_extproj(${name} ${ARGN} OUT_CONFIG_DIR)
   generate_extproj_targets(${name} ${EP_CONFIG_DIR})
   if (PKG_UPDATE_NOW)
     update_extproj(${name} ${EP_CONFIG_DIR})

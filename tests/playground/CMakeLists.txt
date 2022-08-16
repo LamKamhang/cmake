@@ -26,34 +26,48 @@ set(DEBUG_MODE True)
 # #   )
 # require_package(Eigen3 VERSION 3.4 REQUIRED)
 
-DEBUG_MSG("--1")
-require_package(Eigen3 3.4.0
-  FIND_FIRST_OFF
-  GIT_REPOSITORY "ssh://git@ryon.ren:10022/mirrors/eigen3.git"
-  GIT_TAG "3.4.0")
-if (TARGET Eigen3::Eigen)
-  DEBUG_MSG("YES")
-endif()
-DEBUG_MSG("--2")
-require_package(spdlog 1.10
-  FIND_FIRST_OFF
-  IMPORT_AS_SUBDIR
-  GIT_REPOSITORY "ssh://git@ryon.ren:10022/mirrors/spdlog.git"
-  GIT_TAG "v1.10.0"
-  )
-if (TARGET spdlog::spdlog)
-  DEBUG_MSG("PASSED")
-endif()
+# DEBUG_MSG("--1")
+# require_package(Eigen3 3.4.0
+#   FIND_FIRST_OFF
+#   GIT_REPOSITORY "ssh://git@ryon.ren:10022/mirrors/eigen3.git"
+#   GIT_TAG "3.4.0")
+# if (TARGET Eigen3::Eigen)
+#   DEBUG_MSG("YES")
+# endif()
+# DEBUG_MSG("--2")
+# require_package(spdlog 1.10
+#   FIND_FIRST_OFF
+#   IMPORT_AS_SUBDIR
+#   GIT_REPOSITORY "ssh://git@ryon.ren:10022/mirrors/spdlog.git"
+#   GIT_TAG "v1.10.0"
+#   )
+# if (TARGET spdlog::spdlog)
+#   DEBUG_MSG("PASSED")
+# endif()
 
-is_url(out "https://fff")
-if (out)
-  DEBUG_MSG("good1")
-endif()
-is_url(out "git@github.com")
-if (out)
-  DEBUG_MSG("good2")
-endif()
-is_url(out GIT_REPOSITORY)
-if (out)
-  DEBUG_MSG("good3")
-endif()
+# is_url(out "https://fff")
+# if (out)
+#   DEBUG_MSG("good1")
+# endif()
+# is_url(out "git@github.com")
+# if (out)
+#   DEBUG_MSG("good2")
+# endif()
+# is_url(out GIT_REPOSITORY)
+# if (out)
+#   DEBUG_MSG("good3")
+# endif()
+# infer_args_from_uri(out "rom:spdlog/spdlog#v1.2@1.0")
+# infer_args_from_uri(out "rom:Catch2#v1.9")
+# infer_args_from_uri(out "gh:spdlog/spdlog#v1.2@1.0")
+# infer_args_from_uri(out "gh:spdlog/spdlog#v1.2")
+# infer_args_from_uri(out "gh:spdlog/spdlog#@1.0")
+# infer_args_from_uri(out "gh:spdlog/spdlog#asdfab")
+# infer_args_from_uri(out "gh:spdlog/spdlog#1dfa")
+# infer_args_from_uri(out "ssh://git@ryon.ren:10022/mirrors/libigl.git")
+# infer_args_from_uri(out "git@github.com:osqp/osqp.git")
+# infer_args_from_uri(out "https://github.com/Yixin-Hu/TetWild.git")
+# infer_args_from_uri(out "https://github.com/CPPAlliance/url/archive/refs/tags/static-pool.zip")
+# infer_args_from_uri(out "https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh")
+infer_args_from_uri(spdlog "rom:spdlog/spdlog#v1.2@")
+infer_args_from_uri(spdlog "rom:spdlog/spdlog#v1.2")
