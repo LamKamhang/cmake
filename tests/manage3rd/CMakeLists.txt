@@ -122,3 +122,67 @@ add_package(bogus "https://bitbucket.org/gdaviet/so-bogus.git" GIT_TAG "origin/m
 )
 add_package(elasty "git@github.com:yuki-koyama/elasty.git" GIT_TAG "origin/master" DOWNLOAD_ONLY)
 add_package(sofa "git@github.com:sofa-framework/sofa.git" GIT_TAG "origin/master" DOWNLOAD_ONLY)
+
+add_package(AcceleratedQuadraticProxy
+  "https://github.com/shaharkov/AcceleratedQuadraticProxy.git"
+  GIT_TAG "origin/master"
+  DOWNLOAD_ONLY)
+
+add_package(admm-elastic
+  "git@github.com:georgbrown/admm-elastic"
+  GIT_TAG "origin/master"
+  DOWNLOAD_ONLY
+  )
+add_package(AKVFParam
+  "https://gh.gcdn.mirr.one/sebastian-claici/AKVFParam.git"
+  GIT_TAG "origin/master"
+  DOWNLOAD_ONLY)
+add_package(AutoDef
+  "git@github.com:lawsonfulton/AutoDef.git"
+  GIT_TAG "origin/master"
+  DOWNLOAD_ONLY)
+add_package(Blender-FLIP-Fluids
+  "git@github.com:rlguy/Blender-FLIP-Fluids.git"
+  GIT_TAG "origin/master"
+    DOWNLOAD_ONLY)
+  add_package(caches
+    "git@github.com:vpetrigo/caches.git"
+  GIT_TAG "origin/master"
+  DOWNLOAD_ONLY)
+# add_package(ChainSimulation DOWNLOAD_ONLY)
+# add_package(CoMISo_wrapper DOWNLOAD_ONLY)
+# add_package(CompMajor DOWNLOAD_ONLY)
+# add_package(csb DOWNLOAD_ONLY)
+# add_package(Directional DOWNLOAD_ONLY)
+# add_package(entt DOWNLOAD_ONLY)
+# add_package(FastCorotatedFEM DOWNLOAD_ONLY)
+# add_package(Fildem DOWNLOAD_ONLY)
+# add_package(GeoSimMono.jl DOWNLOAD_ONLY)
+# add_package(GLSL-PathTracer DOWNLOAD_ONLY)
+# add_package(HairSimulation DOWNLOAD_ONLY)
+# add_package(HexaLab DOWNLOAD_ONLY)
+# add_package(hsc-code DOWNLOAD_ONLY)
+# add_package(HybridRenderingEngine DOWNLOAD_ONLY)
+# add_package(jsoncpp DOWNLOAD_ONLY)
+# add_package(KnittingShortRows2021 DOWNLOAD_ONLY)
+# add_package(nonmanifold-laplacian DOWNLOAD_ONLY)
+# add_package(NvCloth DOWNLOAD_ONLY)
+# add_package(OpenGL_Fundamentals DOWNLOAD_ONLY)
+# add_package(PBD DOWNLOAD_ONLY)
+# add_package(PositionBasedDynamics DOWNLOAD_ONLY)
+# add_package(progressive_embedding DOWNLOAD_ONLY)
+# add_package(progressive_parametrization DOWNLOAD_ONLY)
+# add_package(protobuf DOWNLOAD_ONLY)
+# add_package(pytorch-beginner DOWNLOAD_ONLY)
+# add_package(rapidjson DOWNLOAD_ONLY)
+# add_package(ray-tracing-cuda DOWNLOAD_ONLY)
+# add_package(Remesh-trunk DOWNLOAD_ONLY)
+# add_package(Scalable-Locally-Injective-Mappings DOWNLOAD_ONLY)
+# add_package(sequential-gallery DOWNLOAD_ONLY)
+# add_package(sequential-line-search DOWNLOAD_ONLY)
+# add_package(SJDXQcourseware DOWNLOAD_ONLY)
+# add_package(SPlisHSPlasH DOWNLOAD_ONLY)
+# add_package(tetgen DOWNLOAD_ONLY)
+# add_package(wrapd DOWNLOAD_ONLY)
+# add_package(wrapd-2d DOWNLOAD_ONLY)
+# add_package(ZJU-nCov-Hitcarder DOWNLOAD_ONLY)

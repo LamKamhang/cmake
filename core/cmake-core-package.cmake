@@ -362,10 +362,10 @@ function(require_package name) # [version]
   endif()
 
   set(options FIND_FIRST_OFF REQUIRED NOT_REQUIRED
-    IMPORT_AS_SUBDIR EXPORT_PM_TARGET
+    IMPORT_AS_SUBDIR EXPORT_PM_TARGET EXCLUDE_FROM_ALL
     )
   set(oneValueArgs)
-  set(multiValueArgs "")
+  set(multiValueArgs)
   cmake_parse_arguments(PKG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   # prepare FIND_PACKAGE_ARGS.
@@ -396,7 +396,22 @@ function(require_package name) # [version]
   if (PKG_IMPORT_AS_SUBDIR)
     ASSERT_DEFINED(EP_SOURCE_DIR)
     ASSERT_EXISTS(${EP_SOURCE_DIR})
-    add_subdirectory(${EP_SOURCE_DIR})
+    ASSERT_EXISTS(${EP_SOURCE_DIR}/CMakeLists.txt)
+    # TODO. maybe use Options will be better.
+    cmake_parse_arguments(ARGS "" "" "CMAKE_ARGS" ${extproj_args})
+    foreach(option ${ARGS_CMAKE_ARGS})
+      if (${option} MATCHES "^-D([^ ]*)=([^ ]*)$")
+        DEBUG_MSG("KEY: ${CMAKE_MATCH_1}, VALUE: ${CMAKE_MATCH_2}")
+        set(${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
+      else()
+        DEBUG_MSG("UNKNOWN CMAKE_ARGS: ${option}")
+      endif()
+    endforeach()
+    if (PKG_EXCLUDE_FROM_ALL)
+      add_subdirectory(${EP_SOURCE_DIR} EXCLUDE_FROM_ALL)
+    else()
+      add_subdirectory(${EP_SOURCE_DIR})
+    endif()
   else()
     install_extproj(${name} ${EP_CONFIG_DIR})
     ASSERT_DEFINED(EP_INSTALL_DIR)
