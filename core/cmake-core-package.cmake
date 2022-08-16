@@ -326,63 +326,75 @@ endfunction()
 # FIXME. Not fully test.
 function(infer_args_from_uri out_args uri)
   cmake_parse_arguments("" "NO_VERSION" "" "" ${ARGN})
-  DEBUG_MSG("Current.uri: ${uri}")
-  # split uri to url#tag
-  if (${uri} MATCHES "^([^# ]+)(#[^ ]+)?$")
+  DEBUG_MSG("-----Current.uri: ${uri}")
+  # split uri to url#tagversion
+  if (${uri} MATCHES "^([^# ]+)(#[^# ]*)?$")
     set(url ${CMAKE_MATCH_1})
-    if (CMAKE_MATCH_2) # if has #xxxxx
-      string(SUBSTRING ${CMAKE_MATCH_2} 1 -1 tag)
-      # tag@version pick out version
-      if (${tag} MATCHES "([^@]*)(@[0-9.]*)?")
-        set(tag ${CMAKE_MATCH_1})
-        if (NOT _NO_VERSION)
-          if (CMAKE_MATCH_2) # if has @version.
-            string(SUBSTRING ${CMAKE_MATCH_2} 1 -1 version)
-          else() # infer version from tag.
-            infer_version_from_tag(version ${tag})
-          endif()
-        endif()
-      else()
-        ERROR_MSG("Unvalid tag format: ${tag}")
-      endif()
+    if (CMAKE_MATCH_2)
+      string(SUBSTRING ${CMAKE_MATCH_2} 1 -1 tagversion)
     endif()
   else()
-    ERROR_MSG("UnValid URI Format: ${uri}")
+    ERROR_MSG("Unvalid URI Format(^[^# ]+(#[^# ]*)?$): ${uri}")
+  endif()
+  # split tagversion: tag@version
+  if (tagversion)
+    if (tagversion MATCHES "^([^@]*)(@[0-9.]*)?$")
+      set(tag ${CMAKE_MATCH_1})
+      # infer version.
+      if (NOT _NO_VERSION)
+        if (CMAKE_MATCH_2)
+          string(SUBSTRING ${CMAKE_MATCH_2} 1 -1 version)
+        else()
+          infer_version_from_tag(version ${tag})
+        endif()
+      endif()
+    else()
+      ERROR_MSG("Unvalid TagVersion Format([^@]*@[0-9.]*): ${tagversion}")
+    endif()
   endif()
 
   DEBUG_MSG("tag: ${tag}")
   DEBUG_MSG("version: ${version}")
 
   # infer scheme from url.
-  if (${url} MATCHES ".*\\.git$")
-    set(out GIT_REPOSITORY ${url})
+  # scheme:path
+  if (${url} MATCHES "^([^: ]+):(.+)$")
+    string(TOLOWER ${CMAKE_MATCH_1} scheme)
+    set(path ${CMAKE_MATCH_2})
+    DEBUG_MSG("Current.Match.Scheme: ${scheme}")
+    DEBUG_MSG("Current.Match.Path: ${path}")
+  endif()
+
+  # some special schemes
+  if (scheme STREQUAL "rom") # ryon.ren:mirrors
     set(type git)
-  else()
-    if (${url} MATCHES "git@")
+    if (${path} MATCHES "([^/]+)$")
+      set(out GIT_REPOSITORY
+        ssh://git@ryon.ren:10022/mirrors/${CMAKE_MATCH_1})
+    else()
+      ERROR_MSG("Unable to infer repo name: ${path}")
+    endif()
+  elseif(scheme STREQUAL "gh") # github
+    set(out GIT_REPOSITORY https://github.com/${path})
+    set(type git)
+  elseif(scheme STREQUAL "gl") # gitlab
+    set(out GIT_REPOSITORY https://gitlab.com/${path})
+    set(type git)
+  else() # normal test.
+    # FIXME: Too Ugly!!!
+    if (${url} MATCHES ".*\\.git$"  # end with **.git**
+        OR ${url} MATCHES "^(ssh://)?git@" # start with [ssh://]git@
+        # https://github/gitlab.com/Username/RepoName
+        OR ${url} MATCHES "^https://github\\.com/[^/ ]+/[^/ ]+$"
+        OR ${url} MATCHES "^https://gitlab\\.com/[^/ ]+/[^/ ]+$"
+        OR ${url} MATCHES "^https://funannongwu\\.com/[^/ ]+/[^/ ]+$"
+        # https://ryon.ren
+        OR ${url} MATCHES "^https://ryon\\.ren:2443/[^/ ]+/[^/ ]+$"
+        )
       set(out GIT_REPOSITORY ${url})
       set(type git)
-    # scheme:path
-    elseif (${url} MATCHES "^([^: ]+):(.*)$")
-      string(TOLOWER ${CMAKE_MATCH_1} scheme)
-      set(path ${CMAKE_MATCH_2})
-      DEBUG_MSG("Current.Match.Scheme: ${scheme}")
-      DEBUG_MSG("Current.Match.Path: ${path}")
-      if (scheme STREQUAL "rom")
-        if (${path} MATCHES "([^/]+)$")
-          set(out GIT_REPOSITORY
-            ssh://git@ryon.ren:10022/mirrors/${CMAKE_MATCH_1})
-          set(type git)
-        else()
-          ERROR_MSG("Unable to infer repo name: ${path}")
-        endif()
-      elseif(scheme STREQUAL "gh")
-        set(out GIT_REPOSITORY https://github.com/${path})
-        set(type git)
-      else() # FIXME. svn, cvs...
-        set(out URL ${url})
-      endif()
-    else()
-      ERROR_MSG("Unknown: ${uri}")
+    else() # FIXME: other protocol: svn. cvs
+      set(out URL ${url})
     endif()
   endif()
 
