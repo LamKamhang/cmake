@@ -433,6 +433,9 @@ function(infer_args_from_uri out_args uri)
   elseif(scheme STREQUAL "gl") # gitlab
     set(out GIT_REPOSITORY https://gitlab.com/${path})
     set(type git)
+  elseif(scheme STREQUAL "bb") # bitbucket
+    set(out GIT_REPOSITORY https://bitbucket.org/${path})
+    set(type git)
   else() # normal test.
     # FIXME: Too Ugly!!!
     if (${url} MATCHES ".*\\.git$"  # end with **.git**
@@ -443,6 +446,8 @@ function(infer_args_from_uri out_args uri)
         OR ${url} MATCHES "^https://funannongwu\\.com/[^/ ]+/[^/ ]+$"
         # https://ryon.ren
         OR ${url} MATCHES "^https://ryon\\.ren:2443/[^/ ]+/[^/ ]+$"
+        # https://bitbucket.org
+        OR ${url} MATCHES "^https://bitbucket\\.org/[^/ ]+/[^/ ]+$"
         )
       set(out GIT_REPOSITORY ${url})
       set(type git)
