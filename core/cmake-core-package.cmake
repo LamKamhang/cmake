@@ -10,6 +10,8 @@ set(EXTERNAL_PROJECT_BASE_DIR
 set(EXTERNAL_PROJECT_BUILD_TYPE
   "release"
   CACHE STRING "The ExternalProject BuildType[Notice: LowerCaseOnly]. Default is release")
+set(EXTERNAL_PROJECT_GITHUB_MIRROR
+  "" CACHE STRING "External Project Use Github Mirror")
 option(EXTERNAL_PROJECT_DOWNLOAD_ONLY "External Project Download only. Default is false" OFF)
 option(ADD_EXTERNAL_PROJECT_SEARCH_PATH "Add External Project install path to cmake search path" ON)
 
@@ -192,7 +194,7 @@ function(prepare_extproj_cmd out_cmd config_dir)
   endif()
   set(${out_cmd}
     ${CMAKE_COMMAND}
-    --build ${config_dir}/tmp/build
+    --build ${config_dir}/tmp/build -j12
     ${tgt} PARENT_SCOPE)
 endfunction()
 
@@ -422,7 +424,11 @@ function(infer_args_from_uri out_args uri)
       ERROR_MSG("Unable to infer repo name: ${path}")
     endif()
   elseif(scheme STREQUAL "gh") # github
-    set(out GIT_REPOSITORY https://github.com/${path})
+    if (EXTERNAL_PROJECT_GITHUB_MIRROR)
+      set(out GIT_REPOSITORY ${EXTERNAL_PROJECT_GITHUB_MIRROR}/${path})
+    else()
+      set(out GIT_REPOSITORY https://github.com/${path})
+    endif()
     set(type git)
   elseif(scheme STREQUAL "gl") # gitlab
     set(out GIT_REPOSITORY https://gitlab.com/${path})
