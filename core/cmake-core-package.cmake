@@ -10,6 +10,8 @@ set(EXTERNAL_PROJECT_BASE_DIR
 set(EXTERNAL_PROJECT_BUILD_TYPE
   "release"
   CACHE STRING "The ExternalProject BuildType[Notice: LowerCaseOnly]. Default is release")
+option(EXTERNAL_PROJECT_DOWNLOAD_ONLY "External Project Download only. Default is false" OFF)
+option(ADD_EXTERNAL_PROJECT_SEARCH_PATH "Add External Project install path to cmake search path" ON)
 
 # Disable Some Invalid Base.Dir
 if (EXTERNAL_PROJECT_BASE_DIR STREQUAL CMAKE_SOURCE_DIR)
@@ -22,6 +24,11 @@ if (NOT _current_build_type STREQUAL EXTERNAL_PROJECT_BUILD_TYPE)
   set(EXTERNAL_PROJECT_BUILD_TYPE ${_current_build_type})
 endif()
 unset(_current_build_type)
+
+if (ADD_EXTERNAL_PROJECT_SEARCH_PATH)
+  list(PREPEND CMAKE_MODULE_PATH ${EXTERNAL_PROJECT_BASE_DIR}/install/${EXTERNAL_PROJECT_BUILD_TYPE})
+  list(PREPEND CMAKE_PREFIX_PATH ${EXTERNAL_PROJECT_BASE_DIR}/install/${EXTERNAL_PROJECT_BUILD_TYPE})
+endif()
 
 # some helper functions.
 function(get_external_project_base_dir out) # [prefix]
@@ -131,7 +138,7 @@ function(configure_extproj name)
   # TODO. refine arguments.
   set(EP_ARGS ${EP_UNPARSED_ARGUMENTS})
   # prepare preset.
-  if (EP_DOWNLOAD_ONLY)
+  if (EP_DOWNLOAD_ONLY OR EXTERNAL_PROJECT_DOWNLOAD_ONLY)
     set(EchoCMD "${CMAKE_COMMAND} -E echo do nothing.")
     set(EP_ARGS
       CONFIGURE_COMMAND ${EchoCMD}
@@ -324,7 +331,13 @@ endfunction()
 function(do_find_package PKG)
   find_package(${PKG} ${ARGN})
   if (${PKG}_FOUND)
+    string(TOUPPER ${PKG} tmp)
     message("Find ${PKG} with version: ${${PKG}_VERSION}")
+    if (${tmp}_INCLUDE_DIR)
+      message("     include.paths: ${${tmp}_INCLUDE_DIR}")
+    elseif(${tmp}_INCLUDE_DIRS)
+      message("     include.paths: ${${tmp}_INCLUDE_DIRS}")
+    endif()
     # RegisterPackage or NOT?
     set(PKG_FOUND TRUE PARENT_SCOPE)
     set(PKG_VERSION ${${PKG}_VERSION} PARENT_SCOPE)
