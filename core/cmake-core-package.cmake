@@ -99,6 +99,7 @@ function(configure_extproj name)
     OUT_SOURCE_DIR OUT_INSTALL_DIR OUT_CONFIG_DIR
     )
   set(oneValueArgs
+    VERSION # ignore pass-in version.
     PREFIX TMP_DIR STAMP_DIR LOG_DIR
     DOWNLOAD_DIR SOURCE_DIR BINARY_DIR INSTALL_DIR
     )
@@ -186,11 +187,13 @@ function(prepare_extproj_cmd out_cmd config_dir)
   DEBUG_MSG("prepare_cmd.config_dir: ${config_dir}")
   DEBUG_MSG("prepare_cmd.argn: ${ARGN}")
   ASSERT_EXISTS(${config_dir})
+  if (ARGN)
+    set(tgt --target ${ARGN})
+  endif()
   set(${out_cmd}
     ${CMAKE_COMMAND}
     --build ${config_dir}/tmp/build
-    --target ${ARGN}
-    PARENT_SCOPE)
+    ${tgt} PARENT_SCOPE)
 endfunction()
 
 function(run_extproj_cmd cmd config_dir)
