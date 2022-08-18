@@ -1,0 +1,22 @@
+project(subproj)
+message("----SubProj.Source.dir: ${CMAKE_SOURCE_DIR}")
+message("----SubProj.CSource.dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+message("----SubProj.Binary.dir: ${CMAKE_BINARY_DIR}")
+message("----SubProj.CBinary.dir: ${CMAKE_CURRENT_BINARY_DIR}")
+message("----SubProj.Project.Source.dir: ${PROJECT_SOURCE_DIR}")
+message("----SubProj.Project.Binary.dir: ${PROJECT_BINARY_DIR}")
+
+function(eval)
+message("----SubProj.Func.Source.dir: ${CMAKE_SOURCE_DIR}")
+message("----SubProj.Func.CSource.dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+message("----SubProj.Func.Binary.dir: ${CMAKE_BINARY_DIR}")
+message("----SubProj.Func.CBinary.dir: ${CMAKE_CURRENT_BINARY_DIR}")
+message("----SubProj.Func.Project.Source.dir: ${PROJECT_SOURCE_DIR}")
+message("----SubProj.Func.Project.Binary.dir: ${PROJECT_BINARY_DIR}")
+endfunction()
+
+message("Call.in.Subdir")
+eval()
+
+add_subdirectory(subsubdir)
+add_subdirectory(subsubproj)

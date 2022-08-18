@@ -1,17 +1,64 @@
+# Point to the current source base dir.
+# In order to locate `extproj.cmake.in`
 set(_CORE_PACKAGE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-set(EXTERNAL_PROJECT_BASE_DIR ${CMAKE_SOURCE_DIR}/3rd)
+
+# Config some global cached variables.
+set(EXTERNAL_PROJECT_BASE_DIR
+  ${CMAKE_SOURCE_DIR}/3rd # SOURCE_DIR point to the Root_Proj_Dir
+  CACHE PATH "The BaseDir for external project to cached, Default is ${CMAKE_SOURCE_DIR}/3rd"
+  )
+set(EXTERNAL_PROJECT_BUILD_TYPE
+  "release"
+  CACHE STRING "The ExternalProject BuildType[Notice: LowerCaseOnly]. Default is release")
+
+# Disable Some Invalid Base.Dir
+if (EXTERNAL_PROJECT_BASE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  ERROR_MSG("In-source ExternalCache is not allowed! Please set `EXTERNAL_PROJECT_BASE_DIR` to another dir. <Default>: ${CMAKE_SOURCE_DIR}/3rd")
+endif()
+
+string(TOLOWER ${EXTERNAL_PROJECT_BUILD_TYPE} _current_build_type)
+if (NOT _current_build_type STREQUAL EXTERNAL_PROJECT_BUILD_TYPE)
+  WARN_MSG("Reset the build type to its lowercase: ${_current_build_type}")
+  set(EXTERNAL_PROJECT_BUILD_TYPE ${_current_build_type})
+endif()
+unset(_current_build_type)
+
+# some helper functions.
+function(get_external_project_base_dir out) # [prefix]
+  if (NOT (ARGC EQUAL 1 OR ARGC EQUAL 2))
+    ERROR_MSG("get_external_project_base_dir <outdir> [prefix]")
+  endif()
+  if (ARGC EQUAL 1 OR NOT ARGV1)
+    set(${out} ${EXTERNAL_PROJECT_BASE_DIR} PARENT_SCOPE)
+  else()
+    if (ARGV1 MATCHES "^/\\.*")
+      set(${out} ${ARGV1} PARENT_SCOPE)
+    else()
+      WARN_MSG("Prefix is not an absolute path, it will be set to ${CMAKE_SOURCE_DIR}/${ARGV1}")
+      set(${out} ${CMAKE_SOURCE_DIR}/${ARGV1} PARENT_SCOPE)
+    endif()
+  endif()
+endfunction()
+
+# internal usage only!!!
+function(_no_prefix_ep_source_dir out name)
+  set(${out} ${name} PARENT_SCOPE)
+endfunction()
+function(_no_prefix_ep_config_dir out name)
+  set(${out} .cache/.ep_config/${name} PARENT_SCOPE)
+endfunction()
+function(_no_prefix_ep_install_dir out name)
+  set(${out} install/${EXTERNAL_PROJECT_BUILD_TYPE}/${name} PARENT_SCOPE)
+endfunction()
 
 function(get_default_ep_source_dir outdir name) # [prefix]
   if (NOT (ARGC EQUAL 2 OR ARGC EQUAL 3))
     ERROR_MSG("get_default_ep_source_dir <outdir> <name> [prefix]")
   endif()
 
-  if (ARGC EQUAL 2)
-    set(base_dir ${EXTERNAL_PROJECT_BASE_DIR})
-  else()
-    set(base_dir ${ARGV2})
-  endif()
-  set(${outdir} ${base_dir}/${name} PARENT_SCOPE)
+  get_external_project_base_dir(base_dir ${ARGV2})
+  _no_prefix_ep_source_dir(path ${name})
+  set(${outdir} ${base_dir}/${path} PARENT_SCOPE)
 endfunction()
 
 function(get_default_ep_config_dir outdir name) # [prefix]
@@ -19,28 +66,19 @@ function(get_default_ep_config_dir outdir name) # [prefix]
     ERROR_MSG("get_default_ep_config_dir <outdir> <name> [prefix]")
   endif()
 
-  if (ARGC EQUAL 2)
-    set(base_dir ${EXTERNAL_PROJECT_BASE_DIR})
-  else()
-    set(base_dir ${ARGV2})
-  endif()
-  set(${outdir} ${base_dir}/.cache/.ep_config/${name} PARENT_SCOPE)
+  get_external_project_base_dir(base_dir ${ARGV2})
+  _no_prefix_ep_config_dir(path ${name})
+  set(${outdir} ${base_dir}/${path} PARENT_SCOPE)
 endfunction()
 
-function(get_default_ep_install_dir outdir name) # [build-type [prefix]]
-  if (NOT (ARGC EQUAL 2 OR ARGC EQUAL 3 OR ARGC EQUAL 4))
-    ERROR_MSG("get_default_ep_install_dir <outdir> <name> [build-type [prefix]]!")
+function(get_default_ep_install_dir outdir name) # [prefix]
+  if (NOT (ARGC EQUAL 2 OR ARGC EQUAL 3))
+    ERROR_MSG("get_default_ep_install_dir <outdir> <name> [prefix]")
   endif()
-  set(base_dir ${EXTERNAL_PROJECT_BASE_DIR})
-  if (ARGC EQUAL 2)
-    set(build_type release)
-  else()
-    string(TOLOWER ${ARGV2} build_type)
-  endif()
-  if (ARGC EQUAL 4)
-    set(base_dir ${ARGV3})
-  endif()
-  set(${outdir} ${base_dir}/install/${build_type}/${name} PARENT_SCOPE)
+
+  get_external_project_base_dir(base_dir ${ARGV2})
+  _no_prefix_ep_install_dir(path ${name})
+  set(${outdir} ${base_dir}/${path} PARENT_SCOPE)
 endfunction()
 
 # https://cmake.org/cmake/help/latest/module/ExternalProject.html
@@ -54,7 +92,6 @@ function(configure_extproj name)
     OUT_SOURCE_DIR OUT_INSTALL_DIR OUT_CONFIG_DIR
     )
   set(oneValueArgs
-    BUILD_TYPE
     PREFIX TMP_DIR STAMP_DIR LOG_DIR
     DOWNLOAD_DIR SOURCE_DIR BINARY_DIR INSTALL_DIR
     )
@@ -62,12 +99,7 @@ function(configure_extproj name)
   cmake_parse_arguments(EP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   # configure some arguments.
-  if (NOT DEFINED EP_BUILD_TYPE)
-    set(EP_BUILD_TYPE release)
-  else()
-    # NOTE: string(TOLOWER <string> <output_variable>)
-    string(TOLOWER ${EP_BUILD_TYPE} EP_BUILD_TYPE)
-  endif()
+  set(EP_BUILD_TYPE ${EXTERNAL_PROJECT_BUILD_TYPE})
   set(EP_NAME ${name})
 
   # NOTE: DO NOT ALLOW TO ReDefine these DIRS:
@@ -92,7 +124,7 @@ function(configure_extproj name)
   set(EP_BINARY_DIR ${EP_CONFIG_DIR}/build-${EP_BUILD_TYPE})
   if (NOT DEFINED EP_INSTALL_DIR)
     get_default_ep_install_dir(EP_INSTALL_DIR
-      ${EP_NAME} ${EP_BUILD_TYPE} ${EP_PREFIX})
+      ${EP_NAME} ${EP_PREFIX})
   endif()
   set(EP_STEP_TARGETS update patch build install)
 
@@ -306,7 +338,6 @@ function(is_version out v)
   string(REGEX MATCH "^[0-9]+(.[0-9]+)?(.[0-9]+)?(.[0-9]+)?$" _ ${v})
   set(${out} ${_} PARENT_SCOPE)
 endfunction()
-
 
 function(infer_version_from_tag out tag)
   DEBUG_MSG("Test.Case: ${tag}")

@@ -1,0 +1,6 @@
+message("----Subdir.Source.dir: ${CMAKE_SOURCE_DIR}")
+message("----Subdir.CSource.dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+message("----Subdir.Binary.dir: ${CMAKE_BINARY_DIR}")
+message("----Subdir.CBinary.dir: ${CMAKE_CURRENT_BINARY_DIR}")
+message("----Subdir.Project.Source.dir: ${PROJECT_SOURCE_DIR}")
+message("----Subdir.Project.Binary.dir: ${PROJECT_BINARY_DIR}")

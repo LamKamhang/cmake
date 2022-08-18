@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(require-package)
+project(check-iner-uri)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../../)
 include(utility)
