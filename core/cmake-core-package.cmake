@@ -97,7 +97,7 @@ function(configure_extproj name)
   DEBUG_MSG("configure-extproj: ARGN: ${ARGN}")
 
   # provide some preset.
-  set(options DOWNLOAD_ONLY BUILD_STATIC
+  set(options DOWNLOAD_ONLY BUILD_STATIC EXPORT_TARGET
     OUT_SOURCE_DIR OUT_INSTALL_DIR OUT_CONFIG_DIR
     )
   set(oneValueArgs
@@ -162,16 +162,27 @@ function(configure_extproj name)
   # configure the exrproj
   configure_file(${_CORE_PACKAGE_BASE_DIR}/extproj.cmake.in
     ${EP_CONFIG_DIR}/CMakeLists.txt @ONLY)
-  execute_process(
-    COMMAND ${CMAKE_COMMAND}
-    -G ${CMAKE_GENERATOR}
-    -S ${EP_CONFIG_DIR}
-    -B ${EP_TMP_DIR}/build
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${EP_CONFIG_DIR}
-    )
-  if (result)
-    ERROR_MSG("Configure ExternalProject(${EP_NAME}) Failed: ${result}")
+  if (NOT EP_EXPORT_TARGET)
+    execute_process(
+      COMMAND ${CMAKE_COMMAND}
+      -G ${CMAKE_GENERATOR}
+      -S ${EP_CONFIG_DIR}
+      -B ${EP_TMP_DIR}/build
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY ${EP_CONFIG_DIR}
+      )
+    if (result)
+      ERROR_MSG("Configure ExternalProject(${EP_NAME}) Failed: ${result}")
+    endif()
+  else()
+    add_custom_target(
+      config_${name}
+      COMMAND ${CMAKE_COMMAND}
+      -G ${CMAKE_GENERATOR}
+      -S ${EP_CONFIG_DIR}
+      -B ${EP_TMP_DIR}/build
+      WORKING_DIRECTORY ${EP_CONFIG_DIR}
+      )
   endif()
   # TODO. maybe register these in some file is better.
   if (EP_OUT_SOURCE_DIR)
@@ -218,6 +229,9 @@ function(generate_extproj_targets name config_dir)
   add_custom_target(update_${name}
     COMMAND ${cmd}
     WORKING_DIRECTORY ${config_dir})
+  if (TARGET config_${name})
+    add_dependencies(update_${name} config_${name})
+  endif()
   if (TARGET update_all3rd)
     add_dependencies(update_all3rd update_${name})
   endif()
@@ -225,6 +239,9 @@ function(generate_extproj_targets name config_dir)
   add_custom_target(build_${name}
     COMMAND ${cmd}
     WORKING_DIRECTORY ${config_dir})
+  if (TARGET config_${name})
+    add_dependencies(build_${name} config_${name})
+  endif()
   if (TARGET build_all3rd)
     add_dependencies(build_all3rd build_${name})
   endif()
@@ -232,6 +249,9 @@ function(generate_extproj_targets name config_dir)
   add_custom_target(install_${name}
     COMMAND ${cmd}
     WORKING_DIRECTORY ${config_dir})
+  if (TARGET config_${name})
+    add_dependencies(install_${name} config_${name})
+  endif()
   if (TARGET install_all3rd)
     add_dependencies(install_all3rd install_${name})
   endif()
@@ -613,7 +633,11 @@ function(add_package name)
     UPDATE_NOW BUILD_NOW INSTALL_NOW
     )
   cmake_parse_arguments(PKG "${options}" "" "" ${ARGN})
-  configure_extproj(${name} ${ARGN} OUT_CONFIG_DIR)
+  if (PKG_UPDATE_NOW OR PKG_BUILD_NOW OR PKG_INSTALL_NOW)
+    configure_extproj(${name} ${ARGN} OUT_CONFIG_DIR)
+  else()
+    configure_extproj(${name} ${ARGN} OUT_CONFIG_DIR EXPORT_TARGET)
+  endif()
   generate_extproj_targets(${name} ${EP_CONFIG_DIR})
   if (PKG_UPDATE_NOW)
     update_extproj(${name} ${EP_CONFIG_DIR})
