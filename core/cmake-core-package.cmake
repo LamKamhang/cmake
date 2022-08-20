@@ -353,7 +353,9 @@ endfunction()
 #
 # default, require_package is set to REQUIRED.
 
-function(do_find_package PKG)
+# FIXME: some package will setup some variable and need to popup.
+# like catch2, it will setup MODULE_PATH for include(Catch)
+macro(do_find_package PKG)
   find_package(${PKG} ${ARGN})
   if (${PKG}_FOUND)
     string(TOUPPER ${PKG} tmp)
@@ -364,12 +366,12 @@ function(do_find_package PKG)
       message("     include.paths: ${${tmp}_INCLUDE_DIRS}")
     endif()
     # RegisterPackage or NOT?
-    set(PKG_FOUND TRUE PARENT_SCOPE)
-    set(PKG_VERSION ${${PKG}_VERSION} PARENT_SCOPE)
+    set(PKG_FOUND TRUE)
+    set(PKG_VERSION ${${PKG}_VERSION})
   else()
-   set(PKG_FOUND FALSE PARENT_SCOPE)
+    set(PKG_FOUND FALSE)
   endif()
-endfunction()
+endmacro()
 
 function(is_version out v)
   # major[.minor[.patch[.tweak]]]
@@ -534,6 +536,25 @@ function(prepare_arguments out_find_package_args out_extproj_args name)
   set(${out_extproj_args} ${extproj_args} PARENT_SCOPE)
 endfunction()
 
+function(do_add_subdirectory SOURCE_DIR) # extproj_args
+  ASSERT_EXISTS(${SOURCE_DIR})
+  ASSERT_EXISTS(${SOURCE_DIR}/CMakeLists.txt)
+  cmake_parse_arguments(ARGS "EXCLUDE_FROM_ALL" "" "CMAKE_ARGS" ${ARGN})
+  foreach(option ${ARGS_CMAKE_ARGS})
+    if (${option} MATCHES "^-D([^ ]*)=([^ ]*)$")
+      DEBUG_MSG("KEY: ${CMAKE_MATCH_1}, VALUE: ${CMAKE_MATCH_2}")
+      set(${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
+    else()
+      DEBUG_MSG("UNKNOWN CMAKE_ARGS: ${option}")
+    endif()
+  endforeach()
+  if (ARGS_EXCLUDE_FROM_ALL)
+    add_subdirectory(${SOURCE_DIR} EXCLUDE_FROM_ALL)
+  else()
+    add_subdirectory(${SOURCE_DIR})
+  endif()
+endfunction()
+
 # HACK: override ARGN
 function(_hack_version_argn out version)
   set(${out} VERSION ${version} ${ARGN} PARENT_SCOPE)
@@ -550,24 +571,28 @@ function(_hack_uri_argn out uri)
   set(${out} ${args} ${ARGN} PARENT_SCOPE)
 endfunction()
 
-function(require_package name) # [version/uri]
+# FIXME. the same reason with do_find_package.
+macro(require_package name) # [version/uri]
+  # since ARGN in macro is only string replacement, it's not a variable.
+  # in this function, it will use it as argn, so we should create a new variable to store them.
+  set(args ${ARGN})
   if (NOT ARGC EQUAL 1)
     is_version(out ${ARGV1})
     if (out)
-      _hack_version_argn(ARGN ${ARGN})
+      _hack_version_argn(args ${args})
     elseif (${ARGV1} MATCHES "[@:/#]")
-      _hack_uri_argn(ARGN ${ARGN})
+      _hack_uri_argn(args ${args})
     endif()
   endif()
 
-  DEBUG_MSG("RequirePackage.Args: ${name};${ARGN}")
+  DEBUG_MSG("RequirePackage.Args: ${name};${args}")
 
   set(options FIND_FIRST_OFF REQUIRED NOT_REQUIRED
     IMPORT_AS_SUBDIR EXPORT_PM_TARGET EXCLUDE_FROM_ALL
     )
   set(oneValueArgs)
   set(multiValueArgs)
-  cmake_parse_arguments(PKG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+  cmake_parse_arguments(PKG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${args})
 
   # prepare FIND_PACKAGE_ARGS.
   if (PKG_REQUIRED AND PKG_NOT_REQUIRED)
@@ -583,45 +608,32 @@ function(require_package name) # [version/uri]
     do_find_package(${find_package_args})
   endif()
 
-  if (PKG_FOUND OR PKG_NOT_REQUIRED)
-    return()
-  endif()
-
-  if (NOT PKG_NOT_REQUIRED)
-    set(find_package_args ${find_package_args} REQUIRED)
-  endif()
-
-  configure_extproj(${extproj_args} OUT_CONFIG_DIR OUT_SOURCE_DIR OUT_INSTALL_DIR)
-  update_extproj(${name} ${EP_CONFIG_DIR})
-
-  if (PKG_IMPORT_AS_SUBDIR)
-    ASSERT_DEFINED(EP_SOURCE_DIR)
-    ASSERT_EXISTS(${EP_SOURCE_DIR})
-    ASSERT_EXISTS(${EP_SOURCE_DIR}/CMakeLists.txt)
-    # TODO. maybe use Options will be better.
-    cmake_parse_arguments(ARGS "" "" "CMAKE_ARGS" ${extproj_args})
-    foreach(option ${ARGS_CMAKE_ARGS})
-      if (${option} MATCHES "^-D([^ ]*)=([^ ]*)$")
-        DEBUG_MSG("KEY: ${CMAKE_MATCH_1}, VALUE: ${CMAKE_MATCH_2}")
-        set(${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
-      else()
-        DEBUG_MSG("UNKNOWN CMAKE_ARGS: ${option}")
-      endif()
-    endforeach()
-    if (PKG_EXCLUDE_FROM_ALL)
-      add_subdirectory(${EP_SOURCE_DIR} EXCLUDE_FROM_ALL)
-    else()
-      add_subdirectory(${EP_SOURCE_DIR})
+  if (NOT (PKG_FOUND OR PKG_NOT_REQUIRED))
+    if (NOT PKG_NOT_REQUIRED)
+      set(find_package_args ${find_package_args} REQUIRED)
     endif()
-  else()
-    install_extproj(${name} ${EP_CONFIG_DIR})
-    ASSERT_DEFINED(EP_INSTALL_DIR)
-    ASSERT_EXISTS(${EP_INSTALL_DIR})
-    set(${name}_ROOT ${EP_INSTALL_DIR})
-    do_find_package(${find_package_args})
-  endif()
-endfunction()
 
+    configure_extproj(${extproj_args} OUT_CONFIG_DIR OUT_SOURCE_DIR OUT_INSTALL_DIR)
+    update_extproj(${name} ${EP_CONFIG_DIR})
+
+    if (PKG_IMPORT_AS_SUBDIR)
+      ASSERT_DEFINED(EP_SOURCE_DIR)
+      if (PKG_EXCLUDE_FROM_ALL)
+        do_add_subdirectory(${EP_SOURCE_DIR} ${extproj_args} EXCLUDE_FROM_ALL)
+      else()
+        do_add_subdirectory(${EP_SOURCE_DIR} ${extproj_args})
+      endif()
+    else()
+      install_extproj(${name} ${EP_CONFIG_DIR})
+      ASSERT_DEFINED(EP_INSTALL_DIR)
+      ASSERT_EXISTS(${EP_INSTALL_DIR})
+      set(${name}_ROOT ${EP_INSTALL_DIR})
+      do_find_package(${find_package_args})
+    endif()
+  endif()
+endmacro()
+
+# NOTE: Maybe deprecated later.
 function(add_package name)
   if (NOT ARGC EQUAL 1)
     if (${ARGV1} MATCHES "[@:/#]")
