@@ -1,4 +1,4 @@
-find_program(CLANG_TIDY "clang-tidy")
+find_program(CLANG_TIDY clang-tidy)
 if (CLANG_TIDY)
   message(STATUS "clang-tidy find: ${CLANG_TIDY}")
 else()
@@ -8,14 +8,14 @@ endif()
 function(code_tidy)
   file(GLOB_RECURSE TIDY_SOURCES ${ARGN})
   add_custom_target(code-tidy-inplace
-    COMMAND clang-tidy
+    COMMAND ${CLANG_TIDY}
     --export-fixes=${CMAKE_BINARY_DIR}/clang-tidy-fix.yml
     -p=${CMAKE_BINARY_DIR}
     --fix
     ${TIDY_SOURCES}
     )
   add_custom_target(code-tidy
-    COMMAND clang-tidy
+    COMMAND ${CLANG_TIDY}
     --export-fixes=${CMAKE_BINARY_DIR}/clang-tidy-fix.yml
     -p=${CMAKE_BINARY_DIR}
     ${TIDY_SOURCES}
