@@ -1,8 +1,8 @@
-# Usage: add_unit(target_name [isLIB] [INTERFACE]
+# Usage: add_unit(target_name [isLIB]
 #                 [SRCS         <file.cpp/file.cc>]
 #                 [LIBS         <libs/other_targets>]
-#                 [INCLUDE_PATH <include_paths>]
-#                 [LINK_PATH    <link_paths>]
+#                 [INCLUDE_DIRS <include_dirs>]
+#                 [LINK_DIRS    <link_dirs>]
 #                 [DEFS         <defs>]
 #                 [FEATS        <features>]
 #                 )
@@ -10,19 +10,20 @@
 function(add_unit name)
   # cmake_parse_arguments(<prefix> <options> <one_value_keywords> <multi_value_keywords> args...)
   set(options isLIB INTERFACE)
-  set(multiValueArgs "SRCS;LIBS;INCLUDE_PATH;LINK_PATH;DEFS;FEATS")
+  set(oneValueArgs "")
+  set(multiValueArgs "SRCS;LIBS;INCLUDE_DIRS;LINK_DIRS;DEFS;FEATS")
   cmake_parse_arguments(
-    arg "${options}" "" "${multiValueArgs}" ${ARGN}
+    arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
     )
-
-  if (NOT DEFINED arg_SRCS)
-    set(arg_SRCS ${name}.cc)
-  endif()
 
   if (arg_INTERFACE)
     set(scope INTERFACE)
   else()
     unset(scope)
+  endif()
+
+  if (NOT DEFINED arg_SRCS)
+    set(arg_SRCS ${name}.cc)
   endif()
 
   if (arg_isLIB)
@@ -35,12 +36,12 @@ function(add_unit name)
     target_link_libraries(${name} ${scope} ${arg_LIBS})
   endif()
 
-  if (DEFINED arg_INCLUDE_PATH)
-    target_include_directories(${name} ${scope} ${arg_INCLUDE_PATH})
+  if (DEFINED arg_INCLUDE_DIRS)
+    target_include_directories(${name} ${scope} ${arg_INCLUDE_DIRS})
   endif()
 
-  if (DEFINED arg_LINK_PATH)
-    target_link_directories(${name} ${scope} ${arg_LINK_PATH})
+  if (DEFINED arg_LINK_DIRS)
+    target_link_directories(${name} ${scope} ${arg_LINK_DIRS})
   endif()
 
   if (DEFINED arg_DEFS)
