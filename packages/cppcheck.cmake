@@ -11,5 +11,6 @@ function(cppcheck_all)
     --enable=all
     --error-exitcode=1
     --suppress=missingIncludeSystem
+    --suppress=preprocessorErrorDirective
     )
 endfunction()
