@@ -10,6 +10,7 @@ function(cppcheck_all)
     COMMAND ${CPPCHECK} --project=${CMAKE_BINARY_DIR}/compile_commands.json
     --enable=all
     --error-exitcode=1
+    --inline-suppr
     --suppress=missingIncludeSystem
     --suppress=preprocessorErrorDirective
     )
