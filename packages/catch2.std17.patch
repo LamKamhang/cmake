@@ -1,0 +1,19 @@
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index b3dc5570..dd6fbc52 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -326,6 +326,14 @@ target_compile_features(Catch2
+     cxx_variadic_macros
+ )
+ 
++if (CATCH_CONFIG_CPP17_BYTE OR
++    CATCH_CONFIG_CPP17_OPTIONAL OR
++    CATCH_CONFIG_CPP17_STRING_VIEW OR
++    CATCH_CONFIG_CPP17_UNCAUGHT_EXCEPTIONS OR
++    CATCH_CONFIG_CPP17_VARIANT)
++    target_compile_features(Catch2 PUBLIC cxx_std_17)
++endif()
++
+ configure_file(
+   "${SOURCES_DIR}/catch_user_config.hpp.in"
+   "${CMAKE_BINARY_DIR}/generated-includes/catch2/catch_user_config.hpp"
