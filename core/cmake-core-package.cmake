@@ -5,13 +5,13 @@ set(_CORE_PACKAGE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 # Config some global cached variables.
 set(EXTERNAL_PROJECT_BASE_DIR
   ${CMAKE_SOURCE_DIR}/3rd # SOURCE_DIR point to the Root_Proj_Dir
-  CACHE PATH "The BaseDir for external project to cached, Default is ${CMAKE_SOURCE_DIR}/3rd"
-  )
+  CACHE PATH "The BaseDir for external project to cached, Default is ${CMAKE_SOURCE_DIR}/3rd")
 set(EXTERNAL_PROJECT_BUILD_TYPE
   "release"
   CACHE STRING "The ExternalProject BuildType[Notice: LowerCaseOnly]. Default is release")
 set(EXTERNAL_PROJECT_GITHUB_MIRROR
-  "" CACHE STRING "External Project Use Github Mirror")
+  ""
+  CACHE STRING "External Project Use Github Mirror")
 option(EXTERNAL_PROJECT_DOWNLOAD_ONLY "External Project Download only. Default is false" OFF)
 option(ADD_EXTERNAL_PROJECT_SEARCH_PATH "Add External Project install path to cmake search path" ON)
 
@@ -225,39 +225,40 @@ function(run_extproj_cmd cmd config_dir)
 endfunction()
 
 function(generate_extproj_targets name config_dir)
-  update_extproj_cmd(cmd ${name} ${config_dir})
+  # update cmd
+  get_update_extproj_cmd(cmd ${name} ${config_dir})
   add_custom_target(update_${name}
     COMMAND ${cmd}
     WORKING_DIRECTORY ${config_dir})
-  if (TARGET config_${name})
-    add_dependencies(update_${name} config_${name})
-  endif()
-  if (TARGET update_all3rd)
-    add_dependencies(update_all3rd update_${name})
-  endif()
-  build_extproj_cmd(cmd ${name} ${config_dir})
+  # build cmd
+  get_build_extproj_cmd(cmd ${name} ${config_dir})
   add_custom_target(build_${name}
     COMMAND ${cmd}
     WORKING_DIRECTORY ${config_dir})
-  if (TARGET config_${name})
-    add_dependencies(build_${name} config_${name})
-  endif()
-  if (TARGET build_all3rd)
-    add_dependencies(build_all3rd build_${name})
-  endif()
-  install_extproj_cmd(cmd ${name} ${config_dir})
+  # install cmd
+  get_install_extproj_cmd(cmd ${name} ${config_dir})
   add_custom_target(install_${name}
     COMMAND ${cmd}
     WORKING_DIRECTORY ${config_dir})
+  # add dependency of config_PKG
   if (TARGET config_${name})
+    add_dependencies(update_${name} config_${name})
+    add_dependencies(build_${name} config_${name})
     add_dependencies(install_${name} config_${name})
+  endif()
+  # bind these target to all3rd.
+  if (TARGET update_all3rd)
+    add_dependencies(update_all3rd update_${name})
+  endif()
+  if (TARGET build_all3rd)
+    add_dependencies(build_all3rd build_${name})
   endif()
   if (TARGET install_all3rd)
     add_dependencies(install_all3rd install_${name})
   endif()
 endfunction()
 
-function(update_extproj_cmd cmd name config_dir)
+function(get_update_extproj_cmd cmd name config_dir)
   ASSERT_EXISTS(${config_dir})
   # since patch is depended on update.
   prepare_extproj_cmd(_ ${config_dir} ${name}-patch)
@@ -275,12 +276,12 @@ function(update_extproj name) # [config_dir]
     set(config_dir ${ARGV1})
   endif()
   ASSERT_EXISTS(${config_dir})
-  update_extproj_cmd(cmd ${name} ${config_dir})
+  get_update_extproj_cmd(cmd ${name} ${config_dir})
   DEBUG_MSG("Current.cmd: ${cmd}")
   run_extproj_cmd("${cmd}" "${config_dir}")
 endfunction()
 
-function(build_extproj_cmd cmd name config_dir)
+function(get_build_extproj_cmd cmd name config_dir)
   ASSERT_EXISTS(${config_dir})
   # build <-- configure <-- patch <-- update
   prepare_extproj_cmd(_ ${config_dir} ${name}-build)
@@ -298,12 +299,12 @@ function(build_extproj name) # [config_dir]
     set(config_dir ${ARGV1})
   endif()
   ASSERT_EXISTS(${config_dir})
-  build_extproj_cmd(cmd ${name} ${config_dir})
+  get_build_extproj_cmd(cmd ${name} ${config_dir})
   DEBUG_MSG("Current.cmd: ${cmd}")
   run_extproj_cmd("${cmd}" "${config_dir}")
 endfunction()
 
-function(install_extproj_cmd cmd name config_dir)
+function(get_install_extproj_cmd cmd name config_dir)
   ASSERT_EXISTS(${config_dir})
   # install <-- build
   prepare_extproj_cmd(_ ${config_dir} ${name}-install)
@@ -322,7 +323,7 @@ function(install_extproj name) # [config_dir]
   endif()
 
   ASSERT_EXISTS(${config_dir})
-  install_extproj_cmd(cmd ${name} ${config_dir})
+  get_install_extproj_cmd(cmd ${name} ${config_dir})
   DEBUG_MSG("Current.cmd: ${cmd}")
   run_extproj_cmd("${cmd}" "${config_dir}")
 endfunction()
