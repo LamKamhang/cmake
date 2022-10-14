@@ -19,3 +19,8 @@ add_unit(demo2.lib isLIB SRCS demo.lib.cc)
 
 # example5: target_link_lib.
 add_unit(demo.with.lib LIBS demo.lib)
+
+# example6: interface.
+add_unit(demo.interface INTERFACE
+  LIBS demo.lib
+  FEATS std_cxx_17)
