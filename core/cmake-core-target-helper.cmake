@@ -11,7 +11,7 @@ function(add_unit name)
   # cmake_parse_arguments(<prefix> <options> <one_value_keywords> <multi_value_keywords> args...)
   set(options isLIB INTERFACE)
   set(oneValueArgs "SCOPE")
-  set(multiValueArgs "SRCS;LIBS;INCLUDE_DIRS;LINK_DIRS;DEFS;FEATS")
+  set(multiValueArgs "SRCS;LIBS;INCLUDE_DIRS;LINK_DIRS;DEFS;FEATS;OPTIONS")
   cmake_parse_arguments(
     arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
     )
@@ -53,5 +53,9 @@ function(add_unit name)
 
   if (DEFINED arg_FEATS)
     target_compile_features(${name} ${scope} ${arg_FEATS})
+  endif()
+
+  if (DEFINED arg_OPTIONS)
+    target_compile_options(${name} ${scope} ${arg_OPTIONS})
   endif()
 endfunction()
