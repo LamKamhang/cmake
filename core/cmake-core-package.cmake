@@ -102,6 +102,7 @@ function(configure_extproj name)
     )
   set(oneValueArgs
     VERSION # ignore pass-in version.
+    GIT_PATCH # easy apply git patch.
     PREFIX TMP_DIR STAMP_DIR LOG_DIR
     DOWNLOAD_DIR SOURCE_DIR BINARY_DIR INSTALL_DIR
     )
@@ -148,6 +149,15 @@ function(configure_extproj name)
       BUILD_COMMAND     ${EchoCMD}
       TEST_COMMAND      ${EchoCMD}
       INSTALL_COMMAND   ${EchoCMD}
+      ${EP_ARGS})
+  endif()
+
+  if (DEFINED EP_GIT_PATCH)
+    # ensure PATCH_FILE exists.
+    ASSERT_EXISTS(${EP_GIT_PATCH})
+    # TODO. should check whether EP_ARGS has PATCH_COMMAND.
+    set(EP_ARGS
+      PATCH_COMMAND "git restore . && git apply ${EP_GIT_PATCH}"
       ${EP_ARGS})
   endif()
 
