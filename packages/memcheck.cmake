@@ -5,10 +5,10 @@ else()
   message(FATAL_ERROR "valgrind not found! please set {VALGRIND_ROOT} correctly!")
 endif()
 
-add_custom_target(
-    memcheck)
-
 function(add_memcheck prog)
+  if (NOT TARGET memcheck)
+    add_custom_target(memcheck)
+  endif()
   add_custom_command(
     TARGET memcheck
     COMMAND ${VALGRIND}
