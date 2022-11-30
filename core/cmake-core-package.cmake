@@ -598,8 +598,8 @@ function(prepare_arguments out_find_package_args out_extproj_args name)
       set(find_package_args ${find_package_args} ${mv} ${ARG_${mv}})
     endif()
   endforeach()
-
   set(${out_find_package_args} ${find_package_args} PARENT_SCOPE)
+  # TODO. check external project args.
   set(${out_extproj_args} ${extproj_args} PARENT_SCOPE)
 endfunction()
 
@@ -661,7 +661,7 @@ macro(require_package name) # [version/uri]
   DEBUG_MSG("RequirePackage.Args: ${name};${args}")
 
   set(options FIND_FIRST_OFF REQUIRED NOT_REQUIRED
-    IMPORT_AS_SUBDIR EXPORT_PM_TARGET EXCLUDE_FROM_ALL
+    IMPORT_AS_SUBDIR EXCLUDE_FROM_ALL
   )
   set(oneValueArgs)
   set(multiValueArgs)
