@@ -7,20 +7,6 @@ include(utility)
 set(DEBUG_MODE True)
 
 DEBUG_MSG("Echo Debug")
-set(GOOD "")
-
-ASSERT_DEFINED(GOOD)
-ASSERT_EMPTY(${GOOD})
-
-set(GOOD)
-ASSERT_NOT_DEFINED(GOOD)
-ASSERT_EMPTY(${GOOD})
-function(test url)
-  if (${url} MATCHES "^https://github.com/[^/ ]+/[^/ ]+$")
-    DEBUG_MSG("MATCHED: ${url}: ${CMAKE_MATCH_0}")
-  endif()
-endfunction()
-test("https://github.com/good/good/good")
 
 # for equal.
 function(check_equal)
@@ -55,24 +41,28 @@ endfunction()
 check_less_greater()
 
 function(check_empty_defined)
-  ASSERT_EMPTY(${hello})
+  ASSERT_EMPTY(hello)
   ASSERT_NOT_DEFINED(hello)
   # !ASSERT_DEFINED(hello)
 
   set(v1 ${hello}) # since hello is undefined, thus this is identical to unset.
-  ASSERT_EMPTY(${v1})
+  ASSERT_EMPTY(v1)
   ASSERT_NOT_DEFINED(hello)
   # !ASSERT_DEFINED(hello)
 
   set(v2 "")
-  ASSERT_EMPTY(${v2})
+  ASSERT_EMPTY(v2)
   ASSERT_DEFINED(v2)
   # !ASSERT_NOT_DEFINED(v2)
 
   set(v3 ${v2}) # since v2 is empty. thus this is identical to unset.
-  ASSERT_EMPTY(${v3})
+  ASSERT_EMPTY(v3)
   # !ASSERT_DEFINED(v3)
   ASSERT_NOT_DEFINED(v3)
+
+  set(v4 a b c d)
+  ASSERT_NOT_EMPTY(v4)
+  # !ASSERT_EMPTY(v4)
 endfunction()
 check_empty_defined()
 

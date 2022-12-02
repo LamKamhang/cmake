@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.12)
 project(manage3rd)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../../)
-include(utility)
 
 add_custom_target(update_all3rd)
 add_custom_target(build_all3rd)

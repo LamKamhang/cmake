@@ -1,3 +1,4 @@
+# DEPRECATED file
 # Point to the current source base dir.
 # In order to locate `extproj.cmake.in`
 set(_CORE_PACKAGE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
