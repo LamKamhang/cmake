@@ -362,7 +362,7 @@ endfunction()
 # FIXME. the same reason with do_find_package.
 macro(core_require_package name)
   set(args ${ARGN})
-  set(options LOCAL_FIRST_OFF REQUIRED NOT_REQUIRED
+  set(options LOCAL_FIRST_OFF REQUIRED NOT_REQUIRED DEFER
     IMPORT_AS_SUBDIR)
   set(oneValueArgs)
   set(multiValueArgs CMAKE_ARGS)
@@ -377,12 +377,16 @@ macro(core_require_package name)
   extract_add_subdir_arguments(subdir_args rest_args ${rest_args})
   DEBUG_MSG("after.subdir.rest: ${rest_args}")
   # TODO.
-  set(configure_package_args ${rest_args} CMAKE_ARGS ${PKG_CMAKE_ARGS})
+  if (DEFINED PKG_CMAKE_ARGS)
+    set(configure_package_args ${rest_args} CMAKE_ARGS ${PKG_CMAKE_ARGS})
+  else()
+    set(configure_package_args ${rest_args})
+  endif()
   DEBUG_MSG("Extract.FindPackage.Args: ${find_package_args}")
   DEBUG_MSG("Extract.SubDir.Args: ${subdir_args}")
   DEBUG_MSG("Extract.ExtProj.Args: ${configure_package_args}")
 
-  cmake_parse_arguments(PKG "DOWNLOAD_ONLY;DEFER" "" "" ${configure_package_args})
+  cmake_parse_arguments(PKG "DOWNLOAD_ONLY" "" "" ${configure_package_args})
   DEBUG_MSG("DOWNLOAD_ONLY: ${PKG_DOWNLOAD_ONLY}")
   if ((NOT PKG_LOCAL_FIRST_OFF)
       AND EXT_PACKAGE_LOCAL_FIRST
