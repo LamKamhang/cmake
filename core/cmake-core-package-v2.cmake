@@ -139,7 +139,7 @@ function(ep_configure_package name)
   DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}.ARGC: ${ARGC}")
   DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}.ARGN: ${ARGN}")
 
-  set(options BUILD_STATIC DEFER
+  set(options BUILD_STATIC
     DOWNLOAD_ONLY
     OUT_SOURCE_DIR OUT_INSTALL_DIR OUT_CONFIG_DIR)
   set(oneValueArgs PREFIX BUILD_TYPE
@@ -213,30 +213,19 @@ function(ep_configure_package name)
 
   # configure the extproj.
   configure_file(${_CORE_PACKAGE_BASE_DIR}/extproj.cmake.in ${EP_CONFIG_DIR}/CMakeLists.txt @ONLY)
-  # add custom target for defer or manually run.
-  if (NOT TARGET ep_config_${name})
-    add_custom_target(ep_config_${name}
-      COMMAND ${CMAKE_COMMAND}
-      -G ${CMAKE_GENERATOR}
-      -S ${EP_CONFIG_DIR}
-      -B ${EP_TMP_DIR}/build
-      WORKING_DIRECTORY ${EP_CONFIG_DIR})
-  else()
-    WARN_MSG("ep_config_${name} has been defined.")
-  endif()
-  if (NOT EP_DEFER)
-    execute_process(
-      COMMAND ${CMAKE_COMMAND}
-      -G ${CMAKE_GENERATOR}
-      -S ${EP_CONFIG_DIR}
-      -B ${EP_TMP_DIR}/build
-      RESULT_VARIABLE result
-      WORKING_DIRECTORY ${EP_CONFIG_DIR}
+
+  execute_process(
+    COMMAND ${CMAKE_COMMAND}
+    -G ${CMAKE_GENERATOR}
+    -S ${EP_CONFIG_DIR}
+    -B ${EP_TMP_DIR}/build
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${EP_CONFIG_DIR}
     )
-    if(result)
-      ERROR_MSG("Configure ExternalProject(${EP_NAME}) Failed: ${result}")
-    endif()
+  if(result)
+    ERROR_MSG("Configure ExternalProject(${EP_NAME}) Failed: ${result}")
   endif()
+
   # TODO. maybe it is better to register these in some list.
   foreach(DIR SOURCE INSTALL CONFIG)
     if (EP_OUT_${DIR}_DIR)
