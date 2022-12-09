@@ -13,5 +13,6 @@ function(cppcheck_all)
     --inline-suppr
     --suppress=missingIncludeSystem
     --suppress=preprocessorErrorDirective
+    ${ARGN}
     )
 endfunction()
