@@ -6,7 +6,7 @@
 #                 [DEFS         <defs>]
 #                 [FEATS        <features>]
 #                 )
-# If SRC is not specfied, ${target_name}.cc is used as the default source.
+# If SRC is not specfied, ${target_name}.cc/cpp is used as the default source.
 function(add_unit name)
   # cmake_parse_arguments(<prefix> <options> <one_value_keywords> <multi_value_keywords> args...)
   set(options isLIB INTERFACE)
@@ -25,7 +25,15 @@ function(add_unit name)
       unset(scope)
     endif()
     if (NOT DEFINED arg_SRCS)
-      set(arg_SRCS ${name}.cc)
+      if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${name}.cc)
+        set(arg_SRCS ${name}.cc)
+      elseif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/${name}.cpp)
+        set(arg_SRCS ${name}.cpp)
+      elseif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/${name}.cxx)
+        set(arg_SRCS ${name}.cxx)
+      else()
+        ERROR_MSG("Cannot determine which source file for: [${name}].")
+      endif()
     endif()
   endif()
 
