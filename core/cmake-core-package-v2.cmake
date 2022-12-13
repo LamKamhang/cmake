@@ -230,6 +230,7 @@ function(ep_configure_package name)
     -S ${EP_CONFIG_DIR}
     -B ${EP_TMP_DIR}/build
     RESULT_VARIABLE result
+    OUTPUT_QUIET
     WORKING_DIRECTORY ${EP_CONFIG_DIR}
     )
   if(result)
@@ -246,9 +247,11 @@ endfunction()
 
 function(run_command cmd work_dir)
   ASSERT_PATH_EXISTS(${work_dir})
+  message("-- Run: ${cmd}")
   execute_process(
     COMMAND ${cmd}
     RESULT_VARIABLE result
+    OUTPUT_QUIET
     WORKING_DIRECTORY ${work_dir})
   if (result)
     ERROR_MSG("Run CMD(${cmd}) Failed: ${result}")
