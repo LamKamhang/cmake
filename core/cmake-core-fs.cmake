@@ -1,5 +1,4 @@
 include_guard()
-message(STATUS "##### Include Once")
 
 function(add_symlink src dest)
   message(STATUS "mklink ${src} -> ${dest}")

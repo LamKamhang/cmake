@@ -3,7 +3,7 @@ include_guard()
 # Point to the current source base dir.
 # In order to locate `extproj.cmake.in`
 set(_CORE_PACKAGE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-include(${_CORE_PACKAGE_BASE_DIR}/cmake-core-fs.cmake)
+include(${_CORE_PACKAGE_BASE_DIR}/cmake-core-assert.cmake)
 
 # #######################################################################
 # Options/CacheVariables
@@ -76,12 +76,12 @@ macro(ep_find_package PKG) # ensure that argn has been prepared for find_package
     set(PKG_FOUND TRUE)
     set(PKG_VERSION ${${PKG}_VERSION})
     string(TOUPPER ${PKG} tmp)
-    message("Find ${PKG} with version: ${PKG_VERSION}")
+    message(STATUS "  Find ${PKG} with version: ${PKG_VERSION}")
 
     if(${tmp}_INCLUDE_DIR)
-      message("    find.include.paths: ${${tmp}_INCLUDE_DIR}")
+      message(STATUS "    find.include.paths: ${${tmp}_INCLUDE_DIR}")
     elseif(${tmp}_INCLUDE_DIRS)
-      message("    find.include.paths: ${${tmp}_INCLUDE_DIRS}")
+      message(STATUS "    find.include.paths: ${${tmp}_INCLUDE_DIRS}")
     endif()
   else()
     set(PKG_FOUND FALSE)
