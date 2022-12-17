@@ -8,6 +8,7 @@ enable_language(C)
 
 if (NOT SUITESPARSE_IMPORT_AS_SUBDIR)
   require_package(SuiteSparse "gh:sergiud/SuiteSparse.git#5.13.0-cmake.3"
+    GIT_PATCH "${CMAKE_UTILITY_PATCH_DIR}/suitesparse.cholmod.patch"
     CMAKE_ARGS "-DWITH_DEMOS=OFF")
 else()
   require_package(SuiteSparse "gh:sergiud/SuiteSparse.git#5.13.0-cmake.3"
