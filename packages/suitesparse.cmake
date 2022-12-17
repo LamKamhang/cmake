@@ -6,7 +6,7 @@ option(SUITESPARSE_IMPORT_AS_SUBDIR "Import as subdirectory instead of install &
 
 enable_language(C)
 
-if (SUITESPARSE_IMPORT_AS_SUBDIR)
+if (NOT SUITESPARSE_IMPORT_AS_SUBDIR)
   require_package(SuiteSparse "gh:sergiud/SuiteSparse.git#5.13.0-cmake.3"
     CMAKE_ARGS "-DWITH_DEMOS=OFF")
 else()
