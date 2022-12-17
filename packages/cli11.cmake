@@ -1,0 +1,8 @@
+include_guard()
+
+message(STATUS "[package/CLI11]: CLI11::CLI11")
+
+require_package(CLI11 "gh:CLIUtils/CLI11#v2.3.1"
+  CMAKE_ARGS "-DCLI11_BUILD_EXAMPLES=OFF"
+  CMAKE_ARGS "-DCLI11_BUILD_TESTS=OFF"
+  CMAKE_ARGS "-DCLI11_BUILD_DOCS=OFF")
