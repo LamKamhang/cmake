@@ -1,14 +1,16 @@
 find_program(VALGRIND valgrind)
-if (VALGRIND)
+
+if(VALGRIND)
   message(STATUS "valgrind find: ${VALGRIND}")
 else()
   message(FATAL_ERROR "valgrind not found! please set {VALGRIND_ROOT} correctly!")
 endif()
 
 function(add_memcheck prog)
-  if (NOT TARGET memcheck)
+  if(NOT TARGET memcheck)
     add_custom_target(memcheck)
   endif()
+
   add_custom_command(
     TARGET memcheck
     COMMAND ${VALGRIND}

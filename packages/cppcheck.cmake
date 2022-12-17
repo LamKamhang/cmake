@@ -1,5 +1,6 @@
 find_program(CPPCHECK "cppcheck")
-if (CPPCHECK)
+
+if(CPPCHECK)
   message(STATUS "cppcheck find: ${CPPCHECK}")
 else()
   message(FATAL_ERROR "cppcheck not found! please set {CPPCHECK_ROOT} correctly!")
@@ -14,5 +15,5 @@ function(cppcheck_all)
     --suppress=missingIncludeSystem
     --suppress=preprocessorErrorDirective
     ${ARGN}
-    )
+  )
 endfunction()

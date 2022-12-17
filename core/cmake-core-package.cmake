@@ -1,380 +1,41 @@
-# DEPRECATED file
+include_guard()
+
 # Point to the current source base dir.
 # In order to locate `extproj.cmake.in`
 set(_CORE_PACKAGE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+include(${_CORE_PACKAGE_BASE_DIR}/cmake-core-fs.cmake)
 
-# Config some global cached variables.
-set(EXTERNAL_PROJECT_BASE_DIR
-  ${CMAKE_SOURCE_DIR}/3rd # SOURCE_DIR point to the Root_Proj_Dir
-  CACHE PATH "The BaseDir for external project to cached, Default is ${CMAKE_SOURCE_DIR}/3rd")
-set(EXTERNAL_PROJECT_BUILD_TYPE
-  "release"
-  CACHE STRING "The ExternalProject BuildType[Notice: LowerCaseOnly]. Default is release")
-set(EXTERNAL_PROJECT_GITHUB_MIRROR
-  ""
-  CACHE STRING "External Project Use Github Mirror")
-option(EXTERNAL_PROJECT_DOWNLOAD_ONLY "External Project Download only. Default is false" OFF)
-option(ADD_EXTERNAL_PROJECT_SEARCH_PATH "Add External Project install path to cmake search path" ON)
+# #######################################################################
+# Options/CacheVariables
+# #######################################################################
+# SOURCE_DIR point to the RootProjDir.
+set(EXT_PACKAGE_BASE_DIR ${CMAKE_SOURCE_DIR}/3rd
+  CACHE PATH "The BaseDir for extPackage. extPackage will be download/clone to here.")
+set(EXT_PACKAGE_BUILD_TYPE "release" CACHE STRING "Default extPackage BuildType[lowercase].")
+option(EXT_PACKAGE_LOCAL_ONLY "use find_package only." OFF)
+option(EXT_PACKAGE_LOCAL_FIRST "use find_package first." ON)
+option(EXT_PACKAGE_DOWNLOAD_ONLY "download extPackage only." OFF)
+option(EXT_PACKAGE_REGISTER_SEARCH_PATH "Add extPackage Path to CMAKE_MODULE/PREFIX_PATH" ON)
 
+# #######################################################################
+# variable/options check.
+# #######################################################################
 # Disable Some Invalid Base.Dir
-if(EXTERNAL_PROJECT_BASE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  ERROR_MSG("In-source ExternalCache is not allowed! Please set `EXTERNAL_PROJECT_BASE_DIR` to another dir. <Default>: ${CMAKE_SOURCE_DIR}/3rd")
+if(EXT_PACKAGE_BASE_DIR STREQUAL CMAKE_SOURCE_DIR)
+  ERROR_MSG("In-source ExternalCache is not allowed! Please set `EXT_PACKAGE_BASE_DIR` to another dir. <Default>: ${CMAKE_SOURCE_DIR}/3rd")
 endif()
 
-string(TOLOWER ${EXTERNAL_PROJECT_BUILD_TYPE} _current_build_type)
+# build_type to lower.
+string(TOLOWER ${EXT_PACKAGE_BUILD_TYPE} EXT_PACKAGE_BUILD_TYPE)
 
-if(NOT _current_build_type STREQUAL EXTERNAL_PROJECT_BUILD_TYPE)
-  WARN_MSG("Reset the build type to its lowercase: ${_current_build_type}")
-  set(EXTERNAL_PROJECT_BUILD_TYPE ${_current_build_type})
+if(EXT_PACKAGE_REGISTER_SEARCH_PATH)
+  list(PREPEND CMAKE_MODULE_PATH ${EXT_PACKAGE_BASE_DIR}/install/${EXT_PACKAGE_BUILD_TYPE})
+  list(PREPEND CMAKE_PREFIX_PATH ${EXT_PACKAGE_BASE_DIR}/install/${EXT_PACKAGE_BUILD_TYPE})
 endif()
 
-unset(_current_build_type)
-
-if(ADD_EXTERNAL_PROJECT_SEARCH_PATH)
-  list(PREPEND CMAKE_MODULE_PATH ${EXTERNAL_PROJECT_BASE_DIR}/install/${EXTERNAL_PROJECT_BUILD_TYPE})
-  list(PREPEND CMAKE_PREFIX_PATH ${EXTERNAL_PROJECT_BASE_DIR}/install/${EXTERNAL_PROJECT_BUILD_TYPE})
-endif()
-
-# some helper functions.
-function(get_external_project_base_dir out) # [prefix]
-  if(NOT(ARGC EQUAL 1 OR ARGC EQUAL 2))
-    ERROR_MSG("get_external_project_base_dir <outdir> [prefix]")
-  endif()
-
-  if(ARGC EQUAL 1 OR NOT ARGV1)
-    set(${out} ${EXTERNAL_PROJECT_BASE_DIR} PARENT_SCOPE)
-  else()
-    if(IS_ABSOLUTE ${ARGV1})
-      set(${out} ${ARGV1} PARENT_SCOPE)
-    else()
-      WARN_MSG("Prefix is not an absolute path, it will be set to ${CMAKE_SOURCE_DIR}/${ARGV1}")
-      set(${out} ${CMAKE_SOURCE_DIR}/${ARGV1} PARENT_SCOPE)
-    endif()
-  endif()
-endfunction()
-
-# internal usage only!!!
-function(_no_prefix_ep_source_dir out name)
-  set(${out} ${name} PARENT_SCOPE)
-endfunction()
-
-function(_no_prefix_ep_config_dir out name)
-  set(${out} .cache/.ep_config/${name} PARENT_SCOPE)
-endfunction()
-
-function(_no_prefix_ep_install_dir out name)
-  set(${out} install/${EXTERNAL_PROJECT_BUILD_TYPE}/${name} PARENT_SCOPE)
-endfunction()
-
-function(get_default_ep_source_dir outdir name) # [prefix]
-  if(NOT(ARGC EQUAL 2 OR ARGC EQUAL 3))
-    ERROR_MSG("get_default_ep_source_dir <outdir> <name> [prefix]")
-  endif()
-
-  get_external_project_base_dir(base_dir ${ARGV2})
-  _no_prefix_ep_source_dir(path ${name})
-  set(${outdir} ${base_dir}/${path} PARENT_SCOPE)
-endfunction()
-
-function(get_default_ep_config_dir outdir name) # [prefix]
-  if(NOT(ARGC EQUAL 2 OR ARGC EQUAL 3))
-    ERROR_MSG("get_default_ep_config_dir <outdir> <name> [prefix]")
-  endif()
-
-  get_external_project_base_dir(base_dir ${ARGV2})
-  _no_prefix_ep_config_dir(path ${name})
-  set(${outdir} ${base_dir}/${path} PARENT_SCOPE)
-endfunction()
-
-function(get_default_ep_install_dir outdir name) # [prefix]
-  if(NOT(ARGC EQUAL 2 OR ARGC EQUAL 3))
-    ERROR_MSG("get_default_ep_install_dir <outdir> <name> [prefix]")
-  endif()
-
-  get_external_project_base_dir(base_dir ${ARGV2})
-  _no_prefix_ep_install_dir(path ${name})
-  set(${outdir} ${base_dir}/${path} PARENT_SCOPE)
-endfunction()
-
-# https://cmake.org/cmake/help/latest/module/ExternalProject.html
-function(configure_extproj name)
-  DEBUG_MSG("configure-extproj: ARGV: ${ARGV}")
-  DEBUG_MSG("configure-extproj: ARGC: ${ARGC}")
-  DEBUG_MSG("configure-extproj: ARGN: ${ARGN}")
-
-  # provide some preset.
-  set(options DOWNLOAD_ONLY BUILD_STATIC EXPORT_TARGET
-    OUT_SOURCE_DIR OUT_INSTALL_DIR OUT_CONFIG_DIR
-  )
-  set(oneValueArgs
-    VERSION # ignore pass-in version.
-    GIT_PATCH # easy apply git patch.
-    PREFIX TMP_DIR STAMP_DIR LOG_DIR
-    DOWNLOAD_DIR SOURCE_DIR BINARY_DIR INSTALL_DIR
-  )
-  set(multiValueArgs STEP_TARGETS)
-  cmake_parse_arguments(EP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-  # configure some arguments.
-  set(EP_BUILD_TYPE ${EXTERNAL_PROJECT_BUILD_TYPE})
-  set(EP_NAME ${name})
-
-  # NOTE: DO NOT ALLOW TO ReDefine these DIRS:
-  ASSERT_NOT_DEFINED(
-    EP_TMP_DIR EP_STAMP_DIR EP_LOG_DIR EP_BINARY_DIR
-    EP_STEP_TARGETS
-  )
-
-  if(NOT DEFINED EP_PREFIX)
-    set(EP_PREFIX ${EXTERNAL_PROJECT_BASE_DIR})
-  endif()
-
-  get_filename_component(EP_PREFIX ${EP_PREFIX} ABSOLUTE
-    BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
-  get_default_ep_config_dir(EP_CONFIG_DIR ${EP_NAME} ${EP_PREFIX})
-  set(EP_TMP_DIR ${EP_CONFIG_DIR}/tmp)
-  set(EP_STAMP_DIR ${EP_CONFIG_DIR}/stamp)
-  set(EP_LOG_DIR ${EP_CONFIG_DIR}/log)
-
-  if((NOT DEFINED EP_DOWNLOAD_DIR) AND(NOT DEFINED EP_SOURCE_DIR))
-    get_default_ep_source_dir(EP_SOURCE_DIR ${EP_NAME} ${EP_PREFIX})
-  elseif(NOT DEFINED EP_SOURCE_DIR)
-    set(EP_SOURCE_DIR ${EP_DOWNLOAD_DIR})
-  endif()
-
-  set(EP_BINARY_DIR ${EP_CONFIG_DIR}/build-${EP_BUILD_TYPE})
-
-  if(NOT DEFINED EP_INSTALL_DIR)
-    get_default_ep_install_dir(EP_INSTALL_DIR
-      ${EP_NAME} ${EP_PREFIX})
-  endif()
-
-  set(EP_STEP_TARGETS update patch build install)
-
-  # TODO. refine arguments.
-  set(EP_ARGS ${EP_UNPARSED_ARGUMENTS})
-
-  # prepare preset.
-  if(EP_DOWNLOAD_ONLY OR EXTERNAL_PROJECT_DOWNLOAD_ONLY)
-    set(EchoCMD "${CMAKE_COMMAND} -E echo do nothing.")
-    set(EP_ARGS
-      CONFIGURE_COMMAND ${EchoCMD}
-      BUILD_COMMAND ${EchoCMD}
-      TEST_COMMAND ${EchoCMD}
-      INSTALL_COMMAND ${EchoCMD}
-      ${EP_ARGS})
-  endif()
-
-  if(DEFINED EP_GIT_PATCH)
-    # ensure PATCH_FILE exists.
-    ASSERT_EXISTS(${EP_GIT_PATCH})
-
-    # TODO. should check whether EP_ARGS has PATCH_COMMAND.
-    set(EP_ARGS
-      PATCH_COMMAND "git restore . && git apply ${EP_GIT_PATCH}"
-      ${EP_ARGS})
-  endif()
-
-  if(NOT EP_BUILD_STATIC)
-    set(EP_ARGS ${EP_ARGS}
-      CMAKE_ARGS "-DBUILD_SHARED_LIBS=ON"
-
-      # https://cmake.org/cmake/help/latest/prop_tgt/POSITION_INDEPENDENT_CODE.html
-      # flags **-fPIC** will be automatically set.
-    )
-  endif()
-
-  # configure the exrproj
-  configure_file(${_CORE_PACKAGE_BASE_DIR}/extproj.cmake.in
-    ${EP_CONFIG_DIR}/CMakeLists.txt @ONLY)
-
-  if(NOT EP_EXPORT_TARGET)
-    execute_process(
-      COMMAND ${CMAKE_COMMAND}
-      -G ${CMAKE_GENERATOR}
-      -S ${EP_CONFIG_DIR}
-      -B ${EP_TMP_DIR}/build
-      RESULT_VARIABLE result
-      WORKING_DIRECTORY ${EP_CONFIG_DIR}
-    )
-
-    if(result)
-      ERROR_MSG("Configure ExternalProject(${EP_NAME}) Failed: ${result}")
-    endif()
-  else()
-    add_custom_target(
-      config_${name}
-      COMMAND ${CMAKE_COMMAND}
-      -G ${CMAKE_GENERATOR}
-      -S ${EP_CONFIG_DIR}
-      -B ${EP_TMP_DIR}/build
-      WORKING_DIRECTORY ${EP_CONFIG_DIR}
-    )
-  endif()
-
-  # TODO. maybe register these in some file is better.
-  if(EP_OUT_SOURCE_DIR)
-    set(EP_SOURCE_DIR ${EP_SOURCE_DIR} PARENT_SCOPE)
-  endif()
-
-  if(EP_OUT_INSTALL_DIR)
-    set(EP_INSTALL_DIR ${EP_INSTALL_DIR} PARENT_SCOPE)
-  endif()
-
-  if(EP_OUT_CONFIG_DIR)
-    set(EP_CONFIG_DIR ${EP_CONFIG_DIR} PARENT_SCOPE)
-  endif()
-endfunction()
-
-function(prepare_extproj_cmd out_cmd config_dir)
-  DEBUG_MSG("prepare_cmd.config_dir: ${config_dir}")
-  DEBUG_MSG("prepare_cmd.argn: ${ARGN}")
-  ASSERT_EXISTS(${config_dir})
-
-  if(ARGN)
-    set(tgt --target ${ARGN})
-  endif()
-
-  set(${out_cmd}
-    ${CMAKE_COMMAND}
-    --build ${config_dir}/tmp/build -j12
-    ${tgt} PARENT_SCOPE)
-endfunction()
-
-function(run_extproj_cmd cmd config_dir)
-  DEBUG_MSG("RUN.EXTPROJ.CMD: ${cmd}")
-  DEBUG_MSG("RUN.EXTPROJ.ConfigDir: ${config_dir}")
-  ASSERT_EQUAL(${ARGC} 2)
-  ASSERT_EXISTS(${config_dir})
-  execute_process(
-    COMMAND ${cmd}
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${config_dir}
-  )
-
-  if(result)
-    ERROR_MSG("RUN.EXTPROJ.CMD failed: ${cmd}")
-  endif()
-endfunction()
-
-function(generate_extproj_targets name config_dir)
-  # update cmd
-  get_update_extproj_cmd(cmd ${name} ${config_dir})
-  add_custom_target(update_${name}
-    COMMAND ${cmd}
-    WORKING_DIRECTORY ${config_dir})
-
-  # build cmd
-  get_build_extproj_cmd(cmd ${name} ${config_dir})
-  add_custom_target(build_${name}
-    COMMAND ${cmd}
-    WORKING_DIRECTORY ${config_dir})
-
-  # install cmd
-  get_install_extproj_cmd(cmd ${name} ${config_dir})
-  add_custom_target(install_${name}
-    COMMAND ${cmd}
-    WORKING_DIRECTORY ${config_dir})
-
-  # add dependency of config_PKG
-  if(TARGET config_${name})
-    add_dependencies(update_${name} config_${name})
-    add_dependencies(build_${name} config_${name})
-    add_dependencies(install_${name} config_${name})
-  endif()
-
-  # bind these target to all3rd.
-  if(TARGET update_all3rd)
-    add_dependencies(update_all3rd update_${name})
-  endif()
-
-  if(TARGET build_all3rd)
-    add_dependencies(build_all3rd build_${name})
-  endif()
-
-  if(TARGET install_all3rd)
-    add_dependencies(install_all3rd install_${name})
-  endif()
-endfunction()
-
-function(get_update_extproj_cmd cmd name config_dir)
-  ASSERT_EXISTS(${config_dir})
-
-  # since patch is depended on update.
-  prepare_extproj_cmd(_ ${config_dir} ${name}-patch)
-  DEBUG_MSG("update.cmd: ${_}")
-  set(${cmd} ${_} PARENT_SCOPE)
-endfunction()
-
-function(update_extproj name) # [config_dir]
-  if(NOT(ARGC EQUAL 1 OR ARGC EQUAL 2))
-    ERROR_MSG("update_extproj <name> [config_dir]")
-  endif()
-
-  if(ARGC EQUAL 1)
-    get_default_ep_config_dir(config_dir ${name})
-  else()
-    set(config_dir ${ARGV1})
-  endif()
-
-  ASSERT_EXISTS(${config_dir})
-  get_update_extproj_cmd(cmd ${name} ${config_dir})
-  DEBUG_MSG("Current.cmd: ${cmd}")
-  run_extproj_cmd("${cmd}" "${config_dir}")
-endfunction()
-
-function(get_build_extproj_cmd cmd name config_dir)
-  ASSERT_EXISTS(${config_dir})
-
-  # build <-- configure <-- patch <-- update
-  prepare_extproj_cmd(_ ${config_dir} ${name}-build)
-  DEBUG_MSG("build.cmd: ${_}")
-  set(${cmd} ${_} PARENT_SCOPE)
-endfunction()
-
-function(build_extproj name) # [config_dir]
-  if(NOT(ARGC EQUAL 1 OR ARGC EQUAL 2))
-    ERROR_MSG("build_extproj <name> [config_dir]")
-  endif()
-
-  if(ARGC EQUAL 1)
-    get_default_ep_config_dir(config_dir ${name})
-  else()
-    set(config_dir ${ARGV1})
-  endif()
-
-  ASSERT_EXISTS(${config_dir})
-  get_build_extproj_cmd(cmd ${name} ${config_dir})
-  DEBUG_MSG("Current.cmd: ${cmd}")
-  run_extproj_cmd("${cmd}" "${config_dir}")
-endfunction()
-
-function(get_install_extproj_cmd cmd name config_dir)
-  ASSERT_EXISTS(${config_dir})
-
-  # install <-- build
-  prepare_extproj_cmd(_ ${config_dir} ${name}-install)
-  DEBUG_MSG("install.cmd: ${_}")
-  set(${cmd} ${_} PARENT_SCOPE)
-endfunction()
-
-function(install_extproj name) # [config_dir]
-  if(NOT(ARGC EQUAL 1 OR ARGC EQUAL 2))
-    ERROR_MSG("install_extproj <name> [config_dir]")
-  endif()
-
-  if(ARGC EQUAL 1)
-    get_default_ep_config_dir(config_dir ${name})
-  else()
-    set(config_dir ${ARGV1})
-  endif()
-
-  ASSERT_EXISTS(${config_dir})
-  get_install_extproj_cmd(cmd ${name} ${config_dir})
-  DEBUG_MSG("Current.cmd: ${cmd}")
-  run_extproj_cmd("${cmd}" "${config_dir}")
-endfunction()
-
+# #######################################################################
+# Core Implementation.
+# #######################################################################
 # find_package(<PackageName> [version] [EXACT] [QUIET]
 # [REQUIRED] [[COMPONENTS] [components...]]
 # [OPTIONAL_COMPONENTS components...]
@@ -403,40 +64,457 @@ endfunction()
 # NO_CMAKE_FIND_ROOT_PATH])
 #
 # default, require_package is set to REQUIRED.
-
+#
 # FIXME: some package will setup some variable and need to popup.
 # like catch2, it will setup MODULE_PATH for include(Catch)
-macro(do_find_package PKG)
+# Thus, use macro instead.
+macro(ep_find_package PKG) # ensure that argn has been prepared for find_package.
   find_package(${PKG} ${ARGN})
 
+  # verbose some infos.
   if(${PKG}_FOUND)
-    string(TOUPPER ${PKG} tmp)
-    message("Find ${PKG} with version: ${${PKG}_VERSION}")
-
-    if(${tmp}_INCLUDE_DIR)
-      message("     include.paths: ${${tmp}_INCLUDE_DIR}")
-    elseif(${tmp}_INCLUDE_DIRS)
-      message("     include.paths: ${${tmp}_INCLUDE_DIRS}")
-    endif()
-
-    # RegisterPackage or NOT?
     set(PKG_FOUND TRUE)
     set(PKG_VERSION ${${PKG}_VERSION})
+    string(TOUPPER ${PKG} tmp)
+    message("Find ${PKG} with version: ${PKG_VERSION}")
+
+    if(${tmp}_INCLUDE_DIR)
+      message("    find.include.paths: ${${tmp}_INCLUDE_DIR}")
+    elseif(${tmp}_INCLUDE_DIRS)
+      message("    find.include.paths: ${${tmp}_INCLUDE_DIRS}")
+    endif()
   else()
     set(PKG_FOUND FALSE)
   endif()
 endmacro()
 
+# use function here to avoid populating options/variable.
+# ep_add_subdirectory(source_dir [binary_dir] [EXCLUDE_FROM_ALL] [CMAKE_ARGS ...])
+function(ep_add_subdirectory SOURCE_DIR)
+  get_filename_component(SOURCE_DIR ${SOURCE_DIR} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
+  ASSERT_PATH_EXISTS(${SOURCE_DIR})
+  ASSERT_FILE_EXISTS(${SOURCE_DIR}/CMakeLists.txt)
+  cmake_parse_arguments(ARGS "EXCLUDE_FROM_ALL" "" "CMAKE_ARGS" ${ARGN})
+
+  list(POP_FRONT ARGS_UNPARSED_ARGUMENTS BINARY_DIR)
+  set(subdir_args ${SOURCE_DIR} ${BINARY_DIR})
+
+  if(ARGS_EXCLUDE_FROM_ALL)
+    set(subdir_args ${subdir_args} EXCLUDE_FROM_ALL)
+  endif()
+
+  DEBUG_MSG("subdir_args: ${subdir_args}")
+
+  foreach(option ${ARGS_CMAKE_ARGS})
+    if(${option} MATCHES "^-D([^ ]*)=([^ ]*)$")
+      DEBUG_MSG("KEY: ${CMAKE_MATCH_1}, VALUE: ${CMAKE_MATCH_2}")
+      set(${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
+    else()
+      DEBUG_MSG("UNKNOWN CMAKE_ARGS: ${option}")
+    endif()
+  endforeach()
+
+  add_subdirectory(${subdir_args})
+endfunction()
+
+macro(get_ep_config_dir out name args PREFIX)
+  ASSERT_EQUAL(${ARGC} 4)
+  string(SHA1 hash_args "${args}")
+  string(SUBSTRING "${hash_args}" 0 8 hash_args)
+  set(${out} ${PREFIX}/.cache/.ep_config/${name}-${hash_args})
+endmacro()
+
+macro(get_ep_install_dir out name args BUILD_TYPE PREFIX)
+  ASSERT_EQUAL(${ARGC} 5)
+  string(SHA1 hash_args "${args}")
+  string(SUBSTRING "${hash_args}" 0 8 hash_args)
+  set(${out} ${PREFIX}/install/${BUILD_TYPE}/${name}-${hash_args})
+endmacro()
+
+macro(get_ep_source_dir out name PREFIX)
+  ASSERT_EQUAL(${ARGC} 3)
+  set(${out} ${PREFIX}/${name})
+endmacro()
+
+function(check_cmake_args args)
+  ASSERT_EQUAL(${ARGC} 1)
+
+  foreach(arg ${args})
+    if(${arg} MATCHES "^-D([^ ]+)(:[^ ]+)?=([^ ]+)$")
+      DEBUG_MSG("Key: ${CMAKE_MATCH_1}, Value: ${CMAKE_MATCH_3}, Type: ${CMAKE_MATCH_2}")
+    else()
+      ERROR_MSG("Unknown cmake_arg: ${arg}, should be specified as: -D<var>[:<type>]=<value>")
+    endif()
+  endforeach()
+endfunction()
+
+set(DO_NOTHING_CMD "${CMAKE_COMMAND} -E echo do nothing.")
+
+# https://cmake.org/cmake/help/latest/module/ExternalProject.html
+function(ep_configure_package name)
+  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}.ARGV: ${ARGV}")
+  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}.ARGC: ${ARGC}")
+  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}.ARGN: ${ARGN}")
+
+  set(options BUILD_STATIC OFF_GIT_SHALLOW
+    DOWNLOAD_ONLY
+    OUT_SOURCE_DIR OUT_INSTALL_DIR OUT_CONFIG_DIR)
+  set(oneValueArgs PREFIX BUILD_TYPE
+    GIT_SHALLOW
+    GIT_PATCH # easy apply git patch.
+    TMP_DIR STAMP_DIR LOG_DIR BINARY_DIR # do not allow to set.
+    DOWNLOAD_DIR SOURCE_DIR INSTALL_DIR
+  )
+  set(multiValueArgs STEP_TARGETS CMAKE_ARGS)
+  cmake_parse_arguments(EP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  # do not allow pass more args.
+  # ASSERT_EMPTY(EP_UNPARSED_ARGUMENTS)
+  ASSERT_NOT_DEFINED(EP_TMP_DIR EP_STAMP_DIR EP_LOG_DIR EP_BINARY_DIR EP_STEP_TARGETS)
+  check_cmake_args("${EP_CMAKE_ARGS}")
+
+  # prepare args.
+  if(EP_OFF_GIT_SHALLOW AND(DEFINED EP_GIT_SHALLOW))
+    ERROR_MSG("Cannot both specify OFF_GIT_SHALLOW and GIT_SHALLOW at the same time.")
+  endif()
+
+  if((NOT EP_OFF_GIT_SHALLOW) AND(NOT DEFINED EP_GIT_SHALLOW))
+    list(APPEND EP_UNPARSED_ARGUMENTS GIT_SHALLOW ON)
+  elseif(DEFINED EP_GIT_SHALLOW)
+    list(APPEND EP_UNPARSED_ARGUMENTS GIT_SHALLOW ${EP_GIT_SHALLOW})
+  endif()
+
+  set(EP_NAME ${name})
+
+  if(NOT DEFINED EP_BUILD_TYPE)
+    set(EP_BUILD_TYPE ${EXT_PACKAGE_BUILD_TYPE})
+  endif()
+
+  if(NOT DEFINED EP_PREFIX)
+    set(EP_PREFIX ${EXT_PACKAGE_BASE_DIR})
+  endif()
+
+  if(EXISTS ${EP_PREFIX})
+    ASSERT_PATH_EXISTS(${EP_PREFIX})
+    get_filename_component(EP_PREFIX ${EP_PREFIX} ABSOLUTE)
+  endif()
+
+  # TODO. set config dir.
+  get_ep_config_dir(EP_CONFIG_DIR ${name} "${EP_CMAKE_ARGS}" ${EP_PREFIX})
+  set(EP_TMP_DIR ${EP_CONFIG_DIR}/tmp)
+  set(EP_STAMP_DIR ${EP_CONFIG_DIR}/stamp)
+  set(EP_LOG_DIR ${EP_CONFIG_DIR}/log)
+
+  if((NOT DEFINED EP_DOWNLOAD_DIR) AND(NOT DEFINED EP_SOURCE_DIR))
+    get_ep_source_dir(EP_SOURCE_DIR ${name} ${EP_PREFIX})
+  elseif(NOT DEFINED EP_SOURCE_DIR)
+    set(EP_SOURCE_DIR ${EP_DOWNLOAD_DIR})
+  endif()
+
+  set(EP_BINARY_DIR ${EP_CONFIG_DIR}/build-${EP_BUILD_TYPE})
+
+  if(NOT DEFINED EP_INSTALL_DIR)
+    get_ep_install_dir(EP_INSTALL_DIR ${name} "${EP_CMAKE_ARGS}" ${EP_BUILD_TYPE} ${EP_PREFIX})
+  endif()
+
+  set(EP_STEP_TARGETS update patch build install)
+  set(EP_ARGS ${EP_UNPARSED_ARGUMENTS} CMAKE_ARGS ${EP_CMAKE_ARGS})
+
+  if(EP_DOWNLOAD_ONLY OR EXT_PACKAGE_DOWNLOAD_ONLY)
+    list(PREPEND EP_ARGS
+      CONFIGURE_COMMAND ${DO_NOTHING_CMD}
+      BUILD_COMMAND ${DO_NOTHING_CMD}
+      TEST_COMMAND ${DO_NOTHING_CMD}
+      INSTALL_COMMAND ${DO_NOTHING_CMD})
+  endif()
+
+  # apply git patch.
+  if(DEFINED EP_GIT_PATCH)
+    ASSERT_FILE_EXISTS(${EP_GIT_PATCH})
+    find_package(Git REQUIRED)
+    ASSERT_DEFINED(GIT_EXECUTABLE)
+    list(PREPEND EP_ARGS
+      PATCH_COMMAND "${GIT_EXECUTABLE} restore . && ${GIT_EXECUTABLE} apply ${EP_GIT_PATCH}")
+  endif()
+
+  if(NOT EP_BUILD_STATIC)
+    # https://cmake.org/cmake/help/latest/prop_tgt/POSITION_INDEPENDENT_CODE.html
+    # flags **-fPIC** will be automatically set.
+    list(APPEND EP_ARGS CMAKE_ARGS "-DBUILD_SHARED_LIBS=ON")
+  endif()
+
+  # configure the extproj.
+  configure_file(${_CORE_PACKAGE_BASE_DIR}/extproj.cmake.in ${EP_CONFIG_DIR}/CMakeLists.txt @ONLY)
+
+  execute_process(
+    COMMAND ${CMAKE_COMMAND}
+    -G ${CMAKE_GENERATOR}
+    -S ${EP_CONFIG_DIR}
+    -B ${EP_TMP_DIR}/build
+    RESULT_VARIABLE result
+    OUTPUT_QUIET
+    WORKING_DIRECTORY ${EP_CONFIG_DIR}
+  )
+
+  if(result)
+    ERROR_MSG("Configure ExternalProject(${EP_NAME}) Failed: ${result}")
+  endif()
+
+  # TODO. maybe it is better to register these in some list.
+  foreach(DIR SOURCE INSTALL CONFIG)
+    if(EP_OUT_${DIR}_DIR)
+      set(EP_${DIR}_DIR ${EP_${DIR}_DIR} PARENT_SCOPE)
+    endif()
+  endforeach()
+endfunction()
+
+function(run_command cmd work_dir)
+  ASSERT_PATH_EXISTS(${work_dir})
+  message("-- Run: ${cmd}")
+  execute_process(
+    COMMAND ${cmd}
+    RESULT_VARIABLE result
+    OUTPUT_QUIET
+    WORKING_DIRECTORY ${work_dir})
+
+  if(result)
+    ERROR_MSG("Run CMD(${cmd}) Failed: ${result}")
+  endif()
+endfunction()
+
+function(ep_prepare_command cmd config_dir)
+  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}.ARGV: ${ARGV}")
+  ASSERT_PATH_EXISTS(${config_dir})
+
+  if(ARGN)
+    set(tgt --target ${ARGN})
+  endif()
+
+  set(${cmd} ${CMAKE_COMMAND} --build ${config_dir}/tmp/build -j12 ${tgt} PARENT_SCOPE)
+endfunction()
+
+macro(ep_fetch_command cmd name config_dir)
+  ep_prepare_command(${cmd} ${config_dir} ${name}-patch)
+endmacro()
+
+macro(ep_build_command cmd name config_dir)
+  ep_prepare_command(${cmd} ${config_dir} ${name}-build)
+endmacro()
+
+macro(ep_install_command cmd name config_dir)
+  ep_prepare_command(${cmd} ${config_dir} ${name}-install)
+endmacro()
+
+# more than 2 arguments will defer by default.
+function(fetch_package name config_dir)
+  ep_fetch_command(cmd ${name} ${config_dir})
+
+  if(${ARGC} EQUAL 2)
+    run_command(
+      "${cmd}"
+      ${config_dir})
+  endif()
+
+  if(NOT TARGET fetch_${name})
+    add_custom_target(fetch_${name} COMMAND ${cmd} WORKING_DIRECTORY ${config_dir})
+  endif()
+endfunction()
+
+function(build_package name config_dir)
+  ep_build_command(cmd ${name} ${config_dir})
+
+  if(${ARGC} EQUAL 2)
+    run_command(
+      "${cmd}"
+      ${config_dir})
+  endif()
+
+  if(NOT TARGET build_${name})
+    add_custom_target(build_${name} COMMAND ${cmd} WORKING_DIRECTORY ${config_dir})
+  endif()
+endfunction()
+
+function(install_package name config_dir)
+  ep_install_command(cmd ${name} ${config_dir})
+
+  if(${ARGC} EQUAL 2)
+    run_command(
+      "${cmd}"
+      ${config_dir})
+  endif()
+
+  if(NOT TARGET install_${name})
+    add_custom_target(install_${name} COMMAND ${cmd} WORKING_DIRECTORY ${config_dir})
+  endif()
+endfunction()
+
+function(extract_find_package_arguments out rest)
+  set(options
+
+    # REQUIRED ignore required.
+    EXACT QUIET GLOBAL CONFIG NO_MODULE
+    NO_POLICY_SCOPE BYPASS_PROVIDER
+    NO_DEFAULT_PATH NO_PACKAGE_ROOT_PATH NO_CMAKE_PATH
+    NO_CMAKE_ENVIRONMENT_PATH
+    NO_SYSTEM_ENVIRONMENT_PATH
+    NO_CMAKE_PACKAGE_REGISTRY
+    NO_CMAKE_SYSTEM_PATH
+    NO_CMAKE_INSTALL_PREFIX
+    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
+    CMAKE_FIND_ROOT_PATH_BOTH ONLY_CMAKE_FIND_ROOT_PATH NO_CMAKE_FIND_ROOT_PATH
+  )
+  DEBUG_MSG("in.extract.input; ${ARGN}")
+  set(oneValueArgs VERSION REGISTRY_VIEW)
+  set(multiValueArgs COMPONENTS OPTIONAL_COMPONENTS NAMES CONFIGS HINTS PATHS PATH_SUFFIXES)
+  cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if(DEFINED ARG_VERSION)
+    set(find_package_args ${ARG_VERSION})
+  else()
+    set(find_package_args "")
+  endif()
+
+  foreach(op ${options})
+    if(ARG_${op})
+      set(find_package_args ${find_package_args} ${op})
+    endif()
+  endforeach()
+
+  if(DEFINED ARG_REGISTRY_VIEW)
+    set(find_package_args ${find_package_args} REGISTRY_VIEW ${ARG_REGISTRY_VIEW})
+  endif()
+
+  foreach(mv ${multiValueArgs})
+    if(DEFINED ARG_${mv})
+      set(find_package_args ${find_package_args} ${mv} ${ARG_${mv}})
+    endif()
+  endforeach()
+
+  DEBUG_MSG("in.extract.find.args: ${find_package_args}")
+  set(${out} ${find_package_args} PARENT_SCOPE)
+  set(${rest} ${ARG_UNPARSED_ARGUMENTS} PARENT_SCOPE)
+endfunction()
+
+# TODO.
+function(extract_add_subdir_arguments out rest)
+  cmake_parse_arguments(SUB "EXCLUDE_FROM_ALL" "SUB_BINARY" "" ${ARGN})
+
+  if(DEFINED SUB_SUB_BINARY)
+    set(args ${SUB_SUB_BINARY})
+  else()
+    set(args "")
+  endif()
+
+  if(SUB_EXCLUDE_FROM_ALL)
+    set(args ${args} EXCLUDE_FROM_ALL)
+  endif()
+
+  set(${out} ${args} PARENT_SCOPE)
+  DEBUG_MSG("In extract.sub: ${args}")
+  set(${rest} ${SUB_UNPARSED_ARGUMENTS} PARENT_SCOPE)
+endfunction()
+
+# FIXME. the same reason with do_find_package.
+macro(core_require_package name)
+  set(args ${ARGN})
+  set(options LOCAL_FIRST_OFF REQUIRED NOT_REQUIRED DEFER
+    IMPORT_AS_SUBDIR)
+  set(oneValueArgs)
+  set(multiValueArgs CMAKE_ARGS)
+  cmake_parse_arguments(PKG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${args})
+
+  # check args.
+  if(PKG_REQUIRED AND PKG_NOT_REQUIRED)
+    ERROR_MSG("[core_require_package]: Cannot specify REQUIRED and NOT_REQUIRED at the same time!")
+  endif()
+
+  DEBUG_MSG("PKG_UNPARSED_ARGS: ${PKG_UNPARSED_ARGUMENTS}")
+  extract_find_package_arguments(find_package_args rest_args ${PKG_UNPARSED_ARGUMENTS})
+  DEBUG_MSG("after.find.rest: ${rest_args}")
+  extract_add_subdir_arguments(subdir_args rest_args ${rest_args})
+  DEBUG_MSG("after.subdir.rest: ${rest_args}")
+
+  # TODO.
+  if(DEFINED PKG_CMAKE_ARGS)
+    set(configure_package_args ${rest_args} CMAKE_ARGS ${PKG_CMAKE_ARGS})
+  else()
+    set(configure_package_args ${rest_args})
+  endif()
+
+  DEBUG_MSG("Extract.FindPackage.Args: ${find_package_args}")
+  DEBUG_MSG("Extract.SubDir.Args: ${subdir_args}")
+  DEBUG_MSG("Extract.ExtProj.Args: ${configure_package_args}")
+
+  cmake_parse_arguments(PKG "DOWNLOAD_ONLY" "" "" ${configure_package_args})
+  DEBUG_MSG("DOWNLOAD_ONLY: ${PKG_DOWNLOAD_ONLY}")
+
+  # configure package
+  ep_configure_package(${name} ${configure_package_args} OUT_CONFIG_DIR OUT_SOURCE_DIR OUT_INSTALL_DIR)
+  fetch_package(${name} ${EP_CONFIG_DIR} DEFER)
+  build_package(${name} ${EP_CONFIG_DIR} DEFER)
+  install_package(${name} ${EP_CONFIG_DIR} DEFER)
+  set(${name}_ROOT ${EP_INSTALL_DIR})
+
+  if((NOT PKG_LOCAL_FIRST_OFF)
+    AND EXT_PACKAGE_LOCAL_FIRST
+    AND(NOT PKG_DOWNLOAD_ONLY))
+    ep_find_package(${name} ${find_package_args} NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+  else()
+    set(PKG_FOUND OFF)
+  endif()
+
+  if(NOT(PKG_FOUND OR PKG_NOT_REQUIRED))
+    if(NOT PKG_NOT_REQUIRED)
+      list(APPEND find_package_args REQUIRED)
+    endif()
+
+    if(NOT PKG_DEFER)
+      if(PKG_DOWNLOAD_ONLY)
+        fetch_package(${name} ${EP_CONFIG_DIR})
+      elseif(PKG_IMPORT_AS_SUBDIR OR EXT_PACKAGE_IMPORT_AS_SUBDIR)
+        DEBUG_MSG("import as subdir: ${name}")
+        fetch_package(${name} ${EP_CONFIG_DIR})
+        ASSERT_DEFINED(EP_SOURCE_DIR)
+        ASSERT_PATH_EXISTS(${EP_SOURCE_DIR})
+        ep_add_subdirectory(${EP_SOURCE_DIR} ${subdir_args} CMAKE_ARGS ${PKG_CMAKE_ARGS})
+      else()
+        DEBUG_MSG("build_and_install ${name}")
+        install_package(${name} ${EP_CONFIG_DIR})
+        ASSERT_DEFINED(EP_INSTALL_DIR)
+        ASSERT_PATH_EXISTS(${EP_INSTALL_DIR})
+        set(${name}_ROOT ${EP_INSTALL_DIR})
+        ep_find_package(${name} ${find_package_args})
+      endif()
+    endif()
+  endif()
+
+  unset(args)
+  unset(options)
+  unset(oneValueArgs)
+  unset(multiValueArgs)
+  unset(find_package_args)
+  unset(subdir_args)
+  unset(configure_package_args)
+  unset(EP_SOURCE_DIR)
+  unset(EP_BINARY_DIR)
+  unset(EP_INSTALL_DIR)
+endmacro()
+
 function(is_version out v)
   # major[.minor[.patch[.tweak]]]
   string(REGEX MATCH "^[0-9]+(.[0-9]+)?(.[0-9]+)?(.[0-9]+)?$" _ ${v})
-  set(${out} ${_} PARENT_SCOPE)
+
+  if(_)
+    set(${out} YES PARENT_SCOPE)
+  else()
+    set(${out} NO PARENT_SCOPE)
+  endif()
 endfunction()
 
 function(infer_version_from_tag out tag)
   DEBUG_MSG("Test.Case: ${tag}")
 
-  if(${tag} MATCHES "^[^0-9]*([0-9]+[0-9.]*)$")
+  if(${tag} MATCHES "^[^0-9]*([0-9]+[0-9.]*)([^0-9]+.*)*$")
     is_version(_ ${CMAKE_MATCH_1})
 
     if(_)
@@ -450,7 +528,6 @@ function(infer_version_from_tag out tag)
   endif()
 endfunction()
 
-# FIXME. Not fully test.
 function(infer_args_from_uri out_args uri)
   cmake_parse_arguments("" "NO_VERSION" "" "" ${ARGN})
   DEBUG_MSG("-----Current.uri: ${uri}")
@@ -498,21 +575,16 @@ function(infer_args_from_uri out_args uri)
 
   # some special schemes
   if(scheme STREQUAL "rom") # ryon.ren:mirrors
-    set(type git)
-
     if(${path} MATCHES "([^/]+)$")
       set(out GIT_REPOSITORY
         ssh://git@ryon.ren:10022/mirrors/${CMAKE_MATCH_1})
     else()
       ERROR_MSG("Unable to infer repo name: ${path}")
     endif()
-  elseif(scheme STREQUAL "gh") # github
-    if(EXTERNAL_PROJECT_GITHUB_MIRROR)
-      set(out GIT_REPOSITORY ${EXTERNAL_PROJECT_GITHUB_MIRROR}/${path})
-    else()
-      set(out GIT_REPOSITORY https://github.com/${path})
-    endif()
 
+    set(type git)
+  elseif(scheme STREQUAL "gh") # github
+    set(out GIT_REPOSITORY https://github.com/${path})
     set(type git)
   elseif(scheme STREQUAL "gl") # gitlab
     set(out GIT_REPOSITORY https://gitlab.com/${path})
@@ -560,181 +632,30 @@ function(infer_args_from_uri out_args uri)
   set(${out_args} ${out} PARENT_SCOPE)
 endfunction()
 
-function(prepare_arguments out_find_package_args out_extproj_args name)
-  set(options EXACT QUIET REQUIRED GLOBAL CONFIG NO_MODULE
-    NO_POLICY_SCOPE BYPASS_PROVIDER
-    NO_DEFAULT_PATH NO_PACKAGE_ROOT_PATH NO_CMAKE_PATH
-    NO_CMAKE_ENVIRONMENT_PATH
-    NO_SYSTEM_ENVIRONMENT_PATH
-    NO_CMAKE_PACKAGE_REGISTRY
-    NO_CMAKE_SYSTEM_PATH
-    NO_CMAKE_INSTALL_PREFIX
-    NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
-    CMAKE_FIND_ROOT_PATH_BOTH ONLY_CMAKE_FIND_ROOT_PATH NO_CMAKE_FIND_ROOT_PATH
-  )
-  set(oneValueArgs VERSION REGISTRY_VIEW)
-  set(multiValueArgs COMPONENTS OPTIONAL_COMPONENTS NAMES CONFIGS HINTS PATHS PATH_SUFFIXES)
-  cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs};EP_ARGS" ${ARGN})
-
-  set(extproj_args ${name} ${ARG_UNPARSED_ARGUMENTS} ${ARG_EP_ARGS})
-
-  if(DEFINED ARG_VERSION)
-    set(find_package_args ${name} ${ARG_VERSION})
-  else()
-    set(find_package_args ${name})
-  endif()
-
-  foreach(op ${options})
-    if(ARG_${op})
-      set(find_package_args ${find_package_args} ${op})
-    endif()
-  endforeach()
-
-  if(DEFINED ARG_REGISTRY_VIEW)
-    set(find_package_args ${find_package_args} REGISTRY_VIEW ${ARG_REGISTRY_VIEW})
-  endif()
-
-  foreach(mv ${multiValueArgs})
-    if(DEFINED ARG_${mv})
-      set(find_package_args ${find_package_args} ${mv} ${ARG_${mv}})
-    endif()
-  endforeach()
-  set(${out_find_package_args} ${find_package_args} PARENT_SCOPE)
-  # TODO. check external project args.
-  set(${out_extproj_args} ${extproj_args} PARENT_SCOPE)
-endfunction()
-
-function(do_add_subdirectory SOURCE_DIR) # extproj_args
-  ASSERT_EXISTS(${SOURCE_DIR})
-  ASSERT_EXISTS(${SOURCE_DIR}/CMakeLists.txt)
-  cmake_parse_arguments(ARGS "EXCLUDE_FROM_ALL" "" "CMAKE_ARGS" ${ARGN})
-
-  foreach(option ${ARGS_CMAKE_ARGS})
-    if(${option} MATCHES "^-D([^ ]*)=([^ ]*)$")
-      DEBUG_MSG("KEY: ${CMAKE_MATCH_1}, VALUE: ${CMAKE_MATCH_2}")
-      set(${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
-    else()
-      DEBUG_MSG("UNKNOWN CMAKE_ARGS: ${option}")
-    endif()
-  endforeach()
-
-  if(ARGS_EXCLUDE_FROM_ALL)
-    add_subdirectory(${SOURCE_DIR} EXCLUDE_FROM_ALL)
-  else()
-    add_subdirectory(${SOURCE_DIR})
-  endif()
-endfunction()
-
-# HACK: override ARGN
-function(_hack_version_argn out version)
-  set(${out} VERSION ${version} ${ARGN} PARENT_SCOPE)
-endfunction()
-
-# HACK: override ARGN
-function(_hack_uri_argn out uri)
-  cmake_parse_arguments("" "DOWNLOAD_ONLY" "VERSION" "" ${ARGN})
-
-  if(DEFINED _VERSION OR _DOWNLOAD_ONLY)
-    infer_args_from_uri(args ${uri} NO_VERSION)
-  else()
-    infer_args_from_uri(args ${uri})
-  endif()
-
-  set(${out} ${args} ${ARGN} PARENT_SCOPE)
-endfunction()
-
-# FIXME. the same reason with do_find_package.
-macro(require_package name) # [version/uri]
-  # since ARGN in macro is only string replacement, it's not a variable.
-  # in this function, it will use it as argn, so we should create a new variable to store them.
+# FIXME. the same reason with ep_find_package.
+macro(require_package name) # [uri]
   set(args ${ARGN})
 
-  if(NOT ARGC EQUAL 1)
-    is_version(out ${ARGV1})
+  # extract uri from args.
+  set(uri ${ARGN})
+  list(FILTER uri INCLUDE REGEX "^([^#: ]+):([^# ]+)(#[^# ]*)?$")
+  list(LENGTH uri NUM_URI)
+  ASSERT_LESS_EQUAL(${NUM_URI} 1)
+  list(REMOVE_ITEM args ${uri})
+  DEBUG_MSG("uri: ${uri}")
+  DEBUG_MSG("args: ${args}")
 
-    if(out)
-      _hack_version_argn(args ${args})
-    elseif(${ARGV1} MATCHES "[@:/#]")
-      _hack_uri_argn(args ${args})
-    endif()
-  endif()
-
-  DEBUG_MSG("RequirePackage.Args: ${name};${args}")
-
-  set(options FIND_FIRST_OFF REQUIRED NOT_REQUIRED
-    IMPORT_AS_SUBDIR EXCLUDE_FROM_ALL
-  )
-  set(oneValueArgs)
-  set(multiValueArgs)
-  cmake_parse_arguments(PKG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${args})
-
-  # prepare FIND_PACKAGE_ARGS.
-  if(PKG_REQUIRED AND PKG_NOT_REQUIRED)
-    ERROR_MSG("[require_package]: Cannot specify REQUIRED and NOT_REQUIRED at the same time!")
-  endif()
-
-  prepare_arguments(find_package_args extproj_args ${name} ${PKG_UNPARSED_ARGUMENTS})
-
-  DEBUG_MSG("require.package.args: ${find_package_args}")
-  DEBUG_MSG("require.package.ext.args: ${extproj_args}")
-
-  if(NOT PKG_FIND_FIRST_OFF)
-    do_find_package(${find_package_args})
-  endif()
-
-  if(NOT(PKG_FOUND OR PKG_NOT_REQUIRED))
-    if(NOT PKG_NOT_REQUIRED)
-      set(find_package_args ${find_package_args} REQUIRED)
-    endif()
-
-    configure_extproj(${extproj_args} OUT_CONFIG_DIR OUT_SOURCE_DIR OUT_INSTALL_DIR)
-
-    if(PKG_IMPORT_AS_SUBDIR)
-      update_extproj(${name} ${EP_CONFIG_DIR})
-      ASSERT_DEFINED(EP_SOURCE_DIR)
-
-      if(PKG_EXCLUDE_FROM_ALL)
-        do_add_subdirectory(${EP_SOURCE_DIR} ${extproj_args} EXCLUDE_FROM_ALL)
-      else()
-        do_add_subdirectory(${EP_SOURCE_DIR} ${extproj_args})
-      endif()
-    else()
-      # install will trigger update and bulid.
-      install_extproj(${name} ${EP_CONFIG_DIR})
-      ASSERT_DEFINED(EP_INSTALL_DIR)
-      ASSERT_EXISTS(${EP_INSTALL_DIR})
-      set(${name}_ROOT ${EP_INSTALL_DIR})
-      do_find_package(${find_package_args})
-    endif()
-  endif()
-endmacro()
-
-# NOTE: Maybe deprecated later.
-function(add_package name)
-  if(NOT ARGC EQUAL 1)
-    if(${ARGV1} MATCHES "[@:/#]")
-      _hack_uri_argn(ARGN ${ARGN})
-    endif()
-  endif()
-
-  set(options
-    UPDATE_NOW BUILD_NOW INSTALL_NOW
-  )
-  cmake_parse_arguments(PKG "${options}" "" "" ${ARGN})
-
-  if(PKG_UPDATE_NOW OR PKG_BUILD_NOW OR PKG_INSTALL_NOW)
-    configure_extproj(${name} ${ARGN} OUT_CONFIG_DIR)
+  if(${NUM_URI} EQUAL 1)
+    # URI to Args.
+    infer_args_from_uri(extra_args "${uri}")
   else()
-    configure_extproj(${name} ${ARGN} OUT_CONFIG_DIR EXPORT_TARGET)
+    set(extra_args "")
   endif()
 
-  generate_extproj_targets(${name} ${EP_CONFIG_DIR})
+  DEBUG_MSG("extra_args: ${extra_args}")
+  core_require_package(${name} ${extra_args} ${args})
 
-  if(PKG_INSTALL_NOW)
-    install_extproj(${name} ${EP_CONFIG_DIR})
-  elseif(PKG_BUILD_NOW)
-    build_extproj(${name} ${EP_CONFIG_DIR})
-  elseif(PKG_UPDATE_NOW)
-    update_extproj(${name} ${EP_CONFIG_DIR})
-  endif()
-endfunction()
+  unset(args)
+  unset(uri)
+  unset(extra_args)
+endmacro()
