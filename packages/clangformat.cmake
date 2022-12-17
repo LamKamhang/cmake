@@ -1,3 +1,5 @@
+include_guard()
+
 find_program(CLANG_FORMAT clang-format)
 
 if(CLANG_FORMAT)

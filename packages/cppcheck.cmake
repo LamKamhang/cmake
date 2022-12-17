@@ -1,3 +1,5 @@
+include_guard()
+
 find_program(CPPCHECK "cppcheck")
 
 if(CPPCHECK)

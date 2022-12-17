@@ -1,3 +1,5 @@
+include_guard()
+
 find_program(CLANG_TIDY clang-tidy)
 
 if(CLANG_TIDY)
