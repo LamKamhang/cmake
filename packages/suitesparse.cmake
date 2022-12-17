@@ -4,5 +4,6 @@ message(STATUS "[package/SuiteSparse]: SuiteSparse::AMD SuiteSparse::BTF SuiteSp
 
 enable_language(C)
 require_package(SuiteSparse "gh:sergiud/SuiteSparse.git#5.13.0-cmake.3"
+  GIT_PATCH  "${CMAKE_UTILITY_PATCH_DIR}/suitesparse.cholmod.patch"
   CMAKE_ARGS "-DBUILD_SHARED_LIBS=ON"
   CMAKE_ARGS "-DWITH_DEMOS=OFF")

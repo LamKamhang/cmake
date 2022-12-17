@@ -1,0 +1,18 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6cb25140..6b4336ac 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -752,11 +752,11 @@ if (WITH_CHOLMOD)
+   target_link_libraries (cholmod
+     PRIVATE BLAS::BLAS
+             LAPACK::LAPACK
+-            SuiteSparse::AMD
++    PUBLIC  SuiteSparse::AMD
+             SuiteSparse::CAMD
+             SuiteSparse::CCOLAMD
+             SuiteSparse::COLAMD
+-    PUBLIC SuiteSparse::Config
++            SuiteSparse::Config
+   )
+ endif (WITH_CHOLMOD)
+ 
