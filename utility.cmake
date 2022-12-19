@@ -25,3 +25,10 @@ list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/find_modules) # for fin
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/packages) # for include
 
 set(CMAKE_UTILITY_PATCH_DIR ${CMAKE_CURRENT_LIST_DIR}/patches)
+
+# for register packages.
+macro(declare_pkg_deps)
+  foreach(dep ${ARGV})
+    include(pkg_${dep})
+  endforeach()
+endmacro()
