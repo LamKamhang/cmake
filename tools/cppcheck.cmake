@@ -1,6 +1,6 @@
 include_guard()
 
-find_program(CPPCHECK "cppcheck")
+find_program(CPPCHECK cppcheck)
 
 if(CPPCHECK)
   message(STATUS "cppcheck find: ${CPPCHECK}")

@@ -23,6 +23,7 @@ use_cmake_core_module(target-helper)
 # register paths
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/find_modules) # for find_package
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/packages) # for include
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/tools) # for include
 
 set(CMAKE_UTILITY_PATCH_DIR ${CMAKE_CURRENT_LIST_DIR}/patches)
 
