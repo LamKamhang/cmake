@@ -1,6 +1,13 @@
 include_guard()
 
+# if pybind11::module has been found
+if (TARGET pybind11::module)
+  return()
+endif()
+
 message(STATUS "[package/pybind11]: pybind11::module")
 
-require_package(pybind11 "gh:pybind/pybind11#v2.10.1"
+set(PYBIND11_VERSION 2.10.1 CACHE STRING "pybind11 customized version")
+
+require_package(pybind11 "gh:pybind/pybind11#v${PYBIND11_VERSION}"
   CMAKE_ARGS "-DPYBIND11_TEST=OFF")
