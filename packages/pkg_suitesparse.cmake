@@ -13,6 +13,5 @@ if (NOT SUITESPARSE_IMPORT_AS_SUBDIR)
 else()
   require_package(SuiteSparse "gh:sergiud/SuiteSparse.git#5.13.0-cmake.3"
     SUBDIR_ONLY
-    SUB_BINARY "${CMAKE_BINARY_DIR}/3rd/suitesparse"
     CMAKE_ARGS "-DWITH_DEMOS=OFF")
 endif()

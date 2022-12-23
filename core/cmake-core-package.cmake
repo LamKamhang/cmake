@@ -11,6 +11,8 @@ include(${_CORE_PACKAGE_BASE_DIR}/cmake-core-assert.cmake)
 # SOURCE_DIR point to the RootProjDir.
 set(EXT_PACKAGE_BASE_DIR ${CMAKE_SOURCE_DIR}/3rd
   CACHE PATH "The BaseDir for extPackage. extPackage will be download/clone to here.")
+set(EXT_PACKAGE_BUILD_BASE_DIR ${CMAKE_BINARY_DIR}/3rd
+  CACHE PATH "The BaseDir for extPackage building. extPackage included as subdirectory will be build here.")
 set(EXT_PACKAGE_BUILD_TYPE "release" CACHE STRING "Default extPackage BuildType[lowercase].")
 option(EXT_PACKAGE_LOCAL_ONLY "use find_package only." OFF)
 option(EXT_PACKAGE_LOCAL_FIRST "use find_package first." ON)
@@ -89,14 +91,13 @@ macro(ep_find_package PKG) # ensure that argn has been prepared for find_package
 endmacro()
 
 # use function here to avoid populating options/variable.
-# ep_add_subdirectory(source_dir [binary_dir] [EXCLUDE_FROM_ALL] [CMAKE_ARGS ...])
-function(ep_add_subdirectory SOURCE_DIR)
+# ep_add_subdirectory(source_dir binary_dir [EXCLUDE_FROM_ALL] [CMAKE_ARGS ...])
+function(ep_add_subdirectory SOURCE_DIR BINARY_DIR)
   get_filename_component(SOURCE_DIR ${SOURCE_DIR} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
   ASSERT_PATH_EXISTS(${SOURCE_DIR})
   ASSERT_FILE_EXISTS(${SOURCE_DIR}/CMakeLists.txt)
   cmake_parse_arguments(ARGS "EXCLUDE_FROM_ALL" "" "CMAKE_ARGS" ${ARGN})
 
-  list(POP_FRONT ARGS_UNPARSED_ARGUMENTS BINARY_DIR)
   set(subdir_args ${SOURCE_DIR} ${BINARY_DIR})
 
   if(ARGS_EXCLUDE_FROM_ALL)
@@ -397,13 +398,7 @@ endfunction()
 
 # TODO.
 function(extract_add_subdir_arguments out rest)
-  cmake_parse_arguments(SUB "EXCLUDE_FROM_ALL" "SUB_BINARY" "" ${ARGN})
-
-  if(DEFINED SUB_SUB_BINARY)
-    set(args ${SUB_SUB_BINARY})
-  else()
-    set(args "")
-  endif()
+  cmake_parse_arguments(SUB "EXCLUDE_FROM_ALL" "" "" ${ARGN})
 
   if(SUB_EXCLUDE_FROM_ALL)
     set(args ${args} EXCLUDE_FROM_ALL)
@@ -459,7 +454,7 @@ macro(core_require_package name)
       AND (NOT PKG_SUBDIR_ONLY)
     AND EXT_PACKAGE_LOCAL_FIRST
     AND(NOT PKG_DOWNLOAD_ONLY))
-    ep_find_package(${name} ${find_package_args} NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
+    ep_find_package(${name} ${find_package_args})
   else()
     set(PKG_FOUND OFF)
   endif()
@@ -470,14 +465,14 @@ macro(core_require_package name)
     endif()
 
     if(NOT PKG_DEFER)
-      if(PKG_DOWNLOAD_ONLY)
-        fetch_package(${name} ${EP_CONFIG_DIR})
-      elseif(PKG_IMPORT_AS_SUBDIR OR PKG_SUBDIR_ONLY OR EXT_PACKAGE_IMPORT_AS_SUBDIR)
+      if(PKG_IMPORT_AS_SUBDIR OR PKG_SUBDIR_ONLY OR EXT_PACKAGE_IMPORT_AS_SUBDIR)
         DEBUG_MSG("import as subdir: ${name}")
         fetch_package(${name} ${EP_CONFIG_DIR})
         ASSERT_DEFINED(EP_SOURCE_DIR)
         ASSERT_PATH_EXISTS(${EP_SOURCE_DIR})
-        ep_add_subdirectory(${EP_SOURCE_DIR} ${subdir_args} CMAKE_ARGS ${PKG_CMAKE_ARGS})
+        ep_add_subdirectory(${EP_SOURCE_DIR} ${EXT_PACKAGE_BUILD_BASE_DIR}/${name} ${subdir_args} CMAKE_ARGS ${PKG_CMAKE_ARGS})
+      elseif(PKG_DOWNLOAD_ONLY)
+        fetch_package(${name} ${EP_CONFIG_DIR})
       else()
         DEBUG_MSG("build_and_install ${name}")
         install_package(${name} ${EP_CONFIG_DIR})
