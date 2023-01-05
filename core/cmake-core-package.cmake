@@ -450,6 +450,7 @@ macro(core_require_package name)
   install_package(${name} ${EP_CONFIG_DIR} DEFER)
   set(${name}_ROOT ${EP_INSTALL_DIR})
   set(${name}_SOURCE_DIR ${EP_SOURCE_DIR})
+  set(${name}_CONFIG_DIR ${EP_CONFIG_DIR})
 
   if((NOT PKG_LOCAL_FIRST_OFF)
       AND (NOT PKG_SUBDIR_ONLY)
