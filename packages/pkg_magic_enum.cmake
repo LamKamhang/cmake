@@ -7,8 +7,8 @@ endif()
 
 message(STATUS "[package/magic_enum]: magic_enum::magic_enum")
 
-set(MAGIC_ENUM_VERSION 0.8.2 CACHE STRING "magic_enum customized version")
+set(magic_enum_VERSION 0.8.2 CACHE STRING "magic_enum customized version")
 
-require_package(magic_enum "gh:Neargye/magic_enum.git#v${MAGIC_ENUM_VERSION}"
+require_package(magic_enum "gh:Neargye/magic_enum.git#v${magic_enum_VERSION}"
   CMAKE_ARGS "-DMAGIC_ENUM_OPT_BUILD_EXAMPLES=OFF"
   CMAKE_ARGS "-DMAGIC_ENUM_OPT_BUILD_TESTS=OFF")

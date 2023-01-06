@@ -7,7 +7,7 @@ endif()
 
 message(STATUS "[package/nlohmann_json]: nlohmann_json::nlohmann_json")
 
-set(NLOHMANN_JSON_VERSION 3.11.2 CACHE STRING "nlohmann_json customized version")
+set(nlohmann_json_VERSION 3.11.2 CACHE STRING "nlohmann_json customized version")
 
-require_package(nlohmann_json "gh:nlohmann/json#v${NLOHMANN_JSON_VERSION}"
+require_package(nlohmann_json "gh:nlohmann/json#v${nlohmann_json_VERSION}"
   CMAKE_ARGS "-DJSON_BuildTests=OFF")

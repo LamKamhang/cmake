@@ -7,25 +7,26 @@ endif()
 
 message(STATUS "[package/imgui]")
 
-option(IMGUI_ENABLE_STDLIB   "Enable InputText() wrappers for STL type: std::string." ON)
-option(IMGUI_ENABLE_FREETYPE "Build font atlases using FreeType instead of stb_truetype" OFF)
-option(IMGUI_USE_DOCKING     "Enable Docking Feature" ON)
-set(IMGUI_VERSION 1.89.1 CACHE STRING "imgui customized version, if `DOCKING` is disable.")
+option(imgui_ENABLE_STDLIB   "Enable InputText() wrappers for STL type: std::string." ON)
+option(imgui_ENABLE_FREETYPE "Build font atlases using FreeType instead of stb_truetype" OFF)
+option(imgui_USE_DOCKING     "Enable Docking Feature" ON)
+set(imgui_VERSION 1.89.1 CACHE STRING "imgui customized version, if `DOCKING` is disable.")
 
-if (IMGUI_USE_DOCKING)
+if (imgui_USE_DOCKING)
+  message(STATUS "Imgui use docking feature.")
   require_package(imgui "gh:ocornut/imgui#c191faf0" DOWNLOAD_ONLY OFF_GIT_SHALLOW)
 else()
-  require_package(imgui "gh:ocornut/imgui#v${IMGUI_VERSION}" DOWNLOAD_ONLY)
+  require_package(imgui "gh:ocornut/imgui#v${imgui_VERSION}" DOWNLOAD_ONLY)
 endif()
 
 file(GLOB imgui_root_srcs ${imgui_SOURCE_DIR}/*.h ${imgui_SOURCE_DIR}/*.cpp)
-if (IMGUI_ENABLE_STDLIB)
+if (imgui_ENABLE_STDLIB)
   set(imgui_misc_srcs
     ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
     ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.h)
 endif()
 
-if (IMGUI_ENABLE_FREETYPE)
+if (imgui_ENABLE_FREETYPE)
   set(imgui_misc_srcs
     ${imgui_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp
     ${imgui_SOURCE_DIR}/misc/freetype/imgui_freetype.h)

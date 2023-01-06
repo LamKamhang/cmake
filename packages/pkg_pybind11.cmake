@@ -7,7 +7,7 @@ endif()
 
 message(STATUS "[package/pybind11]: pybind11::module")
 
-set(PYBIND11_VERSION 2.10.1 CACHE STRING "pybind11 customized version")
+set(pybind11_VERSION 2.10.1 CACHE STRING "pybind11 customized version")
 
-require_package(pybind11 "gh:pybind/pybind11#v${PYBIND11_VERSION}"
+require_package(pybind11 "gh:pybind/pybind11#v${pybind11_VERSION}"
   CMAKE_ARGS "-DPYBIND11_TEST=OFF")

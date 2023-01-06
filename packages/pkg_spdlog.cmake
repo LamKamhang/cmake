@@ -7,7 +7,7 @@ endif()
 
 message(STATUS "[package/spdlog]: spdlog::spdlog")
 
-set(SPDLOG_VERSION 1.10.0 CACHE STRING "spdlog customized version.")
+set(spdlog_VERSION 1.10.0 CACHE STRING "spdlog customized version.")
 
-require_package(spdlog "gh:gabime/spdlog#v${SPDLOG_VERSION}"
+require_package(spdlog "gh:gabime/spdlog#v${spdlog_VERSION}"
   CMAKE_ARGS "-DSPDLOG_BUILD_EXAMPLE=OFF")
