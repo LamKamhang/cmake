@@ -106,36 +106,17 @@ function(ep_add_subdirectory SOURCE_DIR BINARY_DIR)
 
   DEBUG_MSG("subdir_args: ${subdir_args}")
 
-  foreach(option ${ARGS_CMAKE_ARGS})
-    if(${option} MATCHES "^-D([^ ]*)=([^ ]*)$")
-      DEBUG_MSG("KEY: ${CMAKE_MATCH_1}, VALUE: ${CMAKE_MATCH_2}")
-      set(${CMAKE_MATCH_1} ${CMAKE_MATCH_2})
+  foreach(arg ${ARGS_CMAKE_ARGS})
+    if(${arg} MATCHES "^-D([^ ]+)(:[^ ]+)?=([^ ]+)$")
+      DEBUG_MSG("Key: ${CMAKE_MATCH_1}, Value: ${CMAKE_MATCH_3}, Type: ${CMAKE_MATCH_2}")
+      set(${CMAKE_MATCH_1} ${CMAKE_MATCH_3})
     else()
-      DEBUG_MSG("UNKNOWN CMAKE_ARGS: ${option}")
+      ERROR_MSG("Unknown cmake_arg: ${arg}, should be specified as: -D<var>[:<type>]=<value>")
     endif()
   endforeach()
 
   add_subdirectory(${subdir_args})
 endfunction()
-
-macro(get_ep_config_dir out name args PREFIX)
-  ASSERT_EQUAL(${ARGC} 4)
-  string(SHA1 hash_args "${args}")
-  string(SUBSTRING "${hash_args}" 0 8 hash_args)
-  set(${out} ${PREFIX}/.cache/.ep_config/${name}-${hash_args})
-endmacro()
-
-macro(get_ep_install_dir out name args BUILD_TYPE PREFIX)
-  ASSERT_EQUAL(${ARGC} 5)
-  string(SHA1 hash_args "${args}")
-  string(SUBSTRING "${hash_args}" 0 8 hash_args)
-  set(${out} ${PREFIX}/install/${BUILD_TYPE}/${name}-${hash_args})
-endmacro()
-
-macro(get_ep_source_dir out name PREFIX)
-  ASSERT_EQUAL(${ARGC} 3)
-  set(${out} ${PREFIX}/${name})
-endmacro()
 
 function(check_cmake_args args)
   ASSERT_EQUAL(${ARGC} 1)
@@ -158,7 +139,8 @@ function(ep_configure_package name)
   DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}.ARGN: ${ARGN}")
 
   set(options BUILD_STATIC OFF_GIT_SHALLOW
-    DOWNLOAD_ONLY
+    DOWNLOAD_ONLY DRY_RUN
+    # write them to ${name}_SOURCE_DIR, ${name}_INSTALL_DIR, ${name}_CONFIG_DIR
     OUT_SOURCE_DIR OUT_INSTALL_DIR OUT_CONFIG_DIR)
   set(oneValueArgs PREFIX BUILD_TYPE
     GIT_SHALLOW
@@ -201,13 +183,16 @@ function(ep_configure_package name)
   endif()
 
   # TODO. set config dir.
-  get_ep_config_dir(EP_CONFIG_DIR ${name} "${EP_CMAKE_ARGS}" ${EP_PREFIX})
+  string(SHA1 hash_args "${EP_CMAKE_ARGS}")
+  string(SUBSTRING "${hash_args}" 0 8 hash_args)
+  set(EP_CONFIG_DIR ${EP_PREFIX}/.cache/.ep_config/${name}-${hash_args})
+
   set(EP_TMP_DIR ${EP_CONFIG_DIR}/tmp)
   set(EP_STAMP_DIR ${EP_CONFIG_DIR}/stamp)
   set(EP_LOG_DIR ${EP_CONFIG_DIR}/log)
 
   if((NOT DEFINED EP_DOWNLOAD_DIR) AND(NOT DEFINED EP_SOURCE_DIR))
-    get_ep_source_dir(EP_SOURCE_DIR ${name} ${EP_PREFIX})
+    set(EP_SOURCE_DIR ${EP_PREFIX}/${name})
   elseif(NOT DEFINED EP_SOURCE_DIR)
     set(EP_SOURCE_DIR ${EP_DOWNLOAD_DIR})
   endif()
@@ -215,56 +200,59 @@ function(ep_configure_package name)
   set(EP_BINARY_DIR ${EP_CONFIG_DIR}/build-${EP_BUILD_TYPE})
 
   if(NOT DEFINED EP_INSTALL_DIR)
-    get_ep_install_dir(EP_INSTALL_DIR ${name} "${EP_CMAKE_ARGS}" ${EP_BUILD_TYPE} ${EP_PREFIX})
+    set(EP_INSTALL_DIR ${EP_PREFIX}/install/${EP_BUILD_TYPE}/${name}-${hash_args})
   endif()
 
-  set(EP_STEP_TARGETS update patch build install)
-  set(EP_ARGS ${EP_UNPARSED_ARGUMENTS} CMAKE_ARGS ${EP_CMAKE_ARGS})
+  # dry run. only register config/source/install path.
+  if (NOT EP_DRY_RUN)
+    set(EP_STEP_TARGETS update patch build install)
+    set(EP_ARGS ${EP_UNPARSED_ARGUMENTS} CMAKE_ARGS ${EP_CMAKE_ARGS})
 
-  if(EP_DOWNLOAD_ONLY OR EXT_PACKAGE_DOWNLOAD_ONLY)
-    list(PREPEND EP_ARGS
-      CONFIGURE_COMMAND ${DO_NOTHING_CMD}
-      BUILD_COMMAND ${DO_NOTHING_CMD}
-      TEST_COMMAND ${DO_NOTHING_CMD}
-      INSTALL_COMMAND ${DO_NOTHING_CMD})
-  endif()
+    if(EP_DOWNLOAD_ONLY OR EXT_PACKAGE_DOWNLOAD_ONLY)
+      list(PREPEND EP_ARGS
+        CONFIGURE_COMMAND ${DO_NOTHING_CMD}
+        BUILD_COMMAND ${DO_NOTHING_CMD}
+        TEST_COMMAND ${DO_NOTHING_CMD}
+        INSTALL_COMMAND ${DO_NOTHING_CMD})
+    endif()
 
-  # apply git patch.
-  if(DEFINED EP_GIT_PATCH)
-    ASSERT_FILE_EXISTS(${EP_GIT_PATCH})
-    find_package(Git REQUIRED)
-    ASSERT_DEFINED(GIT_EXECUTABLE)
-    list(PREPEND EP_ARGS
-      PATCH_COMMAND "${GIT_EXECUTABLE} restore . && ${GIT_EXECUTABLE} apply ${EP_GIT_PATCH}")
-  endif()
+    # apply git patch.
+    if(DEFINED EP_GIT_PATCH)
+      ASSERT_FILE_EXISTS(${EP_GIT_PATCH})
+      find_package(Git REQUIRED)
+      ASSERT_DEFINED(GIT_EXECUTABLE)
+      list(PREPEND EP_ARGS
+        PATCH_COMMAND "${GIT_EXECUTABLE} restore . && ${GIT_EXECUTABLE} apply ${EP_GIT_PATCH}")
+    endif()
 
-  if(NOT EP_BUILD_STATIC)
-    # https://cmake.org/cmake/help/latest/prop_tgt/POSITION_INDEPENDENT_CODE.html
-    # flags **-fPIC** will be automatically set.
-    list(APPEND EP_ARGS CMAKE_ARGS "-DBUILD_SHARED_LIBS=ON")
-  endif()
+    if(NOT EP_BUILD_STATIC)
+      # https://cmake.org/cmake/help/latest/prop_tgt/POSITION_INDEPENDENT_CODE.html
+      # flags **-fPIC** will be automatically set.
+      list(APPEND EP_ARGS CMAKE_ARGS "-DBUILD_SHARED_LIBS=ON")
+    endif()
 
-  # configure the extproj.
-  configure_file(${_CORE_PACKAGE_BASE_DIR}/extproj.cmake.in ${EP_CONFIG_DIR}/CMakeLists.txt @ONLY)
+    # configure the extproj.
+    configure_file(${_CORE_PACKAGE_BASE_DIR}/extproj.cmake.in ${EP_CONFIG_DIR}/CMakeLists.txt @ONLY)
 
-  execute_process(
-    COMMAND ${CMAKE_COMMAND}
-    -G ${CMAKE_GENERATOR}
-    -S ${EP_CONFIG_DIR}
-    -B ${EP_TMP_DIR}/build
-    RESULT_VARIABLE result
-    OUTPUT_QUIET
-    WORKING_DIRECTORY ${EP_CONFIG_DIR}
-  )
+    execute_process(
+      COMMAND ${CMAKE_COMMAND}
+      -G ${CMAKE_GENERATOR}
+      -S ${EP_CONFIG_DIR}
+      -B ${EP_TMP_DIR}/build
+      RESULT_VARIABLE result
+      OUTPUT_QUIET
+      WORKING_DIRECTORY ${EP_CONFIG_DIR}
+      )
 
-  if(result)
-    ERROR_MSG("Configure ExternalProject(${EP_NAME}) Failed: ${result}")
+    if(result)
+      ERROR_MSG("Configure ExternalProject(${EP_NAME}) Failed: ${result}")
+    endif()
   endif()
 
   # TODO. maybe it is better to register these in some list.
   foreach(DIR SOURCE INSTALL CONFIG)
     if(EP_OUT_${DIR}_DIR)
-      set(EP_${DIR}_DIR ${EP_${DIR}_DIR} PARENT_SCOPE)
+      set(${name}_${DIR}_DIR ${EP_${DIR}_DIR} PARENT_SCOPE)
     endif()
   endforeach()
 endfunction()
@@ -311,9 +299,7 @@ function(fetch_package name config_dir)
   ep_fetch_command(cmd ${name} ${config_dir})
 
   if(${ARGC} EQUAL 2)
-    run_command(
-      "${cmd}"
-      ${config_dir})
+    run_command("${cmd}" ${config_dir})
   endif()
 
   if(NOT TARGET fetch_${name})
@@ -325,9 +311,7 @@ function(build_package name config_dir)
   ep_build_command(cmd ${name} ${config_dir})
 
   if(${ARGC} EQUAL 2)
-    run_command(
-      "${cmd}"
-      ${config_dir})
+    run_command("${cmd}" ${config_dir})
   endif()
 
   if(NOT TARGET build_${name})
@@ -339,9 +323,7 @@ function(install_package name config_dir)
   ep_install_command(cmd ${name} ${config_dir})
 
   if(${ARGC} EQUAL 2)
-    run_command(
-      "${cmd}"
-      ${config_dir})
+    run_command("${cmd}" ${config_dir})
   endif()
 
   if(NOT TARGET install_${name})
@@ -351,7 +333,6 @@ endfunction()
 
 function(extract_find_package_arguments out rest)
   set(options
-
     # REQUIRED ignore required.
     EXACT QUIET GLOBAL CONFIG NO_MODULE
     NO_POLICY_SCOPE BYPASS_PROVIDER
@@ -413,7 +394,7 @@ endfunction()
 macro(core_require_package name)
   set(args ${ARGN})
   set(options LOCAL_FIRST_OFF REQUIRED NOT_REQUIRED DEFER
-    IMPORT_AS_SUBDIR SUBDIR_ONLY GEN_PKG_TARGETS)
+    IMPORT_AS_SUBDIR SUBDIR_ONLY)
   set(oneValueArgs)
   set(multiValueArgs CMAKE_ARGS)
   cmake_parse_arguments(PKG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${args})
@@ -443,20 +424,14 @@ macro(core_require_package name)
   cmake_parse_arguments(PKG "DOWNLOAD_ONLY" "" "" ${configure_package_args})
   DEBUG_MSG("DOWNLOAD_ONLY: ${PKG_DOWNLOAD_ONLY}")
 
-  # configure package
-  # TODO. Not necessary to configure everytime!
-  if (PKG_GEN_PKG_TARGETS)
-    ep_configure_package(${name} ${configure_package_args} OUT_CONFIG_DIR OUT_SOURCE_DIR OUT_INSTALL_DIR)
-    fetch_package(${name} ${EP_CONFIG_DIR} DEFER)
-    install_package(${name} ${EP_CONFIG_DIR} DEFER)
-    set(${name}_SOURCE_DIR ${EP_SOURCE_DIR})
-    set(${name}_CONFIG_DIR ${EP_CONFIG_DIR})
-  endif()
+  # register some find_path.
+  ep_configure_package(${name} ${configure_package_args} OUT_INSTALL_DIR OUT_SOURCE_DIR DRY_RUN)
 
   if((NOT PKG_LOCAL_FIRST_OFF)
       AND (NOT PKG_SUBDIR_ONLY)
     AND EXT_PACKAGE_LOCAL_FIRST
     AND(NOT PKG_DOWNLOAD_ONLY))
+    set(${name}_ROOT ${${name}_INSTALL_DIR})
     ep_find_package(${name} ${find_package_args} QUIET)
   else()
     set(PKG_FOUND OFF)
@@ -467,40 +442,34 @@ macro(core_require_package name)
       list(APPEND find_package_args REQUIRED)
     endif()
 
-    # TODO. Not necessary to configure everytime!
-    if (NOT PKG_GEN_PKG_TARGETS)
-      ep_configure_package(${name} ${configure_package_args} OUT_CONFIG_DIR OUT_SOURCE_DIR OUT_INSTALL_DIR)
-      fetch_package(${name} ${EP_CONFIG_DIR} DEFER)
-      install_package(${name} ${EP_CONFIG_DIR} DEFER)
-      set(${name}_SOURCE_DIR ${EP_SOURCE_DIR})
-      set(${name}_CONFIG_DIR ${EP_CONFIG_DIR})
-    endif()
-
     if(NOT PKG_DEFER)
       if(PKG_IMPORT_AS_SUBDIR OR PKG_SUBDIR_ONLY OR EXT_PACKAGE_IMPORT_AS_SUBDIR)
         DEBUG_MSG("import as subdir: ${name}")
         # not fetch everytime.
-        if (NOT EXISTS ${EP_SOURCE_DIR}/CMakeLists.txt)
-          fetch_package(${name} ${EP_CONFIG_DIR})
+        if (NOT EXISTS ${${name}_SOURCE_DIR}/CMakeLists.txt)
+          ep_configure_package(${name} ${configure_package_args} OUT_CONFIG_DIR)
+          fetch_package(${name} ${${name}_CONFIG_DIR})
         endif()
-        ASSERT_DEFINED(EP_SOURCE_DIR)
-        ASSERT_PATH_EXISTS(${EP_SOURCE_DIR})
-        ep_add_subdirectory(${EP_SOURCE_DIR} ${EXT_PACKAGE_BUILD_BASE_DIR}/${name} ${subdir_args} CMAKE_ARGS ${PKG_CMAKE_ARGS})
+        ASSERT_DEFINED(${name}_SOURCE_DIR)
+        ASSERT_PATH_EXISTS(${${name}_SOURCE_DIR})
+        ep_add_subdirectory(${${name}_SOURCE_DIR} ${EXT_PACKAGE_BUILD_BASE_DIR}/${name} ${subdir_args} CMAKE_ARGS ${PKG_CMAKE_ARGS})
       elseif(PKG_DOWNLOAD_ONLY)
         # not fetch everytime.
-        file(GLOB __srcs ${EP_SOURCE_DIR}/*)
+        file(GLOB __srcs ${${name}_SOURCE_DIR}/*)
         list(LENGTH __srcs __num)
         if (__num EQUAL 0)
-          fetch_package(${name} ${EP_CONFIG_DIR})
+          ep_configure_package(${name} ${configure_package_args} OUT_CONFIG_DIR)
+          fetch_package(${name} ${${name}_CONFIG_DIR})
         endif()
         unset(__srcs)
         unset(__num)
       else()
         DEBUG_MSG("build_and_install ${name}")
-        install_package(${name} ${EP_CONFIG_DIR})
-        ASSERT_DEFINED(EP_INSTALL_DIR)
-        ASSERT_PATH_EXISTS(${EP_INSTALL_DIR})
-        set(${name}_ROOT ${EP_INSTALL_DIR})
+        ep_configure_package(${name} ${configure_package_args} OUT_CONFIG_DIR)
+        install_package(${name} ${${name}_CONFIG_DIR})
+        ASSERT_DEFINED(${name}_INSTALL_DIR)
+        ASSERT_PATH_EXISTS(${${name}_INSTALL_DIR})
+        set(${name}_ROOT ${${name}_INSTALL_DIR})
         ep_find_package(${name} ${find_package_args})
       endif()
     endif()
@@ -513,9 +482,6 @@ macro(core_require_package name)
   unset(find_package_args)
   unset(subdir_args)
   unset(configure_package_args)
-  unset(EP_SOURCE_DIR)
-  unset(EP_BINARY_DIR)
-  unset(EP_INSTALL_DIR)
 endmacro()
 
 function(is_version out v)
