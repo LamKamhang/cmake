@@ -179,7 +179,7 @@ function(ep_configure_package name)
 
   if(EXISTS ${EP_PREFIX})
     ASSERT_PATH_EXISTS(${EP_PREFIX})
-    get_filename_component(EP_PREFIX ${EP_PREFIX} ABSOLUTE)
+    get_filename_component(EP_PREFIX ${EP_PREFIX} REALPATH)
   endif()
 
   # TODO. set config dir.
