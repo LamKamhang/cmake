@@ -18,7 +18,9 @@ option(EXT_PACKAGE_LOCAL_ONLY "use find_package only." OFF)
 option(EXT_PACKAGE_LOCAL_FIRST "use find_package first." ON)
 option(EXT_PACKAGE_DOWNLOAD_ONLY "download extPackage only." OFF)
 option(EXT_PACKAGE_REGISTER_SEARCH_PATH "Add extPackage Path to CMAKE_MODULE/PREFIX_PATH" ON)
-
+# #######################################################################
+# set policy
+cmake_policy(SET CMP0074 NEW)
 # #######################################################################
 # variable/options check.
 # #######################################################################

@@ -3,14 +3,14 @@ if (NOT TARGET Ipopt)
     NAMES coin-or/IpNLP.hpp
     PATHS
     /usr/include/
-    ${PROJECT_SOURCE_DIR}/3rd/include/
+    ${Ipopt_INSTALL_DIR}/include
     ${IPOPT_DIR}
     )
 
   find_library(IPOPT_LIBRARIES
     NAMES ipopt
     PATHS
-    ${PROJECT_SOURCE_DIR}/3rd/lib
+    ${Ipopt_INSTALL_DIR}/lib
     )
   if (${IPOPT_LIBRARIES} MATCHES "NOTFOUND")
     message("\n*NOT* using IPOPT.\n")
