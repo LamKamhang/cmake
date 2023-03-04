@@ -174,7 +174,7 @@ function(require_package pkg uri)
   endif()
 
   CPMAddPackage(
-#    EXCLUDE_FROM_ALL YES
+    EXCLUDE_FROM_ALL YES
     NAME ${pkg}
     ${extra_args}
     ${PKG_UNPARSED_ARGUMENTS}
