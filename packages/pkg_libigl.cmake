@@ -9,4 +9,4 @@ message(STATUS "[package/libigl]: igl::core")
 
 set(libigl_VERSION 2.4.0 CACHE STRING "libigl customized version.")
 
-require_package(libigl "gh:libigl/libigl#v${libigl_VERSION}" SUBDIR_ONLY DOWNLOAD_ONLY)
+require_package(libigl "gh:libigl/libigl#v${libigl_VERSION}")

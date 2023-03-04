@@ -174,10 +174,36 @@ function(require_package pkg uri)
   endif()
 
   CPMAddPackage(
-    EXCLUDE_FROM_ALL YES
+#    EXCLUDE_FROM_ALL YES
     NAME ${pkg}
     ${extra_args}
     ${PKG_UNPARSED_ARGUMENTS}
     OPTIONS ${CPM_OPTIONS}
   )
 endfunction()
+
+# for register packages.
+macro(declare_pkg_deps)
+  foreach(dep ${ARGV})
+    # split dep into name[@version]
+    if (${dep} MATCHES "^([^@ ]+)(@[^@ ]*)?$")
+      if (CMAKE_MATCH_2)
+        if (NOT ${CMAKE_MATCH_2} STREQUAL "@default")
+          string(SUBSTRING ${CMAKE_MATCH_2} 1 -1 ${CMAKE_MATCH_1}_VERSION)
+          message(DEBUG "${CMAKE_MATCH_1} use ${${CMAKE_MATCH_1}_VERSION}")
+        else()
+          message(DEBUG "${CMAKE_MATCH_1} use default")
+        endif()
+      endif()
+      include(pkg_${CMAKE_MATCH_1})
+    else()
+      ERROR_MSG("Unvalid dep Format(^([^@ ]+)(@[^@ ]*)?$): ${dep}")
+    endif()
+  endforeach()
+endmacro()
+
+# ignore NO_MODULE/CONFIG
+macro(find_package PKG)
+  cmake_parse_arguments(_ "NO_MODULE;CONFIG" "" "" "${ARGN}")
+  _find_package(${PKG} MODULE ${ARG_UNPARSED_ARGUMENTS})
+endmacro()

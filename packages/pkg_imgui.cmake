@@ -14,9 +14,9 @@ set(imgui_VERSION 1.89.1 CACHE STRING "imgui customized version, if `DOCKING` is
 
 if (imgui_USE_DOCKING)
   message(STATUS "Imgui use docking feature.")
-  require_package(imgui "gh:ocornut/imgui#c191faf0" DOWNLOAD_ONLY OFF_GIT_SHALLOW)
+  require_package(imgui "gh:ocornut/imgui#c191faf0" DOWNLOAD_ONLY YES)
 else()
-  require_package(imgui "gh:ocornut/imgui#v${imgui_VERSION}" DOWNLOAD_ONLY)
+  require_package(imgui "gh:ocornut/imgui#v${imgui_VERSION}" DOWNLOAD_ONLY YES)
 endif()
 
 file(GLOB imgui_root_srcs ${imgui_SOURCE_DIR}/*.h ${imgui_SOURCE_DIR}/*.cpp)
