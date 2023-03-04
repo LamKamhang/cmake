@@ -17,7 +17,9 @@ endmacro()
 
 # register modules
 use_cmake_core_module(fs)
-use_cmake_core_module(package)
+# deprecated package-module and use CPM.cmake instead.
+#use_cmake_core_module(package)
+use_cmake_core_module(package-cpm)
 use_cmake_core_module(target-helper)
 
 # register paths
