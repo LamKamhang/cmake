@@ -8,7 +8,7 @@ endif()
 message(STATUS "[package/Catch2]: Catch2::Catch2")
 
 option(catch2_USE_CPP17_STRING_VIEW "Catch2 use cpp17 string_view" ON)
-#option(catch2_USE_CATCH_DISCOVER_TESTS "Catch2 enable catch_discover_tests for ctest" ON)
+option(catch2_USE_CATCH_DISCOVER_TESTS "Catch2 enable catch_discover_tests for ctest" ON)
 set(catch2_VERSION 3.2.1 CACHE STRING "Catch2 customized version")
 
 if(catch2_USE_CPP17_STRING_VIEW)
@@ -23,7 +23,9 @@ else()
     CMAKE_ARGS "-DCATCH_INSTALL_DOCS=OFF")
 endif()
 
-# # for catch_discover_tests
-# if (catch2_USE_CATCH_DISCOVER_TESTS)
-#   include(Catch)
-# endif()
+# for catch_discover_tests
+if (catch2_USE_CATCH_DISCOVER_TESTS)
+  list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
+  include(CTest)
+  include(Catch)
+endif()

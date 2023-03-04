@@ -141,7 +141,7 @@ function(infer_args_from_uri out_args uri)
   set(${out_args} ${out} PARENT_SCOPE)
 endfunction()
 
-function(require_package pkg uri)
+macro(require_package pkg uri)
   DEBUG_MSG("uri: ${uri}")
   DEBUG_MSG("args: ${ARGN}")
   # extract uri from args.
@@ -149,7 +149,7 @@ function(require_package pkg uri)
   DEBUG_MSG("extra_args: ${extra_args}")
 
   # parse CMAKE_ARGS/GIT_PATCH
-  cmake_parse_arguments(PKG "" "GIT_PATCH" "CMAKE_ARGS" ${ARGN})
+  cmake_parse_arguments(PKG "" "GIT_PATCH" "CMAKE_ARGS" "${ARGN}")
 
   set(CPM_OPTIONS "")
   foreach(arg ${PKG_CMAKE_ARGS})
@@ -180,7 +180,7 @@ function(require_package pkg uri)
     ${PKG_UNPARSED_ARGUMENTS}
     OPTIONS ${CPM_OPTIONS}
   )
-endfunction()
+endmacro()
 
 # for register packages.
 macro(declare_pkg_deps)
