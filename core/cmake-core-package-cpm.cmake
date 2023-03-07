@@ -204,6 +204,6 @@ endmacro()
 
 # ignore NO_MODULE/CONFIG
 macro(find_package PKG)
-  cmake_parse_arguments(_ "NO_MODULE;CONFIG" "" "" "${ARGN}")
+  cmake_parse_arguments(ARG "NO_MODULE;CONFIG" "" "" "${ARGN}")
   _find_package(${PKG} MODULE ${ARG_UNPARSED_ARGUMENTS})
 endmacro()
