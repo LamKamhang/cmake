@@ -13,10 +13,10 @@ set(catch2_VERSION 3.2.1 CACHE STRING "Catch2 customized version")
 
 if(catch2_USE_CPP17_STRING_VIEW)
   require_package(Catch2 "gh:catchorg/Catch2#v${catch2_VERSION}"
-    GIT_PATCH "${CMAKE_UTILITY_PATCH_DIR}/catch2.std17.patch"
     CMAKE_ARGS "-DCATCH_BUILD_TESTING=OFF"
     CMAKE_ARGS "-DCATCH_INSTALL_DOCS=OFF"
     CMAKE_ARGS "-DCATCH_CONFIG_CPP17_STRING_VIEW=ON")
+  target_compile_features(Catch2 PUBLIC cxx_std_17)
 else()
   require_package(Catch2 "gh:catchorg/Catch2#v${catch2_VERSION}"
     CMAKE_ARGS "-DCATCH_BUILD_TESTING=OFF"
