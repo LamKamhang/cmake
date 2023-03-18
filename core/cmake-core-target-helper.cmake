@@ -7,12 +7,13 @@ include_guard()
 # [LINK_DIRS    <link_dirs>]
 # [DEFS         <defs>]
 # [FEATS        <features>]
+# [ALIAS        alias]
 # )
 # If SRC is not specfied, ${target_name}.cc/cpp is used as the default source.
 function(add_unit name)
   # cmake_parse_arguments(<prefix> <options> <one_value_keywords> <multi_value_keywords> args...)
   set(options isLIB INTERFACE)
-  set(oneValueArgs "SCOPE")
+  set(oneValueArgs "SCOPE;ALIAS")
   set(multiValueArgs "GLOB_SRCS;SRCS;LIBS;INCLUDE_DIRS;LINK_DIRS;DEFS;FEATS;OPTIONS")
   cmake_parse_arguments(
     arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
@@ -74,5 +75,9 @@ function(add_unit name)
 
   if(DEFINED arg_OPTIONS)
     target_compile_options(${name} ${scope} ${arg_OPTIONS})
+  endif()
+
+  if (DEFINED arg_ALIAS)
+    add_library(${arg_ALIAS} ALIAS ${name})
   endif()
 endfunction()
