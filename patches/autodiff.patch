@@ -1,0 +1,13 @@
+diff --git a/autodiff/forward/dual/eigen.hpp b/autodiff/forward/dual/eigen.hpp
+index a706600..2473f58 100644
+--- a/autodiff/forward/dual/eigen.hpp
++++ b/autodiff/forward/dual/eigen.hpp
+@@ -49,7 +49,7 @@ template<typename T>
+ struct NumTraits;
+ 
+ template<typename T, typename G>
+-struct NumTraits<autodiff::Dual<T, G>> : NumTraits<double> // permits to get the epsilon, dummy_precision, lowest, highest functions
++struct NumTraits<autodiff::Dual<T, G>> : NumTraits<T> // permits to get the epsilon, dummy_precision, lowest, highest functions
+ {
+     typedef autodiff::Dual<T, G> Real;
+     typedef autodiff::Dual<T, G> NonInteger;
