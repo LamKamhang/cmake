@@ -10,10 +10,12 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/CPM.cmake)
 
 function(is_version out v)
-  # major[.minor[.patch[.tweak]]]
-  string(REGEX MATCH "^[0-9]+(.[0-9]+)?(.[0-9]+)?(.[0-9]+)?$" _ ${v})
+  message(DEBUG "check whether |${v}| is version")
 
-  if(_)
+  # major[.minor[.patch[.tweak]]]
+  string(REGEX MATCH "^[0-9]+(.[0-9]+)?(.[0-9]+)?(.[0-9]+)?$" res ${v})
+
+  if(res)
     set(${out} YES PARENT_SCOPE)
   else()
     set(${out} NO PARENT_SCOPE)
@@ -21,13 +23,14 @@ function(is_version out v)
 endfunction()
 
 function(infer_version_from_tag out tag)
-  DEBUG_MSG("Test.Case: ${tag}")
+  message(DEBUG "infer_version_from ${tag}")
 
+  # extract version pattern from tag.
   if(${tag} MATCHES "^[^0-9]*([0-9]+[0-9.]*)([^0-9]+.*)*$")
     is_version(_ ${CMAKE_MATCH_1})
 
     if(_)
-      DEBUG_MSG("infer.version: ${CMAKE_MATCH_1}")
+      message(DEBUG "infer_version_from_tag get: ${CMAKE_MATCH_1}")
       set(${out} ${CMAKE_MATCH_1} PARENT_SCOPE)
     else()
       unset(${out} PARENT_SCOPE)
@@ -37,42 +40,34 @@ function(infer_version_from_tag out tag)
   endif()
 endfunction()
 
+# uri must be: scheme:path[#tag][@version]
 function(infer_args_from_uri out_args uri)
-  cmake_parse_arguments("" "NO_VERSION" "" "" ${ARGN})
-  DEBUG_MSG("-----Current.uri: ${uri}")
-
-  # split uri to url#tagversion
-  if(${uri} MATCHES "^([^# ]+)(#[^# ]*)?$")
-    set(url ${CMAKE_MATCH_1})
-
-    if(CMAKE_MATCH_2)
-      string(SUBSTRING ${CMAKE_MATCH_2} 1 -1 tagversion)
-    endif()
+  message(DEBUG "infer_args_from_uri: input is |${uri}|")
+  # Step0. check uri.
+  if (${uri} MATCHES " ")
+    message(FATAL_ERROR "uri |${uri}| cannot has SPACE")
+  elseif(${uri} MATCHES "#[^#]*#")
+    message(FATAL_ERROR "uri |${uri}| cannot has more than 1 '#'")
   else()
-    ERROR_MSG("Unvalid URI Format(^[^# ]+(#[^# ]*)?$): ${uri}")
+    string(REGEX REPLACE "@$" "" uri ${uri})
+    string(REGEX REPLACE "#$" "" uri ${uri})
   endif()
 
-  # split tagversion: tag@version
-  if(tagversion)
-    if(tagversion MATCHES "^([^@]*)(@[0-9.]*)?$")
-      set(tag ${CMAKE_MATCH_1})
-
-      # infer version.
-      if(NOT _NO_VERSION)
-        if(CMAKE_MATCH_2)
-          string(SUBSTRING ${CMAKE_MATCH_2} 1 -1 version)
-        else()
-          infer_version_from_tag(version ${tag})
-        endif()
-      endif()
-    else()
-      ERROR_MSG("Unvalid TagVersion Format([^@]*@[0-9.]*): ${tagversion}")
+  # Step1. pick tailing version.
+  if (${uri} MATCHES "@([0-9.]+)$")
+    set(version ${CMAKE_MATCH_1})
+    string(REGEX REPLACE "@([0-9.]+)$" "" uri ${uri})
+  endif()
+  # Step2. pick tailing tag.
+  if (${uri} MATCHES "#(.*)$")
+    set(tag ${CMAKE_MATCH_1})
+    if (NOT ${version} STREQUAL "")
+      infer_version_from_tag(version ${tag})
     endif()
+    string(REGEX REPLACE "#(.*)$" "" url ${uri})
   endif()
-
-  DEBUG_MSG("tag: ${tag}")
-  DEBUG_MSG("version: ${version}")
-
+  message(DEBUG "tag is: ${tag}, version is: ${version}")
+  # Step3. pick scheme.
   # infer scheme from url.
   # scheme:path
   if(${url} MATCHES "^([^: ]+):(.+)$")
@@ -124,7 +119,7 @@ function(infer_args_from_uri out_args uri)
     endif()
   endif()
 
-  if(tag)
+  if(NOT ${tag} STREQUAL "")
     if(${type} STREQUAL git)
       set(out ${out} GIT_TAG ${tag})
     else()
@@ -132,7 +127,7 @@ function(infer_args_from_uri out_args uri)
     endif()
   endif()
 
-  if(version)
+  if(NOT ${version} STREQUAL "")
     set(out ${out} VERSION ${version})
   endif()
 
