@@ -7,6 +7,12 @@ endif()
 
 message(STATUS "[package/EnTT]: EnTT::EnTT")
 
-set(entt_VERSION 3.11.1 CACHE STRING "EnTT customized version")
+if (NOT DEFINED entt_TAG)
+  if (NOT DEFINED entt_VERSION)
+    set(entt_TAG "v3.11.1")
+  else()
+    set(entt_TAG v${entt_VERSION})
+  endif()
+endif()
 
-require_package(EnTT "gh:skypjack/entt#v${entt_VERSION}")
+require_package(EnTT "gh:skypjack/entt#${entt_TAG}")

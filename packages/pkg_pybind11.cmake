@@ -7,7 +7,13 @@ endif()
 
 message(STATUS "[package/pybind11]: pybind11::module")
 
-set(pybind11_VERSION 2.10.1 CACHE STRING "pybind11 customized version")
+if (NOT DEFINED pybind11_TAG)
+  if (NOT DEFINED pybind11_VERSION)
+    set(pybind11_TAG "v2.10.1")
+  else()
+    set(pybind11_TAG v${pybind11_VERSION})
+  endif()
+endif()
 
-require_package(pybind11 "gh:pybind/pybind11#v${pybind11_VERSION}"
+require_package(pybind11 "gh:pybind/pybind11#${pybind11_TAG}"
   CMAKE_ARGS "-DPYBIND11_TEST=OFF")
