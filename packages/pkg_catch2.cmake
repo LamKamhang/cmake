@@ -6,16 +6,14 @@ if (TARGET Catch2::Catch2)
 endif()
 
 message(STATUS "[package/Catch2]: Catch2::Catch2")
-
 option(catch2_USE_CPP17_STRING_VIEW "Catch2 use cpp17 string_view" ON)
 option(catch2_USE_CATCH_DISCOVER_TESTS "Catch2 enable catch_discover_tests for ctest" ON)
 
+if (NOT DEFINED catch2_VERSION)
+  set(catch2_VERSION "3.3.2")
+endif()
 if (NOT DEFINED catch2_TAG)
-  if (NOT DEFINED catch2_VERSION)
-    set(catch2_TAG "v3.2.1")
-  else()
-    set(catch2_TAG v${catch2_VERSION})
-  endif()
+  set(catch2_TAG "v${catch2_VERSION}")
 endif()
 
 if(catch2_USE_CPP17_STRING_VIEW)

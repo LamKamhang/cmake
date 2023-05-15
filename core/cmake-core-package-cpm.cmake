@@ -50,20 +50,18 @@ function(infer_args_from_uri out_args uri)
     message(FATAL_ERROR "uri |${uri}| cannot has SPACE")
   elseif(${uri} MATCHES "#[^#]*#")
     message(FATAL_ERROR "uri |${uri}| cannot has more than 1 '#'")
-  else()
-    string(REGEX REPLACE "@$" "" uri ${uri})
-    string(REGEX REPLACE "#$" "" uri ${uri})
   endif()
 
   # Step1. pick tailing version.
-  if (${uri} MATCHES "@([0-9.]+)$")
+  if (${uri} MATCHES "@([0-9.]*)$")
     set(version ${CMAKE_MATCH_1})
-    string(REGEX REPLACE "@([0-9.]+)$" "" uri ${uri})
+    string(REGEX REPLACE "@([0-9.]*)$" "" uri ${uri})
   endif()
   # Step2. pick tailing tag.
   if (${uri} MATCHES "#(.*)$")
     set(tag ${CMAKE_MATCH_1})
-    if (NOT ${version} STREQUAL "")
+    # if version is empty. just simply skip it, do not infer from tag.
+    if (NOT DEFINED version)
       infer_version_from_tag(version ${tag})
     endif()
     string(REGEX REPLACE "#(.*)$" "" url ${uri})
@@ -72,7 +70,7 @@ function(infer_args_from_uri out_args uri)
   # Step3. pick scheme.
   # infer scheme from url.
   # scheme:path
-  if(${url} MATCHES "^([^: ]+):(.+)$")
+  if(${url} MATCHES "^([^:]+):(.+)$")
     string(TOLOWER ${CMAKE_MATCH_1} scheme)
     set(path ${CMAKE_MATCH_2})
     DEBUG_MSG("Current.Match.Scheme: ${scheme}")
@@ -129,7 +127,7 @@ function(infer_args_from_uri out_args uri)
     endif()
   endif()
 
-  if(NOT ${version} STREQUAL "")
+  if (DEFINED version)
     set(out ${out} VERSION ${version})
   endif()
 
@@ -176,26 +174,32 @@ macro(require_package pkg uri)
     ${extra_args}
     ${PKG_UNPARSED_ARGUMENTS}
     OPTIONS ${CPM_OPTIONS}
-    OPTIONS "CMAKE_BUILD_TYPE ${DEPS_USE_RELEASE_BUILDING_TYPE}"
+    OPTIONS "CMAKE_BUILD_TYPE ${DEPS_BUILD_WITH_RELEASE}"
   )
+  unset(CPM_OPTIONS)
+  unset(extra_args)
 endmacro()
 
 # for register packages.
 macro(declare_pkg_deps)
   foreach(dep ${ARGV})
-    # split dep into name[@version]
-    if (${dep} MATCHES "^([^@ ]+)(@[^@ ]*)?$")
-      if (CMAKE_MATCH_2)
-        if (NOT ${CMAKE_MATCH_2} STREQUAL "@default")
-          string(SUBSTRING ${CMAKE_MATCH_2} 1 -1 ${CMAKE_MATCH_1}_VERSION)
-          message(DEBUG "${CMAKE_MATCH_1} use ${${CMAKE_MATCH_1}_VERSION}")
-        else()
-          message(DEBUG "${CMAKE_MATCH_1} use default")
-        endif()
-      endif()
+    message(STATUS "Current dep: ${dep}")
+    if (${dep} MATCHES "^([^@#]+)#([^#]+)$")
+      # split dep into name#tag[@version]
+      set(${CMAKE_MATCH_1}_TAG ${CMAKE_MATCH_2})
+      message(STATUS "${CMAKE_MATCH_1} use ${CMAKE_MATCH_2}")
+      include(pkg_${CMAKE_MATCH_1})
+    elseif(${dep} MATCHES "^([^@#]+)@([0-9.]+)$")
+      # split dep into name@version
+      set(${CMAKE_MATCH_1}_VERSION ${CMAKE_MATCH_2})
+      message(STATUS "${CMAKE_MATCH_1} use ${CMAKE_MATCH_2}")
+      include(pkg_${CMAKE_MATCH_1})
+    elseif(${dep} MATCHES "^([^@#]+)(@(default)?)?$")
+      message(STATUS "${CMAKE_MATCH_1} use default")
+      # use default tag.
       include(pkg_${CMAKE_MATCH_1})
     else()
-      ERROR_MSG("Unvalid dep Format(^([^@ ]+)(@[^@ ]*)?$): ${dep}")
+      message(FATAL_ERROR "Invalid dep format(name[#tag][@version]): ${dep}")
     endif()
   endforeach()
 endmacro()

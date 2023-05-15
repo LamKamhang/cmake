@@ -6,14 +6,13 @@ if (TARGET Eigen3::Eigen)
 endif()
 
 message(STATUS "[package/Eigen3]: Eigen3::Eigen")
-
 option(eigen_APPLY_CHOLMOD_PATCH "Apply cholmod patch for eigen" ON)
+
+if (NOT DEFINED eigen_VERSION)
+  set(eigen_VERSION "3.4.0")
+endif()
 if (NOT DEFINED eigen_TAG)
-  if (NOT DEFINED eigen_VERSION)
-    set(eigen_TAG 3.4.0)
-  else()
-    set(eigen_TAG ${eigen_VERSION})
-  endif()
+  set(eigen_TAG "${eigen_VERSION}")
 endif()
 
 if(eigen_APPLY_CHOLMOD_PATCH)

@@ -7,9 +7,14 @@ endif()
 
 message(STATUS "[package/benchmark]: benchmark::benchmark")
 
-set(benchmark_VERSION 1.8.0 CACHE STRING "benchmark customized version")
+if (NOT DEFINED benchmark_VERSION)
+  set(benchmark_VERSION "1.8.0")
+endif()
+if (NOT DEFINED benchmark_TAG)
+  set(benchmark_TAG "v${benchmark_VERSION}")
+endif()
 
-require_package(benchmark "gh:google/benchmark#v${benchmark_VERSION}"
+require_package(benchmark "gh:google/benchmark#${benchmark_TAG}"
   CMAKE_ARGS "-DBENCHMARK_ENABLE_TESTING=OFF"
   CMAKE_ARGS "-DBENCHMARK_ENABLE_INSTALL=OFF"
   CMAKE_ARGS "-DBENCHMARK_INSTALL_DOCS=OFF"

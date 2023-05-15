@@ -7,12 +7,11 @@ endif()
 
 message(STATUS "[package/CLI11]: CLI11::CLI11")
 
+if (NOT DEFINED cli11_VERSION)
+  set(cli11_VERSION "2.3.2")
+endif()
 if (NOT DEFINED cli11_TAG)
-  if (NOT DEFINED cli11_VERSION)
-    set(cli11_TAG v2.3.1)
-  else()
-    set(cli11_TAG v${cli11_VERSION})
-  endif()
+  set(cli11_TAG "v${cli11_VERSION}")
 endif()
 
 require_package(CLI11 "gh:CLIUtils/CLI11#${cli11_TAG}"

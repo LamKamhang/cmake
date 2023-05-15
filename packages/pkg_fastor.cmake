@@ -4,12 +4,22 @@ include_guard()
 if (TARGET Fastor::Fastor)
   return()
 endif()
+if (TARGET Fastor)
+  add_library(Fastor::Fastor ALIAS Fastor)
+  return()
+endif()
 
 message(STATUS "[package/Fastor]: Fastor::Fastor")
 
-set(fastor_VERSION "origin/master" CACHE STRING "Fastor customized version")
+if (NOT ${fastor_VERSION} STREQUAL "")
+  message(FATAL_ERROR "[package/Fastor] does not support version selection.")
+endif()
 
-require_package(Fastor "gh:romeric/Fastor#${fastor_VERSION}"
+if (NOT DEFINED fastor_TAG)
+  set(fastor_TAG "origin/master")
+endif()
+
+require_package(Fastor "gh:romeric/Fastor#${fastor_TAG}"
   CMAKE_ARGS "-DBUILD_TESTING=OFF"
 )
 

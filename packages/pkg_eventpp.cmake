@@ -7,8 +7,14 @@ endif()
 
 message(STATUS "[package/eventpp]: eventpp::eventpp")
 
-set(eventpp_VERSION "origin/master" CACHE STRING "eventpp customized version")
+if (NOT ${eventpp_VERSION} STREQUAL "")
+  message(FATAL_ERROR "[package/eventpp] does not support version selection.")
+endif()
 
-require_package(eventpp "gh:wqking/eventpp#${eventpp_VERSION}"
+if (NOT DEFINED eventpp_TAG)
+  set(eventpp_TAG "origin/master")
+endif()
+
+require_package(eventpp "gh:wqking/eventpp#${eventpp_TAG}"
   CMAKE_ARGS "-DEVENTPP_INSTALL=OFF"
 )

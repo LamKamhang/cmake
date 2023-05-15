@@ -7,12 +7,12 @@ endif()
 
 message(STATUS "[package/EnTT]: EnTT::EnTT")
 
+
+if (NOT DEFINED entt_VERSION)
+  set(entt_VERSION "3.11.1")
+endif()
 if (NOT DEFINED entt_TAG)
-  if (NOT DEFINED entt_VERSION)
-    set(entt_TAG "v3.11.1")
-  else()
-    set(entt_TAG v${entt_VERSION})
-  endif()
+  set(entt_TAG "v${entt_VERSION}")
 endif()
 
 require_package(EnTT "gh:skypjack/entt#${entt_TAG}")
