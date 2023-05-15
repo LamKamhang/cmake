@@ -10,7 +10,7 @@ message(STATUS "[package/imgui]")
 option(imgui_ENABLE_STDLIB   "Enable InputText() wrappers for STL type: std::string." ON)
 option(imgui_ENABLE_FREETYPE "Build font atlases using FreeType instead of stb_truetype" OFF)
 option(imgui_USE_DOCKING     "Enable Docking Feature" ON)
-set(imgui_VERSION 1.89.1 CACHE STRING "imgui customized version, if `DOCKING` is disable.")
+set(imgui_VERSION 1.89.5 CACHE STRING "imgui customized version, if `DOCKING` is disable.")
 
 if (imgui_USE_DOCKING)
   message(STATUS "Imgui use docking feature.")
