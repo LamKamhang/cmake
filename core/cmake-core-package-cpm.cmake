@@ -54,7 +54,7 @@ function(infer_args_from_uri out_args uri)
 
   # Step1. pick tailing version.
   if (${uri} MATCHES "@([0-9.]*)$")
-    set(version ${CMAKE_MATCH_1})
+    set(version "${CMAKE_MATCH_1}")
     string(REGEX REPLACE "@([0-9.]*)$" "" uri ${uri})
   endif()
   # Step2. pick tailing tag.
@@ -128,10 +128,10 @@ function(infer_args_from_uri out_args uri)
   endif()
 
   if (DEFINED version)
-    set(out ${out} VERSION ${version})
+    set(out ${out} VERSION "${version}")
   endif()
 
-  DEBUG_MSG("Current.Prepare.args: ${out}")
+  message("Current.Prepare.args: ${out}")
 
   set(${out_args} ${out} PARENT_SCOPE)
 endfunction()

@@ -1,18 +1,18 @@
 include_guard()
 
-# if stb::image has been found
+# if stb::stb has been found
 if (TARGET stb::stb)
   return()
 endif()
 
 message(STATUS "[package/stb]: stb::stb")
 
+if (NOT ${stb_VERSION} STREQUAL "")
+  message(FATAL_ERROR "[package/stb] does not support version selection.")
+endif()
+
 if (NOT DEFINED stb_TAG)
-  if (NOT DEFINED stb_VERSION)
-    set(stb_TAG "5736b15")
-  else()
-    message(FATAL_ERROR "[package/stb] does not support version selection.")
-  endif()
+  set(stb_TAG "5736b15@")
 endif()
 
 require_package(stb "gh:nothings/stb#${stb_TAG}"

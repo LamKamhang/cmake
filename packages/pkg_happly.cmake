@@ -1,18 +1,21 @@
 include_guard()
 
-# if happly::happly has been found
-if (TARGET happly::happly)
+# if happly has been found
+if (TARGET happly)
+  if (NOT TARGET happly::happly)
+    add_library(happly::happly ALIAS happly)
+  endif()
   return()
 endif()
 
-message(STATUS "[package/happly]: happly::happly")
+message(STATUS "[package/happly]: happly, happly::happly")
+
+if (NOT ${happly_VERSION} STREQUAL "")
+  message(FATAL_ERROR "[package/happly] does not support version selection.")
+endif()
 
 if (NOT DEFINED happly_TAG)
-  if (NOT DEFINED happly_VERSION)
-    set(happly_TAG "cfa2611")
-  else()
-    message(FATAL_ERROR "[package/happly] does not support version selection.")
-  endif()
+  set(happly_TAG "cfa2611")
 endif()
 
 require_package(happly "gh:nmwsharp/happly#${happly_TAG}")

@@ -7,9 +7,15 @@ endif()
 
 message(STATUS "[package/nanoflann]: nanoflann::nanoflann")
 
-set(nanoflann_VERSION 1.4.3 CACHE STRING "nanoflann customized version")
 
-require_package(nanoflann "gh:jlblancoc/nanoflann#v${nanoflann_VERSION}"
+if (NOT DEFINED nanoflann_VERSION)
+  set(nanoflann_VERSION "1.4.3")
+endif()
+if (NOT DEFINED nanoflann_TAG)
+  set(nanoflann_TAG "v${nanoflann_VERSION}")
+endif()
+
+require_package(nanoflann "gh:jlblancoc/nanoflann#${nanoflann_TAG}"
   CMAKE_ARGS "-DNANOFLANN_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DNANOFLANN_BUILD_BENCHMARKS=OFF"
   CMAKE_ARGS "-DNANOFLANN_BUILD_EXAMPLES=OFF"

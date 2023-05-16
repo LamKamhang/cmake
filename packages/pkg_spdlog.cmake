@@ -7,12 +7,11 @@ endif()
 
 message(STATUS "[package/spdlog]: spdlog::spdlog")
 
+if (NOT DEFINED spdlog_VERSION)
+  set(spdlog_VERSION "1.11.0")
+endif()
 if (NOT DEFINED spdlog_TAG)
-  if (NOT DEFINED spdlog_VERSION)
-    set(spdlog_TAG "v1.10.0")
-  else()
-    set(spdlog_TAG v${spdlog_VERSION})
-  endif()
+  set(spdlog_TAG "v${spdlog_VERSION}")
 endif()
 
 require_package(spdlog "gh:gabime/spdlog#${spdlog_TAG}"

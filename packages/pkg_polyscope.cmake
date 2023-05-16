@@ -1,15 +1,18 @@
 include_guard()
 
-# if polyscope has beed found.
-if (TARGET polyscope::polyscope)
-  return()
-endif()
+# if polyscope has been found
 if (TARGET polyscope)
-  add_library(polyscope::polyscope ALIAS polyscope)
   return()
 endif()
 
-message(STATUS "[package/polyscope]: polyscope::polyscope")
-set(polyscope_VERSION 1.3.0 CACHE STRING "polyscope customized version.")
+message(STATUS "[package/polyscope]: polyscope")
 
-require_package(polyscope "gh:nmwsharp/polyscope#v${polyscope_VERSION}")
+
+if (NOT DEFINED polyscope_VERSION)
+  set(polyscope_VERSION "1.3.0")
+endif()
+if (NOT DEFINED polyscope_TAG)
+  set(polyscope_TAG "v${polyscope_VERSION}")
+endif()
+
+require_package(polyscope "gh:nmwsharp/polyscope#${polyscope_TAG}")

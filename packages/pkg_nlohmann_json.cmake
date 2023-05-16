@@ -7,12 +7,12 @@ endif()
 
 message(STATUS "[package/nlohmann_json]: nlohmann_json::nlohmann_json")
 
+
+if (NOT DEFINED nlohmann_json_VERSION)
+  set(nlohmann_json_VERSION "3.11.2")
+endif()
 if (NOT DEFINED nlohmann_json_TAG)
-  if (NOT DEFINED nlohmann_json_VERSION)
-    set(nlohmann_json_TAG "v3.11.2")
-  else()
-    set(nlohmann_json_TAG v${nlohmann_json_VERSION})
-  endif()
+  set(nlohmann_json_TAG "v${nlohmann_json_VERSION}")
 endif()
 
 require_package(nlohmann_json "gh:nlohmann/json#${nlohmann_json_TAG}"

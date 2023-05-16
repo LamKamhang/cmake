@@ -7,12 +7,12 @@ endif()
 
 message(STATUS "[package/pybind11_json]: pybind11_json")
 
+
+if (NOT DEFINED pybind11_json_VERSION)
+  set(pybind11_json_VERSION "0.2.13")
+endif()
 if (NOT DEFINED pybind11_json_TAG)
-  if (NOT DEFINED pybind11_json_VERSION)
-    set(pybind11_json_TAG "0.2.13")
-  else()
-    set(pybind11_json_TAG ${pybind11_json_VERSION})
-  endif()
+  set(pybind11_json_TAG "${pybind11_json_VERSION}")
 endif()
 
 require_package(pybind11_json "gh:pybind/pybind11_json.git#${pybind11_json_TAG}"

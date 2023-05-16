@@ -1,23 +1,31 @@
 include_guard()
 
-# if imgui has been found.
+# if imgui has been found
 if (TARGET imgui)
+  if (NOT TARGET imgui::imgui)
+    add_library(imgui::imgui ALIAS imgui)
+  endif()
   return()
 endif()
 
-message(STATUS "[package/imgui]")
-
+message(STATUS "[package/imgui]: imgui")
 option(imgui_ENABLE_STDLIB   "Enable InputText() wrappers for STL type: std::string." ON)
 option(imgui_ENABLE_FREETYPE "Build font atlases using FreeType instead of stb_truetype" OFF)
 option(imgui_USE_DOCKING     "Enable Docking Feature" ON)
-set(imgui_VERSION 1.89.5 CACHE STRING "imgui customized version, if `DOCKING` is disable.")
 
 if (imgui_USE_DOCKING)
   message(STATUS "Imgui use docking feature.")
-  require_package(imgui "gh:ocornut/imgui#c191faf0" DOWNLOAD_ONLY YES)
+  set(imgui_TAG "c191faf0")
 else()
-  require_package(imgui "gh:ocornut/imgui#v${imgui_VERSION}" DOWNLOAD_ONLY YES)
+  if (NOT DEFINED imgui_VERSION)
+    set(imgui_VERSION "1.89.5")
+  endif()
+  if (NOT DEFINED imgui_TAG)
+    set(imgui_TAG "v${imgui_VERSION}")
+  endif()
 endif()
+
+require_package(imgui "gh:ocornut/imgui#${imgui_TAG}")
 
 file(GLOB imgui_root_srcs ${imgui_SOURCE_DIR}/*.h ${imgui_SOURCE_DIR}/*.cpp)
 if (imgui_ENABLE_STDLIB)
