@@ -1,8 +1,6 @@
 include_guard()
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake-core-assert.cmake)
-option(DEPS_BUILD_WITH_RELEASE "Pass CMAKE_BUILD_TYPE=Release to Deps"
-  $ENV{DEPS_BUILD_WITH_RELEASE})
 
 # Use CPM.cmake instead.
 if (NOT DEFINED ENV{CPM_SOURCE_CACHE})
@@ -174,7 +172,6 @@ macro(require_package pkg uri)
     ${extra_args}
     ${PKG_UNPARSED_ARGUMENTS}
     OPTIONS ${CPM_OPTIONS}
-    OPTIONS "CMAKE_BUILD_TYPE ${DEPS_BUILD_WITH_RELEASE}"
   )
   unset(CPM_OPTIONS)
   unset(extra_args)
