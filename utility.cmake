@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.12)
 
 include_guard()
 
+# set policy
+cmake_policy(SET CMP0077 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+
 macro(use_cmake_core_module module)
   string(REPLACE "-" "_" MODULE ${module})
   string(TOUPPER ${MODULE} MODULE)
@@ -28,4 +32,3 @@ list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/packages) # for include
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/tools) # for include
 
 set(CMAKE_UTILITY_PATCH_DIR ${CMAKE_CURRENT_LIST_DIR}/patches)
-
