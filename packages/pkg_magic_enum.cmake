@@ -9,7 +9,7 @@ message(STATUS "[package/magic_enum]: magic_enum::magic_enum")
 
 
 if (NOT DEFINED magic_enum_VERSION)
-  set(magic_enum_VERSION "0.8.2")
+  set(magic_enum_VERSION "0.9.1")
 endif()
 if (NOT DEFINED magic_enum_TAG)
   set(magic_enum_TAG "v${magic_enum_VERSION}")
