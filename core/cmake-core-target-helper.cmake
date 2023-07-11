@@ -151,7 +151,7 @@ endfunction()
 
 function(chaos_add_unittest name)
   if (NOT TARGET Catch2::Catch2)
-    declare_pkg_deps(Catch2)
+    declare_pkg_deps(catch2)
   endif()
 
   set(options CUSTOM_MAIN DISABLE_DEFAULT_GLOB)

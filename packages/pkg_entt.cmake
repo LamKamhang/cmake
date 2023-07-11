@@ -9,7 +9,7 @@ message(STATUS "[package/EnTT]: EnTT::EnTT")
 
 
 if (NOT DEFINED entt_VERSION)
-  set(entt_VERSION "3.11.1")
+  set(entt_VERSION "3.12.2")
 endif()
 if (NOT DEFINED entt_TAG)
   set(entt_TAG "v${entt_VERSION}")

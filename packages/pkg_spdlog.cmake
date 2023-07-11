@@ -8,7 +8,7 @@ endif()
 message(STATUS "[package/spdlog]: spdlog::spdlog")
 
 if (NOT DEFINED spdlog_VERSION)
-  set(spdlog_VERSION "1.11.0")
+  set(spdlog_VERSION "1.12.0")
 endif()
 if (NOT DEFINED spdlog_TAG)
   set(spdlog_TAG "v${spdlog_VERSION}")
