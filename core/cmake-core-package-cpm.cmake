@@ -7,6 +7,8 @@ if (NOT DEFINED ENV{CPM_SOURCE_CACHE})
   set(ENV{CPM_SOURCE_CACHE} ${CMAKE_SOURCE_DIR}/3rd)
 endif()
 
+set(CPM_USE_NAMED_CACHE_DIRECTORIES ON)
+
 include(${CMAKE_CURRENT_LIST_DIR}/CPM.cmake)
 
 function(is_version out v)
