@@ -9,7 +9,7 @@ message(STATUS "[package/glm]: glm::glm")
 
 if (NOT DEFINED glm_TAG)
   if (NOT DEFINED glm_VERSION)
-    set(glm_TAG "efec5db@0.9.9.9") # 0.9.9.9 still on development.
+    set(glm_TAG "5c46b9c@0.9.9.9") # 0.9.9.9 still on development.
   else()
     set(glm_TAG "${glm_VERSION}")
   endif()
