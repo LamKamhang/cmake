@@ -2,6 +2,9 @@ include_guard()
 
 # if alglib has been found
 if (TARGET alglib)
+  if (NOT TARGET alglib::alglib)
+    add_library(alglib::alglib ALIAS alglib)
+  endif()
   return()
 endif()
 
