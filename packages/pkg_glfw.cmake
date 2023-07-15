@@ -11,6 +11,7 @@ endif()
 
 message(STATUS "[package/glfw3]: glfw::glfw")
 enable_language(C)
+option(glfw_DEF_INCLUDE_NONE "define GLFW_INCLUDE_NONE" ON)
 
 if (NOT DEFINED glfw_VERSION)
   set(glfw_VERSION "3.3.8")
@@ -26,3 +27,6 @@ require_package(glfw3 "gh:glfw/glfw#${glfw_TAG}"
   CMAKE_ARGS "-DGLFW_INSTALL=OFF"
 )
 add_library(glfw::glfw ALIAS glfw)
+if (${glfw_DEF_INCLUDE_NONE})
+  target_compile_definitions(glfw INTERFACE GLFW_INCLUDE_NONE)
+endif()

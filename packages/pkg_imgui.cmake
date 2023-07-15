@@ -42,6 +42,7 @@ add_library(imgui
 add_library(imgui::imgui ALIAS imgui)
 target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR})
 target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR}/../)
+target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR}/backends/)
 
 if (imgui_ENABLE_STDLIB)
   target_sources(imgui
