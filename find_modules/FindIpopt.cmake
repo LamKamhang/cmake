@@ -5,13 +5,13 @@ if (NOT TARGET Ipopt)
     /usr/include/
     ${Ipopt_INSTALL_DIR}/include
     ${IPOPT_DIR}
-    )
+  )
 
   find_library(IPOPT_LIBRARIES
     NAMES ipopt
     PATHS
     ${Ipopt_INSTALL_DIR}/lib
-    )
+  )
   if (${IPOPT_LIBRARIES} MATCHES "NOTFOUND")
     message("\n*NOT* using IPOPT.\n")
     set(Ipopt_FOUND FALSE)

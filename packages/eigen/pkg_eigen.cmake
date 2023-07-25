@@ -17,7 +17,7 @@ endif()
 
 if(eigen_APPLY_CHOLMOD_PATCH)
   require_package(Eigen3 "gl:libeigen/eigen#${eigen_TAG}"
-    GIT_PATCH "${CMAKE_UTILITY_PATCH_DIR}/eigen3.cholmod.patch"
+    GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/cholmod.patch"
     CMAKE_ARGS "-DEIGEN_BUILD_DOC=OFF"
     CMAKE_ARGS "-DBUILD_TESTING=OFF")
 else()

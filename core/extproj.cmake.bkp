@@ -2,8 +2,8 @@ include_guard()
 
 # Point to the current source base dir.
 # In order to locate `extproj.cmake.in`
+use_cmake_core_module(assert)
 set(_CORE_PACKAGE_BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
-include(${_CORE_PACKAGE_BASE_DIR}/cmake-core-assert.cmake)
 
 # #######################################################################
 # Options/CacheVariables
