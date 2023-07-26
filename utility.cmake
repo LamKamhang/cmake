@@ -3,6 +3,7 @@ include_guard()
 cmake_minimum_required(VERSION 3.12)
 
 # set policy.
+# https://cmake.org/cmake/help/latest/policy/CMP0077.html
 cmake_policy(SET CMP0077 NEW)
 
 # Point to the current list dir.
