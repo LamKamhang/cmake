@@ -15,6 +15,11 @@ if (NOT DEFINED glbinding_TAG)
   set(glbinding_TAG "v${glbinding_VERSION}")
 endif()
 
+# TODO: suppress WriteCompilerDetectionHeader.
+# FOR thiry-party library.
+# https://cmake.org/cmake/help/latest/variable/CMAKE_POLICY_DEFAULT_CMPNNNN.html
+set(CMAKE_POLICY_DEFAULT_CMP0120 OLD)
+
 require_package(glbinding "gh:cginternals/glbinding#${glbinding_TAG}"
   CMAKE_ARGS "-DOPTION_SELF_CONTAINED=OFF"
   CMAKE_ARGS "-DOPTION_BUILD_TESTS=OFF"
