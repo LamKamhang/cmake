@@ -193,6 +193,14 @@ macro(optional_package pkg)
   endif()
 endmacro()
 
+macro(download_package)
+  require_package(${ARGV} DOWNLOAD_ONLY YES)
+endmacro()
+
+macro(optional_download_package)
+  optional_package(${ARGV} DOWNLOAD_ONLY YES)
+endmacro()
+
 # for register packages.
 macro(include_package pkg)
   if (EXISTS ${USER_CUSTOM_PACKAGES_DIR}/pkg_${pkg}.cmake)
