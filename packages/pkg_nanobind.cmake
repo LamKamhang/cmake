@@ -16,7 +16,7 @@ if (NOT DEFINED nanobind_TAG)
 endif()
 
 find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
-require_package(nanobind "gh:wjakob/nanobind#${nanobind_TAG}"
+require_package("gh:wjakob/nanobind#${nanobind_TAG}"
   CMAKE_ARGS "-DNB_TEST=OFF"
   CMAKE_ARGS "-DNB_TEST_STABLE_ABI=OFF"
   CMAKE_ARGS "-DNB_TEST_SHARED_BUILD=OFF"

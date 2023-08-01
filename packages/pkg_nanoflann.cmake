@@ -14,7 +14,7 @@ if (NOT DEFINED nanoflann_TAG)
   set(nanoflann_TAG "v${nanoflann_VERSION}")
 endif()
 
-require_package(nanoflann "gh:jlblancoc/nanoflann#${nanoflann_TAG}"
+require_package("gh:jlblancoc/nanoflann#${nanoflann_TAG}"
   CMAKE_ARGS "-DNANOFLANN_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DNANOFLANN_BUILD_BENCHMARKS=OFF"
   CMAKE_ARGS "-DNANOFLANN_BUILD_EXAMPLES=OFF"

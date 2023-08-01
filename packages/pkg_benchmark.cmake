@@ -14,7 +14,7 @@ if (NOT DEFINED benchmark_TAG)
   set(benchmark_TAG "v${benchmark_VERSION}")
 endif()
 
-require_package(benchmark "gh:google/benchmark#${benchmark_TAG}"
+require_package("gh:google/benchmark#${benchmark_TAG}"
   CMAKE_ARGS "-DBENCHMARK_ENABLE_TESTING=OFF"
   CMAKE_ARGS "-DBENCHMARK_ENABLE_INSTALL=OFF"
   CMAKE_ARGS "-DBENCHMARK_INSTALL_DOCS=OFF"

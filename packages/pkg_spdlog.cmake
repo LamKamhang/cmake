@@ -14,5 +14,5 @@ if (NOT DEFINED spdlog_TAG)
   set(spdlog_TAG "v${spdlog_VERSION}")
 endif()
 
-require_package(spdlog "gh:gabime/spdlog#${spdlog_TAG}"
+require_package("gh:gabime/spdlog#${spdlog_TAG}"
   CMAKE_ARGS "-DSPDLOG_BUILD_EXAMPLE=OFF")

@@ -16,5 +16,5 @@ if (NOT DEFINED suitesparse_TAG)
   set(suitesparse_TAG "${suitesparse_VERSION}-cmake.3")
 endif()
 
-require_package(SuiteSparse "gh:sergiud/SuiteSparse.git#${suitesparse_TAG}"
+require_package("gh:sergiud/SuiteSparse.git#${suitesparse_TAG}"
   CMAKE_ARGS "-DWITH_DEMOS=OFF")

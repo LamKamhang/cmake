@@ -20,7 +20,8 @@ if (NOT DEFINED glfw_TAG)
   set(glfw_TAG "${glfw_VERSION}")
 endif()
 
-require_package(glfw3 "gh:glfw/glfw#${glfw_TAG}"
+require_package("gh:glfw/glfw#${glfw_TAG}"
+  NAME glfw3
   CMAKE_ARGS "-DGLFW_BUILD_EXAMPLES=OFF"
   CMAKE_ARGS "-DGLFW_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DGLFW_BUILD_DOCS=OFF"

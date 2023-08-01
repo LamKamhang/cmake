@@ -18,4 +18,6 @@ if (NOT DEFINED alglib_TAG)
   set(alglib_TAG "origin/master")
 endif()
 
-require_package(alglib "gh:LamKamhang/alglib-cmake-wrapper#${alglib_TAG}")
+require_package("gh:LamKamhang/alglib-cmake-wrapper#${alglib_TAG}"
+  NAME alglib
+)

@@ -15,5 +15,5 @@ if (NOT DEFINED proxy_TAG)
   set(proxy_TAG "${proxy_VERSION}")
 endif()
 
-require_package(proxy "gh:microsoft/proxy.git#${proxy_TAG}"
+require_package("gh:microsoft/proxy.git#${proxy_TAG}"
   CMAKE_ARGS "-DBUILD_TESTING=OFF")

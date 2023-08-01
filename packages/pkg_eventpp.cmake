@@ -15,6 +15,6 @@ if (NOT DEFINED eventpp_TAG)
   set(eventpp_TAG "origin/master")
 endif()
 
-require_package(eventpp "gh:wqking/eventpp#${eventpp_TAG}"
+require_package("gh:wqking/eventpp#${eventpp_TAG}"
   CMAKE_ARGS "-DEVENTPP_INSTALL=OFF"
 )

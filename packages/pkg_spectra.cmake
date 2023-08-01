@@ -17,7 +17,9 @@ if (NOT DEFINED spectra_TAG)
   set(spectra_TAG "v${spectra_VERSION}")
 endif()
 
-require_package(Spectra "gh:yixuan/spectra#${spectra_TAG}")
+require_package("gh:yixuan/spectra#${spectra_TAG}"
+  NAME Spectra
+)
 
 if (NOT TARGET Spectra::Spectra)
   add_library(Spectra::Spectra ALIAS Spectra)

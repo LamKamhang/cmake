@@ -15,4 +15,6 @@ if (NOT DEFINED entt_TAG)
   set(entt_TAG "v${entt_VERSION}")
 endif()
 
-require_package(EnTT "gh:skypjack/entt#${entt_TAG}")
+require_package("gh:skypjack/entt#${entt_TAG}"
+  NAME EnTT
+)

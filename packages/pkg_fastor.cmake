@@ -19,7 +19,7 @@ if (NOT DEFINED fastor_TAG)
   set(fastor_TAG "origin/master")
 endif()
 
-require_package(Fastor "gh:romeric/Fastor#${fastor_TAG}"
+require_package("gh:romeric/Fastor#${fastor_TAG}"
   CMAKE_ARGS "-DBUILD_TESTING=OFF"
 )
 

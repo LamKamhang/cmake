@@ -17,13 +17,13 @@ if (NOT DEFINED catch2_TAG)
 endif()
 
 if(catch2_USE_CPP17_STRING_VIEW)
-  require_package(Catch2 "gh:catchorg/Catch2#${catch2_TAG}"
+  require_package("gh:catchorg/Catch2#${catch2_TAG}"
     CMAKE_ARGS "-DCATCH_BUILD_TESTING=OFF"
     CMAKE_ARGS "-DCATCH_INSTALL_DOCS=OFF"
     CMAKE_ARGS "-DCATCH_CONFIG_CPP17_STRING_VIEW=ON")
   target_compile_features(Catch2 PUBLIC cxx_std_17)
 else()
-  require_package(Catch2 "gh:catchorg/Catch2#${catch2_TAG}"
+  require_package("gh:catchorg/Catch2#${catch2_TAG}"
     CMAKE_ARGS "-DCATCH_BUILD_TESTING=OFF"
     CMAKE_ARGS "-DCATCH_INSTALL_DOCS=OFF")
 endif()

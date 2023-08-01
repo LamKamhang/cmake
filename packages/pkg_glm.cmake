@@ -15,4 +15,4 @@ if (NOT DEFINED glm_TAG)
   endif()
 endif()
 
-require_package(glm "gh:g-truc/glm#${glm_TAG}")
+require_package("gh:g-truc/glm#${glm_TAG}")

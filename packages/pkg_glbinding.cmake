@@ -20,7 +20,7 @@ endif()
 # https://cmake.org/cmake/help/latest/variable/CMAKE_POLICY_DEFAULT_CMPNNNN.html
 set(CMAKE_POLICY_DEFAULT_CMP0120 OLD)
 
-require_package(glbinding "gh:cginternals/glbinding#${glbinding_TAG}"
+require_package("gh:cginternals/glbinding#${glbinding_TAG}"
   CMAKE_ARGS "-DOPTION_SELF_CONTAINED=OFF"
   CMAKE_ARGS "-DOPTION_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DOPTION_BUILD_DOCS=OFF"

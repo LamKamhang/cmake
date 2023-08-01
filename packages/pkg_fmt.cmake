@@ -15,7 +15,7 @@ if (NOT DEFINED fmt_TAG)
   set(fmt_TAG "${fmt_VERSION}")
 endif()
 
-require_package(fmt "gh:fmtlib/fmt#${fmt_TAG}"
+require_package("gh:fmtlib/fmt#${fmt_TAG}"
   CMAKE_ARGS "-DFMT_DOC=OFF"
   CMAKE_ARGS "-DFMT_INSTALL=OFF"
   CMAKE_ARGS "-DFMT_TEST=OFF"

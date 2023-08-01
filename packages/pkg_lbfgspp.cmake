@@ -15,4 +15,6 @@ if (NOT DEFINED lbfgspp_TAG)
   endif()
 endif()
 
-require_package(lbfgspp "gh:yixuan/LBFGSpp#${lbfgspp_TAG}")
+require_package("gh:yixuan/LBFGSpp#${lbfgspp_TAG}"
+  NAME lbfgspp
+)

@@ -16,12 +16,14 @@ if (NOT DEFINED eigen_TAG)
 endif()
 
 if(eigen_APPLY_CHOLMOD_PATCH)
-  require_package(Eigen3 "gl:libeigen/eigen#${eigen_TAG}"
+  require_package("gl:libeigen/eigen#${eigen_TAG}"
+    NAME Eigen3
     GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/cholmod.patch"
     CMAKE_ARGS "-DEIGEN_BUILD_DOC=OFF"
     CMAKE_ARGS "-DBUILD_TESTING=OFF")
 else()
-  require_package(Eigen3 "gl:libeigen/eigen#${eigen_TAG}"
+  require_package("gl:libeigen/eigen#${eigen_TAG}"
+    NAME Eigen3
     CMAKE_ARGS "-DEIGEN_BUILD_DOC=OFF"
     CMAKE_ARGS "-DBUILD_TESTING=OFF")
 endif()

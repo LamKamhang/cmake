@@ -20,7 +20,7 @@ if (NOT DEFINED osqp_TAG)
   set(osqp_TAG "v${osqp_VERSION}")
 endif()
 
-require_package(osqp "gh:osqp/osqp#${osqp_TAG}")
+require_package("gh:osqp/osqp#${osqp_TAG}")
 
 if (NOT TARGET osqp::osqp)
   if (TARGET osqp)

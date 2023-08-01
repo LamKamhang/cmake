@@ -15,7 +15,7 @@ if (NOT DEFINED pybind11_json_TAG)
   set(pybind11_json_TAG "${pybind11_json_VERSION}")
 endif()
 
-require_package(pybind11_json "gh:pybind/pybind11_json.git#${pybind11_json_TAG}"
+require_package("gh:pybind/pybind11_json.git#${pybind11_json_TAG}"
   CMAKE_ARGS "-DBUILD_TESTS=OFF"
   CMAKE_ARGS "-DDOWNLOAD_GTEST=OFF"
 )

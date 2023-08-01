@@ -14,7 +14,7 @@ if (NOT DEFINED openmesh_TAG)
   set(openmesh_TAG "OpenMesh-${openmesh_VERSION}")
 endif()
 
-require_package(OpenMesh "https://gitlab.vci.rwth-aachen.de:9000/OpenMesh/OpenMesh.git#${openmesh_TAG}"
+require_package("https://gitlab.vci.rwth-aachen.de:9000/OpenMesh/OpenMesh.git#${openmesh_TAG}"
   CMAKE_ARGS "-DBUILD_APPS=OFF"
   CMAKE_ARGS "-DOPENMESH_DOCS=OFF"
 )

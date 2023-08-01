@@ -14,5 +14,5 @@ if (NOT DEFINED csv-parser_TAG)
   set(csv-parser_TAG "${csv-parser_VERSION}")
 endif()
 
-require_package(csv-parser "gh:vincentlaucsb/csv-parser#${csv-parser_TAG}")
+require_package("gh:vincentlaucsb/csv-parser#${csv-parser_TAG}")
 target_include_directories(csv PUBLIC ${csv-parser_SOURCE_DIR}/include)

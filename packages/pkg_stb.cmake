@@ -15,7 +15,7 @@ if (NOT DEFINED stb_TAG)
   set(stb_TAG "5736b15@")
 endif()
 
-require_package(stb "gh:nothings/stb#${stb_TAG}"
+require_package("gh:nothings/stb#${stb_TAG}"
   DOWNLOAD_ONLY YES
 )
 

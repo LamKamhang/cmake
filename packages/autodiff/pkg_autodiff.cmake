@@ -15,7 +15,7 @@ if (NOT DEFINED autodiff_TAG)
   set(autodiff_TAG "v${autodiff_VERSION}")
 endif()
 
-require_package(autodiff "gh:autodiff/autodiff#${autodiff_TAG}"
+require_package("gh:autodiff/autodiff#${autodiff_TAG}"
   GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/num_traits.patch"
   CMAKE_ARGS "-DAUTODIFF_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DAUTODIFF_BUILD_PYTHON=OFF"

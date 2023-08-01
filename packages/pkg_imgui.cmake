@@ -19,7 +19,7 @@ if (NOT DEFINED imgui_TAG)
   set(imgui_TAG "v${imgui_VERSION}")
 endif()
 
-require_package(imgui "gh:ocornut/imgui#${imgui_TAG}")
+require_package("gh:ocornut/imgui#${imgui_TAG}")
 
 add_library(imgui
   ${imgui_SOURCE_DIR}/imgui.h

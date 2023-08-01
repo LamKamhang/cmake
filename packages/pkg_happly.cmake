@@ -18,7 +18,7 @@ if (NOT DEFINED happly_TAG)
   set(happly_TAG "cfa2611")
 endif()
 
-require_package(happly "gh:nmwsharp/happly#${happly_TAG}")
+require_package("gh:nmwsharp/happly#${happly_TAG}")
 
 add_library(happly INTERFACE)
 add_library(happly::happly ALIAS happly)

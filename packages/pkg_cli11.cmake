@@ -14,7 +14,7 @@ if (NOT DEFINED cli11_TAG)
   set(cli11_TAG "v${cli11_VERSION}")
 endif()
 
-require_package(CLI11 "gh:CLIUtils/CLI11#${cli11_TAG}"
+require_package("gh:CLIUtils/CLI11#${cli11_TAG}"
   CMAKE_ARGS "-DCLI11_BUILD_EXAMPLES=OFF"
   CMAKE_ARGS "-DCLI11_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DCLI11_BUILD_DOCS=OFF")

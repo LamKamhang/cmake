@@ -15,4 +15,4 @@ if (NOT DEFINED glad_TAG)
   set(glad_TAG "OpenGL-Core-${glad_VERSION}")
 endif()
 
-require_package(glad "gh:LamKamhang/glad#${glad_TAG}")
+require_package("gh:LamKamhang/glad#${glad_TAG}")

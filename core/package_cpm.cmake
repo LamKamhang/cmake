@@ -25,6 +25,22 @@ function(is_version out v)
   endif()
 endfunction()
 
+function(infer_package_name_from_uri out uri)
+  # trim tailing.
+  DEBUG_MSG("infer_package_name_from ${uri}")
+
+  string(REGEX REPLACE "@([0-9.]*)$" "" uri ${uri})
+  string(REGEX REPLACE "#(.*)$" "" uri ${uri})
+  string(REGEX REPLACE ".git$" "" uri ${uri})
+  DEBUG_MSG("uri after trim: ${uri}")
+
+  if (${uri} MATCHES "([^/:]+)$")
+    set(${out} ${CMAKE_MATCH_1} PARENT_SCOPE)
+  else()
+    unset(${out} PARENT_SCOPE)
+  endif()
+endfunction()
+
 function(infer_version_from_tag out tag)
   message(DEBUG "infer_version_from ${tag}")
 
@@ -80,7 +96,7 @@ function(infer_args_from_uri out_args uri)
 
   # some special schemes
   if(scheme STREQUAL "rom") # ryon.ren:mirrors
-    if(${path} MATCHES "([^/]+)$")
+    if(${path} MATCHES "([^/]+)$") # infer repo.name
       set(out GIT_REPOSITORY
         ssh://git@ryon.ren:10022/mirrors/${CMAKE_MATCH_1})
     else()
@@ -137,7 +153,7 @@ function(infer_args_from_uri out_args uri)
   set(${out_args} ${out} PARENT_SCOPE)
 endfunction()
 
-macro(require_package pkg uri)
+macro(require_package uri)
   DEBUG_MSG("uri: ${uri}")
   DEBUG_MSG("args: ${ARGN}")
   # extract uri from args.
@@ -145,7 +161,13 @@ macro(require_package pkg uri)
   DEBUG_MSG("extra_args: ${extra_args}")
 
   # parse CMAKE_ARGS/GIT_PATCH
-  cmake_parse_arguments(PKG "" "GIT_PATCH" "CMAKE_ARGS" "${ARGN}")
+  cmake_parse_arguments(PKG "" "GIT_PATCH;NAME" "CMAKE_ARGS" "${ARGN}")
+
+  # parse Name.
+  if (NOT DEFINED PKG_NAME)
+    infer_package_name_from_uri(PKG_NAME ${uri})
+  endif()
+  list(APPEND extra_args NAME ${PKG_NAME})
 
   set(CPM_OPTIONS "")
   foreach(arg ${PKG_CMAKE_ARGS})
@@ -171,7 +193,6 @@ macro(require_package pkg uri)
 
   CPMAddPackage(
     EXCLUDE_FROM_ALL YES
-    NAME ${pkg}
     ${extra_args}
     ${PKG_UNPARSED_ARGUMENTS}
     OPTIONS ${CPM_OPTIONS}
@@ -180,7 +201,8 @@ macro(require_package pkg uri)
   unset(extra_args)
 endmacro()
 
-macro(optional_package pkg)
+macro(optional_package uri)
+  infer_package_name_from_uri(pkg ${uri})
   string(TOUPPER ${pkg} PKG)
   if (NOT DEFINED OPTIONAL_PKG_PREFIX)
     if (CHAOS_USE_${PKG})
@@ -191,6 +213,7 @@ macro(optional_package pkg)
       require_package(${ARGV})
     endif()
   endif()
+  unset(pkg)
 endmacro()
 
 macro(download_package)

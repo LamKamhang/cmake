@@ -16,4 +16,6 @@ if (NOT DEFINED bgfx_TAG)
   set(bgfx_TAG "v1.118.8455-425")
 endif()
 
-require_package(bgfx "gh:bkaradzic/bgfx.cmake.git#${bgfx_TAG}")
+require_package("gh:bkaradzic/bgfx.cmake.git#${bgfx_TAG}"
+  NAME bgfx
+)
