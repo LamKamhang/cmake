@@ -12,6 +12,39 @@ set(CPM_USE_NAMED_CACHE_DIRECTORIES ON)
 
 include(${CMAKE_CURRENT_LIST_DIR}/CPM.cmake)
 
+########################################################################
+# Options/CacheVariables
+########################################################################
+option(CHAOS_PACKAGE_OVERRIDE_FIND_PACKAGE "override find_package with verbose" ON)
+option(CHAOS_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." OFF)
+option(CHAOS_PACKAGE_VERBOSE_INSTALL "Enable verbose ExternalPackage" ON)
+
+message(DEBUG "[package_cpm|TRY_FIND]: ${CHAOS_PACKAGE_ENABLE_TRY_FIND}")
+set(CHAOS_PACKAGE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
+  CACHE STRING "Default ExternalPackage BuildType"
+)
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+  set(CHAOS_PACKAGE_BUILD_TYPE "Release")
+endif()
+# BuildType to lowercase.
+string(TOLOWER ${CHAOS_PACKAGE_BUILD_TYPE} CHAOS_PACKAGE_BUILD_TYPE_LC)
+message(DEBUG "[package_cpm|ExternalProjectBuildType]: ${CHAOS_PACKAGE_BUILD_TYPE}")
+
+set(CHAOS_PACKAGE_INSTALL_PREFIX ${CPM_SOURCE_CACHE}/installed/${CHAOS_PACKAGE_BUILD_TYPE_LC}
+  CACHE PATH "Directory to install external package."
+)
+message(DEBUG "[package_cpm|ExternalPackageInstallPath]: ${CHAOS_PACKAGE_INSTALL_PREFIX}")
+
+set(CHAOS_PACKAGE_NUM_THREADS 0 CACHE STRING "Number of Threads used to comile.")
+if (${CHAOS_PACKAGE_NUM_THREADS} EQUAL 0)
+  include(ProcessorCount)
+  ProcessorCount(CHAOS_PACKAGE_NUM_THREADS)
+endif()
+message(STATUS "[package#Threads]: ${CHAOS_PACKAGE_NUM_THREADS}")
+
+########################################################################
+# Core Implementation.
+########################################################################
 function(is_version out v)
   message(DEBUG "check whether |${v}| is version")
 
@@ -161,13 +194,16 @@ macro(require_package uri)
   DEBUG_MSG("extra_args: ${extra_args}")
 
   # parse CMAKE_ARGS/GIT_PATCH
-  cmake_parse_arguments(PKG "" "GIT_PATCH;NAME" "CMAKE_ARGS" "${ARGN}")
+  cmake_parse_arguments(PKG "" "GIT_PATCH;NAME;DOWNLOAD_ONLY" "CMAKE_ARGS" "${ARGN}")
 
   # parse Name.
   if (NOT DEFINED PKG_NAME)
     infer_package_name_from_uri(PKG_NAME ${uri})
   endif()
   list(APPEND extra_args NAME ${PKG_NAME})
+  if (DEFINED PKG_DOWNLOAD_ONLY)
+    list(APPEND extra_args DOWNLOAD_ONLY ${PKG_DOWNLOAD_ONLY})
+  endif()
 
   set(CPM_OPTIONS "")
   foreach(arg ${PKG_CMAKE_ARGS})
@@ -279,4 +315,108 @@ macro(optional_pkg_deps)
       message(FATAL_ERROR "Cannot infer package name: ${dep}")
     endif()
   endforeach()
+endmacro()
+
+macro(verbose_find_package PKG)
+  # verbose some infos.
+  if (${PKG}_FOUND)
+    string(TOUPPER ${PKG} tmp)
+    if (DEFINED ${${PKG}_VERSION})
+      message(STATUS "[package/${PKG}]: find version: ${${PKG}_VERSION}")
+    endif()
+
+    if (${tmp}_INCLUDE_DIR)
+      message(STATUS "[package/${PKG}]: find_include_dir: ${${tmp}_INCLUDE_DIR}")
+    elseif(${tmp}_INCLUDE_DIRS)
+      message(STATUS "[package/${PKG}]: find_include_dir: ${${tmp}_INCLUDE_DIRS}")
+    endif()
+  endif()
+endmacro()
+
+if (CHAOS_PACKAGE_OVERRIDE_FIND_PACKAGE)
+  macro(find_package PKG)
+    _find_package(${PKG} ${ARGN})
+    verbose_find_package(${PKG})
+  endmacro()
+endif()
+
+macro(find_package_ext PKG)
+  find_package(${PKG} ${ARGN})
+  if (NOT CHAOS_PACKAGE_OVERRIDE_FIND_PACKAGE)
+    verbose_find_package(${PKG})
+  endif()
+endmacro()
+
+# NOTE!! Only Experimentally support!!
+macro(install_and_find_package)
+  cmake_parse_arguments(PKG "" "" "CPM_ARGS" ${ARGV})
+  set(find_package_args ${PKG_UNPARSED_ARGUMENTS})
+  if (NOT DEFINED PKG_CPM_ARGS)
+    set(find_package_args)
+    set(PKG_CPM_ARGS ${PKG_UNPARSED_ARGUMENTS})
+  endif()
+
+  # get package name.
+  cmake_parse_arguments(CPM_ARGS "" "NAME" "OPTIONS;CMAKE_ARGS" ${PKG_CPM_ARGS})
+  if (NOT DEFINED CPM_ARGS_NAME)
+    set(uri ${PKG_CPM_ARGS})
+    list(FILTER uri INCLUDE REGEX "^([^#: ]+):([^#@ ]+)(#[^#@ ]*)?(@[0-9.]*)?$")
+    list(LENGTH uri NUM_URI)
+    ASSERT_EQUAL(${NUM_URI} 1)
+    infer_package_name_from_uri(CPM_ARGS_NAME ${uri})
+  endif()
+  foreach(arg ${CPM_ARGS_OPTIONS})
+    cpm_parse_option("${arg}")
+    list(APPEND CPM_ARGS_CMAKE_ARGS "-D${OPTION_KEY}=${OPTION_VALUE}")
+  endforeach()
+
+  if (CHAOS_PACKAGE_ENABLE_TRY_FIND)
+    # TODO: use args-hashed to distinguish different prebuild.
+    find_package(${CPM_ARGS_NAME} ${find_package_args} NO_DEFAULT_PATH)
+  endif()
+
+
+  if (${${CPM_ARGS_NAME}_FOUND})
+    # cannot use return(), since this is a macro instead of a function.
+  else()
+    # download package by cpm.
+    download_package(${PKG_CPM_ARGS})
+
+    execute_process(
+      COMMAND ${CMAKE_COMMAND}
+      -S ${${CPM_ARGS_NAME}_SOURCE_DIR}
+      -B${CMAKE_BINARY_DIR}/deps-build/${CPM_ARGS_NAME}
+      -G${CMAKE_GENERATOR}
+      -DCMAKE_BUILD_TYPE=${CHAOS_PACKAGE_BUILD_TYPE}
+      -DCMAKE_INSTALL_PREFIX=${CHAOS_PACKAGE_INSTALL_PREFIX}
+      -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
+      -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
+      ${CPM_ARGS_CMAKE_ARGS}
+      WORKING_DIRECTORY ${${CPM_ARGS_NAME}_SOURCE_DIR}
+      OUTPUT_QUIET
+      RESULT_VARIABLE result
+    )
+    if (result)
+      message(FATAL_ERROR "configure external project(${CPM_ARGS_NAME}) failed: ${result}")
+    endif()
+
+    if (NOT CHAOS_PACKAGE_VERBOSE_INSTALL)
+      set(__ARGS OUTPUT_QUIET)
+    endif()
+
+    execute_process(
+      COMMAND ${CMAKE_COMMAND}
+      --build ${CMAKE_BINARY_DIR}/deps-build/${CPM_ARGS_NAME} --target install -j ${CHAOS_PACKAGE_NUM_THREADS}
+      RESULT_VARIABLE result
+      ${__ARGS}
+    )
+
+    if (result)
+      message(FATAL_ERROR "Failed to install external package: ${CPM_ARGS_NAME}")
+    endif()
+
+    find_package(${CPM_ARGS_NAME} ${find_package_args} NO_DEFAULT_PATH
+      PATHS ${CHAOS_PACKAGE_INSTALL_PREFIX}
+    )
+  endif()
 endmacro()
