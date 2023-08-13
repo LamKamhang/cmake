@@ -14,5 +14,12 @@ if (NOT DEFINED spdlog_TAG)
   set(spdlog_TAG "v${spdlog_VERSION}")
 endif()
 
-require_package("gh:gabime/spdlog#${spdlog_TAG}"
-  CMAKE_ARGS "-DSPDLOG_BUILD_EXAMPLE=OFF")
+
+
+if (CHAOS_PACKAGE_PREFER_INSTALL_FIND)
+  install_and_find_package("gh:gabime/spdlog#${spdlog_TAG}"
+    CMAKE_ARGS "-DSPDLOG_BUILD_EXAMPLE=OFF")
+else()
+  require_package("gh:gabime/spdlog#${spdlog_TAG}"
+    CMAKE_ARGS "-DSPDLOG_BUILD_EXAMPLE=OFF")
+endif()

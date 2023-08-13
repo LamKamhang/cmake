@@ -14,10 +14,19 @@ if (NOT DEFINED benchmark_TAG)
   set(benchmark_TAG "v${benchmark_VERSION}")
 endif()
 
-require_package("gh:google/benchmark#${benchmark_TAG}"
+set(_args
+  "gh:google/benchmark#${benchmark_TAG}"
   CMAKE_ARGS "-DBENCHMARK_ENABLE_TESTING=OFF"
-  CMAKE_ARGS "-DBENCHMARK_ENABLE_INSTALL=OFF"
   CMAKE_ARGS "-DBENCHMARK_INSTALL_DOCS=OFF"
   CMAKE_ARGS "-DBENCHMARK_ENABLE_GTEST_TESTS=OFF"
   CMAKE_ARGS "-DBENCHMARK_USE_BUNDLED_GTEST=OFF"
 )
+
+if (CHAOS_PACKAGE_PREFER_INSTALL_FIND)
+  install_and_find_package(${_args})
+else()
+  require_package(
+    ${_args}
+    CMAKE_ARGS "-DBENCHMARK_ENABLE_INSTALL=OFF"
+  )
+endif()

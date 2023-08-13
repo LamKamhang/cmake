@@ -77,7 +77,7 @@ target_sources(imgui
 # add deps.
 if (${imgui_PLATFORM_BACKEND} STREQUAL glfw)
   declare_pkg_deps(glfw)
-  target_link_libraries(imgui PUBLIC glfw)
+  target_link_libraries(imgui PUBLIC glfw::glfw)
 endif()
 
 if (${imgui_RENDERER_BACKEND} STREQUAL opengl3)
@@ -92,7 +92,7 @@ if (${imgui_RENDERER_BACKEND} STREQUAL opengl3)
   )
   if (${imgui_GL_BINDING} STREQUAL glad)
     declare_pkg_deps(glad)
-    target_link_libraries(imgui PUBLIC glad)
+    target_link_libraries(imgui PUBLIC glad::glad)
   elseif(${imgui_GL_BINDING} STREQUAL glbinding)
     declare_pkg_deps(glbinding)
     target_link_libraries(imgui PUBLIC glbinding::glbinding)

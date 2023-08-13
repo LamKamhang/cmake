@@ -20,14 +20,24 @@ if (NOT DEFINED glfw_TAG)
   set(glfw_TAG "${glfw_VERSION}")
 endif()
 
-require_package("gh:glfw/glfw#${glfw_TAG}"
+set(_args
+  "gh:glfw/glfw#${glfw_TAG}"
   NAME glfw3
   CMAKE_ARGS "-DGLFW_BUILD_EXAMPLES=OFF"
   CMAKE_ARGS "-DGLFW_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DGLFW_BUILD_DOCS=OFF"
-  CMAKE_ARGS "-DGLFW_INSTALL=OFF"
 )
+
+if (CHAOS_PACKAGE_PREFER_INSTALL_FIND)
+  install_and_find_package(${_args})
+else()
+  require_package(
+    ${_args}
+    CMAKE_ARGS "-DGLFW_INSTALL=OFF"
+  )
+endif()
 add_library(glfw::glfw ALIAS glfw)
+
 if (${glfw_DEF_INCLUDE_NONE})
   target_compile_definitions(glfw INTERFACE GLFW_INCLUDE_NONE)
 endif()

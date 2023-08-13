@@ -16,8 +16,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/CPM.cmake)
 # Options/CacheVariables
 ########################################################################
 option(CHAOS_PACKAGE_OVERRIDE_FIND_PACKAGE "override find_package with verbose" ON)
-option(CHAOS_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." OFF)
+option(CHAOS_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." ON)
+option(CHAOS_PACKAGE_PREFER_INSTALL_FIND "prefer install and find strategy" ON)
 option(CHAOS_PACKAGE_VERBOSE_INSTALL "Enable verbose ExternalPackage" ON)
+option(CHAOS_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" ON)
 
 message(DEBUG "[package_cpm|TRY_FIND]: ${CHAOS_PACKAGE_ENABLE_TRY_FIND}")
 set(CHAOS_PACKAGE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
@@ -390,6 +392,7 @@ macro(install_and_find_package)
       -B${CMAKE_BINARY_DIR}/deps-build/${CPM_ARGS_NAME}
       -G${CMAKE_GENERATOR}
       -DCMAKE_BUILD_TYPE=${CHAOS_PACKAGE_BUILD_TYPE}
+      -DBUILD_SHARED_LIBS=${CHAOS_PACKAGE_BUILD_SHARED}
       -DCMAKE_INSTALL_PREFIX=${CHAOS_PACKAGE_INSTALL_PREFIX}
       -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
       -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
