@@ -10,7 +10,7 @@ option(catch2_USE_CPP17_STRING_VIEW "Catch2 use cpp17 string_view" ON)
 option(catch2_USE_CATCH_DISCOVER_TESTS "Catch2 enable catch_discover_tests for ctest" ON)
 
 if (NOT DEFINED catch2_VERSION)
-  set(catch2_VERSION "3.3.2")
+  set(catch2_VERSION "3.4.0")
 endif()
 if (NOT DEFINED catch2_TAG)
   set(catch2_TAG "v${catch2_VERSION}")

@@ -13,7 +13,7 @@ option(imgui_ENABLE_STDLIB    "Enable InputText() wrappers for STL type: std::st
 option(imgui_ENABLE_FREETYPE  "Build font atlases using FreeType instead of stb_truetype" OFF)
 
 if (NOT DEFINED imgui_VERSION)
-  set(imgui_VERSION "1.89.7")
+  set(imgui_VERSION "1.89.8")
 endif()
 if (NOT DEFINED imgui_TAG)
   set(imgui_TAG "v${imgui_VERSION}")
