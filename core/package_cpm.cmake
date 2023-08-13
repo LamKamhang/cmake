@@ -372,7 +372,9 @@ macro(install_and_find_package)
 
   if (CHAOS_PACKAGE_ENABLE_TRY_FIND)
     # TODO: use args-hashed to distinguish different prebuild.
-    find_package(${CPM_ARGS_NAME} ${find_package_args} NO_DEFAULT_PATH)
+    find_package(${CPM_ARGS_NAME} ${find_package_args} NO_DEFAULT_PATH
+      PATHS ${CHAOS_PACKAGE_INSTALL_PREFIX}
+    )
   endif()
 
 
