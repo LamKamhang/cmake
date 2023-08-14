@@ -16,21 +16,32 @@ if (NOT DEFINED catch2_TAG)
   set(catch2_TAG "v${catch2_VERSION}")
 endif()
 
+set(_args
+  "gh:catchorg/Catch2#${catch2_TAG}"
+  CMAKE_ARGS "-DCATCH_BUILD_TESTING=OFF"
+  CMAKE_ARGS "-DCATCH_INSTALL_DOCS=OFF"
+)
+
 if(catch2_USE_CPP17_STRING_VIEW)
-  require_package("gh:catchorg/Catch2#${catch2_TAG}"
-    CMAKE_ARGS "-DCATCH_BUILD_TESTING=OFF"
-    CMAKE_ARGS "-DCATCH_INSTALL_DOCS=OFF"
-    CMAKE_ARGS "-DCATCH_CONFIG_CPP17_STRING_VIEW=ON")
-  target_compile_features(Catch2 PUBLIC cxx_std_17)
+  set(_args ${_args}
+    CMAKE_ARGS "-DCATCH_CONFIG_CPP17_STRING_VIEW=ON"
+  )
+endif()
+
+if (CHAOS_PACKAGE_PREFER_INSTALL_FIND)
+  install_and_find_package(${_args})
 else()
-  require_package("gh:catchorg/Catch2#${catch2_TAG}"
-    CMAKE_ARGS "-DCATCH_BUILD_TESTING=OFF"
-    CMAKE_ARGS "-DCATCH_INSTALL_DOCS=OFF")
+  require_package(${_args})
+  if (catch2_USE_CATCH_DISCOVER_TESTS)
+    list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
+  endif()
+  if (catch2_USE_CPP17_STRING_VIEW)
+    target_compile_features(Catch2 PUBLIC cxx_std_17)
+  endif()
 endif()
 
 # for catch_discover_tests
 if (catch2_USE_CATCH_DISCOVER_TESTS)
-  list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
   include(CTest)
   include(Catch)
 endif()

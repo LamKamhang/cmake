@@ -372,10 +372,15 @@ macro(install_and_find_package)
     list(APPEND CPM_ARGS_CMAKE_ARGS "-D${OPTION_KEY}=${OPTION_VALUE}")
   endforeach()
 
+  set(my_origin_parameters ${PKG_CPM_ARGS})
+  list(SORT my_origin_parameters)
+  string(SHA1 my_origin_hash "${my_origin_parameters}")
+  set(PKG_INSTALL_PREFIX ${CHAOS_PACKAGE_INSTALL_PREFIX}/${CPM_ARGS_NAME}/${my_origin_hash})
+
   if (CHAOS_PACKAGE_ENABLE_TRY_FIND)
     # TODO: use args-hashed to distinguish different prebuild.
     find_package(${CPM_ARGS_NAME} ${find_package_args} NO_DEFAULT_PATH
-      PATHS ${CHAOS_PACKAGE_INSTALL_PREFIX}
+      PATHS ${PKG_INSTALL_PREFIX}
     )
   endif()
 
@@ -393,7 +398,7 @@ macro(install_and_find_package)
       -G${CMAKE_GENERATOR}
       -DCMAKE_BUILD_TYPE=${CHAOS_PACKAGE_BUILD_TYPE}
       -DBUILD_SHARED_LIBS=${CHAOS_PACKAGE_BUILD_SHARED}
-      -DCMAKE_INSTALL_PREFIX=${CHAOS_PACKAGE_INSTALL_PREFIX}
+      -DCMAKE_INSTALL_PREFIX=${PKG_INSTALL_PREFIX}
       -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
       -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
       ${CPM_ARGS_CMAKE_ARGS}
@@ -421,7 +426,7 @@ macro(install_and_find_package)
     endif()
 
     find_package(${CPM_ARGS_NAME} ${find_package_args} NO_DEFAULT_PATH
-      PATHS ${CHAOS_PACKAGE_INSTALL_PREFIX}
+      PATHS ${PKG_INSTALL_PREFIX}
     )
   endif()
 endmacro()
