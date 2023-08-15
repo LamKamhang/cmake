@@ -15,40 +15,38 @@ include(${CMAKE_CURRENT_LIST_DIR}/CPM.cmake)
 ########################################################################
 # Options/CacheVariables
 ########################################################################
-option(CHAOS_PACKAGE_OVERRIDE_FIND_PACKAGE "override find_package with verbose" ON)
-option(CHAOS_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." ON)
-option(CHAOS_PACKAGE_PREFER_INSTALL_FIND "prefer install and find strategy" ON)
-option(CHAOS_PACKAGE_VERBOSE_INSTALL "Enable verbose ExternalPackage" ON)
-option(CHAOS_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" ON)
+option(LAM_PACKAGE_OVERRIDE_FIND_PACKAGE "override find_package with verbose" ON)
+option(LAM_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." ON)
+option(LAM_PACKAGE_PREFER_INSTALL_FIND "prefer install and find strategy" ON)
+option(LAM_PACKAGE_VERBOSE_INSTALL "Enable verbose ExternalPackage" ON)
+option(LAM_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" ON)
 
-message(DEBUG "[package_cpm|TRY_FIND]: ${CHAOS_PACKAGE_ENABLE_TRY_FIND}")
-set(CHAOS_PACKAGE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
+set(LAM_PACKAGE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
   CACHE STRING "Default ExternalPackage BuildType"
 )
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
-  set(CHAOS_PACKAGE_BUILD_TYPE "Release")
+  set(LAM_PACKAGE_BUILD_TYPE "Release")
 endif()
 # BuildType to lowercase.
-string(TOLOWER ${CHAOS_PACKAGE_BUILD_TYPE} CHAOS_PACKAGE_BUILD_TYPE_LC)
-message(DEBUG "[package_cpm|ExternalProjectBuildType]: ${CHAOS_PACKAGE_BUILD_TYPE}")
+string(TOLOWER ${LAM_PACKAGE_BUILD_TYPE} LAM_PACKAGE_BUILD_TYPE_LC)
+lam_debug("[package_cpm|ExternalProjectBuildType]: ${LAM_PACKAGE_BUILD_TYPE}")
 
-set(CHAOS_PACKAGE_INSTALL_PREFIX ${CPM_SOURCE_CACHE}/installed/${CHAOS_PACKAGE_BUILD_TYPE_LC}
+set(LAM_PACKAGE_INSTALL_PREFIX ${CPM_SOURCE_CACHE}/installed/${LAM_PACKAGE_BUILD_TYPE_LC}
   CACHE PATH "Directory to install external package."
 )
-message(DEBUG "[package_cpm|ExternalPackageInstallPath]: ${CHAOS_PACKAGE_INSTALL_PREFIX}")
 
-set(CHAOS_PACKAGE_NUM_THREADS 0 CACHE STRING "Number of Threads used to comile.")
-if (${CHAOS_PACKAGE_NUM_THREADS} EQUAL 0)
+set(LAM_PACKAGE_NUM_THREADS 0 CACHE STRING "Number of Threads used to comile.")
+if (${LAM_PACKAGE_NUM_THREADS} EQUAL 0)
   include(ProcessorCount)
-  ProcessorCount(CHAOS_PACKAGE_NUM_THREADS)
+  ProcessorCount(LAM_PACKAGE_NUM_THREADS)
 endif()
-message(STATUS "[package#Threads]: ${CHAOS_PACKAGE_NUM_THREADS}")
+message(STATUS "[package#Threads]: ${LAM_PACKAGE_NUM_THREADS}")
 
 ########################################################################
 # Core Implementation.
 ########################################################################
 function(is_version out v)
-  message(DEBUG "check whether |${v}| is version")
+  lam_verbose_func()
 
   # major[.minor[.patch[.tweak]]]
   string(REGEX MATCH "^[0-9]+(.[0-9]+)?(.[0-9]+)?(.[0-9]+)?$" res ${v})
@@ -62,12 +60,12 @@ endfunction()
 
 function(infer_package_name_from_uri out uri)
   # trim tailing.
-  DEBUG_MSG("infer_package_name_from ${uri}")
+  lam_verbose_func()
 
   string(REGEX REPLACE "@([0-9.]*)$" "" uri ${uri})
   string(REGEX REPLACE "#(.*)$" "" uri ${uri})
   string(REGEX REPLACE ".git$" "" uri ${uri})
-  DEBUG_MSG("uri after trim: ${uri}")
+  lam_debug("uri after trim: ${uri}")
 
   if (${uri} MATCHES "([^/:]+)$")
     set(${out} ${CMAKE_MATCH_1} PARENT_SCOPE)
@@ -77,14 +75,14 @@ function(infer_package_name_from_uri out uri)
 endfunction()
 
 function(infer_version_from_tag out tag)
-  message(DEBUG "infer_version_from ${tag}")
+  lam_verbose_func()
 
   # extract version pattern from tag.
   if(${tag} MATCHES "^[^0-9]*([0-9]+[0-9.]*)([^0-9]+.*)*$")
     is_version(_ ${CMAKE_MATCH_1})
 
     if(_)
-      message(DEBUG "infer_version_from_tag get: ${CMAKE_MATCH_1}")
+      lam_debug("infer_version_from_tag get: ${CMAKE_MATCH_1}")
       set(${out} ${CMAKE_MATCH_1} PARENT_SCOPE)
     else()
       unset(${out} PARENT_SCOPE)
@@ -96,7 +94,7 @@ endfunction()
 
 # uri must be: scheme:path[#tag][@version]
 function(infer_args_from_uri out_args uri)
-  message(DEBUG "infer_args_from_uri: input is |${uri}|")
+  lam_debug("infer_args_from_uri: input is |${uri}|")
   # Step0. check uri.
   if (${uri} MATCHES " ")
     message(FATAL_ERROR "uri |${uri}| cannot has SPACE")
@@ -118,15 +116,15 @@ function(infer_args_from_uri out_args uri)
     endif()
     string(REGEX REPLACE "#(.*)$" "" url ${uri})
   endif()
-  message(DEBUG "tag is: ${tag}, version is: ${version}")
+  lam_debug("tag is: ${tag}, version is: ${version}")
   # Step3. pick scheme.
   # infer scheme from url.
   # scheme:path
   if(${url} MATCHES "^([^:]+):(.+)$")
     string(TOLOWER ${CMAKE_MATCH_1} scheme)
     set(path ${CMAKE_MATCH_2})
-    DEBUG_MSG("Current.Match.Scheme: ${scheme}")
-    DEBUG_MSG("Current.Match.Path: ${path}")
+    lam_debug("Current.Match.Scheme: ${scheme}")
+    lam_debug("Current.Match.Path: ${path}")
   endif()
 
   # some special schemes
@@ -135,7 +133,7 @@ function(infer_args_from_uri out_args uri)
       set(out GIT_REPOSITORY
         ssh://git@ryon.ren:10022/mirrors/${CMAKE_MATCH_1})
     else()
-      ERROR_MSG("Unable to infer repo name: ${path}")
+      lam_fatal("Unable to infer repo name: ${path}")
     endif()
 
     set(type git)
@@ -183,17 +181,18 @@ function(infer_args_from_uri out_args uri)
     set(out ${out} VERSION "${version}")
   endif()
 
-  message("Current.Prepare.args: ${out}")
+  lam_debug("Current.Prepare.args: ${out}")
 
   set(${out_args} ${out} PARENT_SCOPE)
 endfunction()
 
+# TODO: make it neat!
 macro(require_package uri)
-  DEBUG_MSG("uri: ${uri}")
-  DEBUG_MSG("args: ${ARGN}")
+  lam_debug("uri: ${uri}")
+  lam_debug("args: ${ARGN}")
   # extract uri from args.
   infer_args_from_uri(extra_args "${uri}")
-  DEBUG_MSG("extra_args: ${extra_args}")
+  lam_debug("extra_args: ${extra_args}")
 
   # parse CMAKE_ARGS/GIT_PATCH
   cmake_parse_arguments(PKG "" "GIT_PATCH;NAME;DOWNLOAD_ONLY" "CMAKE_ARGS" "${ARGN}")
@@ -210,20 +209,20 @@ macro(require_package uri)
   set(CPM_OPTIONS "")
   foreach(arg ${PKG_CMAKE_ARGS})
     if(${arg} MATCHES "^-D([^ ]+)(:[^ ]+)?=([^ ]+)$")
-      DEBUG_MSG("Key: ${CMAKE_MATCH_1}, Value: ${CMAKE_MATCH_3}, Type: ${CMAKE_MATCH_2}")
+      lam_debug("Key: ${CMAKE_MATCH_1}, Value: ${CMAKE_MATCH_3}, Type: ${CMAKE_MATCH_2}")
       set(CPM_OPTIONS ${CPM_OPTIONS} "${CMAKE_MATCH_1} ${CMAKE_MATCH_3}")
     else()
-      ERROR_MSG("Unknown cmake_arg: ${arg}, should be specified as: -D<var>[:<type>]=<value>")
+      lam_fatal("Unknown cmake_arg: ${arg}, should be specified as: -D<var>[:<type>]=<value>")
     endif()
   endforeach()
 
-  DEBUG_MSG("CMAKE.ARGS: ${CPM_OPTIONS}")
+  lam_debug("CMAKE.ARGS: ${CPM_OPTIONS}")
 
   if (DEFINED PKG_GIT_PATCH)
     get_filename_component(PKG_GIT_PATCH ${PKG_GIT_PATCH} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
-    ASSERT_FILE_EXISTS(${PKG_GIT_PATCH})
+    lam_assert_file_exists(${PKG_GIT_PATCH})
     find_package(Git REQUIRED)
-    ASSERT_DEFINED(GIT_EXECUTABLE)
+    lam_assert_defined(GIT_EXECUTABLE)
     list(APPEND extra_args
       PATCH_COMMAND ${GIT_EXECUTABLE} restore . && ${GIT_EXECUTABLE} apply ${PKG_GIT_PATCH}
     )
@@ -335,7 +334,7 @@ macro(verbose_find_package PKG)
   endif()
 endmacro()
 
-if (CHAOS_PACKAGE_OVERRIDE_FIND_PACKAGE)
+if (LAM_PACKAGE_OVERRIDE_FIND_PACKAGE)
   macro(find_package PKG)
     _find_package(${PKG} ${ARGN})
     verbose_find_package(${PKG})
@@ -344,7 +343,7 @@ endif()
 
 macro(find_package_ext PKG)
   find_package(${PKG} ${ARGN})
-  if (NOT CHAOS_PACKAGE_OVERRIDE_FIND_PACKAGE)
+  if (NOT LAM_PACKAGE_OVERRIDE_FIND_PACKAGE)
     verbose_find_package(${PKG})
   endif()
 endmacro()
@@ -364,7 +363,7 @@ macro(install_and_find_package)
     set(uri ${PKG_CPM_ARGS})
     list(FILTER uri INCLUDE REGEX "^([^#: ]+):([^#@ ]+)(#[^#@ ]*)?(@[0-9.]*)?$")
     list(LENGTH uri NUM_URI)
-    ASSERT_EQUAL(${NUM_URI} 1)
+    lam_assert_list_var_size(uri 1)
     infer_package_name_from_uri(CPM_ARGS_NAME ${uri})
   endif()
   foreach(arg ${CPM_ARGS_OPTIONS})
@@ -375,9 +374,9 @@ macro(install_and_find_package)
   set(my_origin_parameters ${PKG_CPM_ARGS})
   list(SORT my_origin_parameters)
   string(SHA1 my_origin_hash "${my_origin_parameters}")
-  set(PKG_INSTALL_PREFIX ${CHAOS_PACKAGE_INSTALL_PREFIX}/${CPM_ARGS_NAME}/${my_origin_hash})
+  set(PKG_INSTALL_PREFIX ${LAM_PACKAGE_INSTALL_PREFIX}/${CPM_ARGS_NAME}/${my_origin_hash})
 
-  if (CHAOS_PACKAGE_ENABLE_TRY_FIND)
+  if (LAM_PACKAGE_ENABLE_TRY_FIND)
     # TODO: use args-hashed to distinguish different prebuild.
     find_package(${CPM_ARGS_NAME} ${find_package_args} NO_DEFAULT_PATH
       PATHS ${PKG_INSTALL_PREFIX}
@@ -396,8 +395,8 @@ macro(install_and_find_package)
       -S ${${CPM_ARGS_NAME}_SOURCE_DIR}
       -B${CMAKE_BINARY_DIR}/deps-build/${CPM_ARGS_NAME}
       -G${CMAKE_GENERATOR}
-      -DCMAKE_BUILD_TYPE=${CHAOS_PACKAGE_BUILD_TYPE}
-      -DBUILD_SHARED_LIBS=${CHAOS_PACKAGE_BUILD_SHARED}
+      -DCMAKE_BUILD_TYPE=${LAM_PACKAGE_BUILD_TYPE}
+      -DBUILD_SHARED_LIBS=${LAM_PACKAGE_BUILD_SHARED}
       -DCMAKE_INSTALL_PREFIX=${PKG_INSTALL_PREFIX}
       -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
       -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
@@ -410,13 +409,13 @@ macro(install_and_find_package)
       message(FATAL_ERROR "configure external project(${CPM_ARGS_NAME}) failed: ${result}")
     endif()
 
-    if (NOT CHAOS_PACKAGE_VERBOSE_INSTALL)
+    if (NOT LAM_PACKAGE_VERBOSE_INSTALL)
       set(__ARGS OUTPUT_QUIET)
     endif()
 
     execute_process(
       COMMAND ${CMAKE_COMMAND}
-      --build ${CMAKE_BINARY_DIR}/deps-build/${CPM_ARGS_NAME} --target install -j ${CHAOS_PACKAGE_NUM_THREADS}
+      --build ${CMAKE_BINARY_DIR}/deps-build/${CPM_ARGS_NAME} --target install -j ${LAM_PACKAGE_NUM_THREADS}
       RESULT_VARIABLE result
       ${__ARGS}
     )

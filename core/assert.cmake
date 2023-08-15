@@ -1,6 +1,6 @@
 include_guard()
 
-option(LAM_ENABLE_ERROR_KEEP_GOING "enable lam_error() keep going" ON)
+option(LAM_ENABLE_ERROR_KEEP_GOING "enable lam_error() keep going" OFF)
 set(lam_debug_indent " |")
 
 function(lam_debug)
@@ -17,6 +17,10 @@ function(lam_error)
   else()
     message(FATAL_ERROR "${ARGV}")
   endif()
+endfunction()
+
+function(lam_fatal)
+  message(FATAL_ERROR "${ARGV}")
 endfunction()
 
 ##############################################################################
