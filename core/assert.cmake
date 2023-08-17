@@ -96,7 +96,7 @@ function(lam_assert_num_equal LHS RHS)
   __lam_assert("\"${LHS}\"==\"${RHS}\"")
 endfunction()
 
-function(lam_assert_num_not_equal LHS RHS)
+function(lam_assert_not_num_equal LHS RHS)
   lam_verbose_func()
 
   set(__passed FALSE)
@@ -106,7 +106,7 @@ function(lam_assert_num_not_equal LHS RHS)
   __lam_assert("\"${LHS}\"!=\"${RHS}\"")
 endfunction()
 
-function(lam_assert_num_less LHS RHS)
+function(lam_assert_num_lt LHS RHS)
   lam_verbose_func()
 
   set(__passed FALSE)
@@ -116,7 +116,7 @@ function(lam_assert_num_less LHS RHS)
   __lam_assert("\"${LHS}\"<\"${RHS}\"")
 endfunction()
 
-function(lam_assert_num_less_equal LHS RHS)
+function(lam_assert_num_le LHS RHS)
   lam_verbose_func()
 
   set(__passed FALSE)
@@ -126,7 +126,7 @@ function(lam_assert_num_less_equal LHS RHS)
   __lam_assert("\"${LHS}\"<=\"${RHS}\"")
 endfunction()
 
-function(lam_assert_num_greater LHS RHS)
+function(lam_assert_num_gt LHS RHS)
   lam_verbose_func()
 
   set(__passed FALSE)
@@ -136,7 +136,7 @@ function(lam_assert_num_greater LHS RHS)
   __lam_assert("\"${LHS}\">\"${RHS}\"")
 endfunction()
 
-function(lam_assert_num_greater_equal LHS RHS)
+function(lam_assert_num_ge LHS RHS)
   lam_verbose_func()
 
   set(__passed FALSE)
@@ -168,7 +168,7 @@ function(lam_assert_str_not_equal LHS RHS)
   __lam_assert("\"${LHS}\"!=\"${RHS}\"")
 endfunction()
 
-function(lam_assert_str_less LHS RHS)
+function(lam_assert_str_lt LHS RHS)
   lam_verbose_func()
 
   set(__passed FALSE)
@@ -178,7 +178,7 @@ function(lam_assert_str_less LHS RHS)
   __lam_assert("\"${LHS}\"<\"${RHS}\"")
 endfunction()
 
-function(lam_assert_str_less_equal LHS RHS)
+function(lam_assert_str_le LHS RHS)
   lam_verbose_func()
 
   set(__passed FALSE)
@@ -188,7 +188,7 @@ function(lam_assert_str_less_equal LHS RHS)
   __lam_assert("\"${LHS}\"<=\"${RHS}\"")
 endfunction()
 
-function(lam_assert_str_greater LHS RHS)
+function(lam_assert_str_gt LHS RHS)
   lam_verbose_func()
 
   set(__passed FALSE)
@@ -198,7 +198,7 @@ function(lam_assert_str_greater LHS RHS)
   __lam_assert("\"${LHS}\">\"${RHS}\"")
 endfunction()
 
-function(lam_assert_str_greater_equal LHS RHS)
+function(lam_assert_str_ge LHS RHS)
   lam_verbose_func()
 
   set(__passed FALSE)
@@ -211,7 +211,7 @@ endfunction()
 # Assertion for lists
 ##############################################################################
 # NOTE: The VAR's name cannot be VAR/SIZE
-function(lam_assert_list_var_size VAR SIZE)
+function(lam_assert_list_size_var VAR SIZE)
   lam_verbose_func()
   lam_assert_num_equal(${ARGC} 2)
 
@@ -223,7 +223,7 @@ function(lam_assert_list_var_size VAR SIZE)
   __lam_assert("(${VAR}:=[${${VAR}}]).size(${N_TERMS})==${SIZE}")
 endfunction()
 
-function(lam_assert_list_var_size_lt VAR SIZE)
+function(lam_assert_list_size_lt_var VAR SIZE)
   lam_verbose_func()
   lam_assert_num_equal(${ARGC} 2)
 
@@ -235,7 +235,7 @@ function(lam_assert_list_var_size_lt VAR SIZE)
   __lam_assert("(${VAR}:=[${${VAR}}]).size(${N_TERMS})<${SIZE}")
 endfunction()
 
-function(lam_assert_list_var_size_gt VAR SIZE)
+function(lam_assert_list_size_gt_var VAR SIZE)
   lam_verbose_func()
   lam_assert_num_equal(${ARGC} 2)
 
@@ -250,7 +250,7 @@ endfunction()
 function(lam_assert_not_empty_var) #extend to arg_list
   lam_verbose_func()
   foreach(__arg ${ARGV})
-    lam_assert_list_var_size_gt(${__arg} 0)
+    lam_assert_list_size_gt_var(${__arg} 0)
   endforeach()
 endfunction()
 
@@ -259,7 +259,7 @@ function(lam_assert_list_size LIST SIZE)
   lam_verbose_func()
   lam_assert_num_equal(${ARGC} 2)
 
-  lam_assert_list_var_size(LIST ${SIZE})
+  lam_assert_list_size_var(LIST ${SIZE})
 endfunction()
 
 function(lam_assert_defined) # passed in a list of variable's name.
@@ -272,7 +272,7 @@ function(lam_assert_defined) # passed in a list of variable's name.
     if (DEFINED ${KEY})
       set(__passed TRUE)
     endif()
-    __lam_assert("${KEY} is defined.")
+    __lam_assert("${KEY} should be defined.")
   endforeach()
 endfunction()
 
@@ -284,7 +284,7 @@ function(lam_assert_not_defined)
     if (NOT DEFINED ${KEY})
       set(__passed TRUE)
     endif()
-    __lam_assert("${KEY} should not be defined.")
+    __lam_assert("${KEY} should *NOT* be defined.")
   endforeach()
 endfunction()
 
