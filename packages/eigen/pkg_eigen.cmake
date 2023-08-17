@@ -6,6 +6,7 @@ if (TARGET Eigen3::Eigen)
 endif()
 
 message(STATUS "[package/Eigen3]: Eigen3::Eigen")
+
 option(eigen_APPLY_CHOLMOD_PATCH "Apply cholmod patch for eigen" ON)
 
 if (NOT DEFINED eigen_VERSION)
@@ -15,15 +16,18 @@ if (NOT DEFINED eigen_TAG)
   set(eigen_TAG "${eigen_VERSION}")
 endif()
 
-if(eigen_APPLY_CHOLMOD_PATCH)
-  require_package("gl:libeigen/eigen#${eigen_TAG}"
-    NAME Eigen3
-    GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/cholmod.patch"
-    CMAKE_ARGS "-DEIGEN_BUILD_DOC=OFF"
-    CMAKE_ARGS "-DBUILD_TESTING=OFF")
-else()
-  require_package("gl:libeigen/eigen#${eigen_TAG}"
-    NAME Eigen3
-    CMAKE_ARGS "-DEIGEN_BUILD_DOC=OFF"
-    CMAKE_ARGS "-DBUILD_TESTING=OFF")
+set(__args "gl:libeigen/eigen#${eigen_TAG}" NAME Eigen3)
+if (eigen_APPLY_CHOLMOD_PATCH)
+  list(APPEND __args
+    GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/cholmod.patch")
 endif()
+
+list(APPEND __args
+  CMAKE_ARGS
+  "-DEIGEN_BUILD_DOC=OFF"
+  "-DBUILD_TESTING=OFF"
+  # for user customize.
+  ${eigen_USER_CMAKE_ARGS}
+)
+
+lam_add_package_maybe_prebuild(eigen ${__args})
