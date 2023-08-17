@@ -73,3 +73,42 @@ lam_assert_exists(${CMAKE_CURRENT_LIST_DIR}) # passed.
 lam_assert_file_exists(${CMAKE_CURRENT_LIST_FILE}) # passed.
 # lam_assert_file_exists(${CMAKE_CURRENT_LIST_DIR}) # failed.
 # lam_assert_dir_exists(${CMAKE_CURRENT_LIST_FILE}) # failed.
+
+function(check_equal)
+  # for number.
+  lam_assert_num_equal(10 10)
+  set(v1 10)
+  lam_assert_num_equal(${v1} 10)
+  # lam_assert_num_equal(v1 10) # failed.
+  # lam_assert_str_equal(v1 10) # failed.
+  lam_assert_not_equal(${v1} 11)
+  lam_assert_not_equal(v1 11)
+
+  # for string.
+  set(v2 hello)
+  lam_assert_str_equal(${v2} "hello")
+  lam_assert_not_equal(${v2} "hello2")
+  lam_assert_not_equal(v2 "hello2")
+endfunction()
+check_equal()
+
+function(check_empty_defined)
+  lam_assert_not_defined(hello)
+
+  set(v1 ${hello}) # since hello is undefined. thus, this is identical to unset.
+  # lam_assert_not_empty_var(v1) # failed.
+  lam_assert_not_defined(v1)
+
+  set(v2 "")
+  # lam_assert_not_empty_var(v2) # failed.
+  lam_assert_defined(v2)
+
+  set(v3 ${v2}) # since v2 is empty, thus this is identical to unset.
+  # lam_assert_not_empty_var(v3) # failed.
+  lam_assert_not_defined(v3)
+
+  set(v4 a)
+  lam_assert_not_empty_var(v4)
+  lam_assert_defined(v4)
+endfunction()
+check_empty_defined()

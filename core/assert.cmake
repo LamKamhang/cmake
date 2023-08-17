@@ -168,6 +168,14 @@ function(lam_assert_str_not_equal LHS RHS)
   __lam_assert("\"${LHS}\"!=\"${RHS}\"")
 endfunction()
 
+macro(lam_assert_equal LHS RHS)
+  lam_assert_str_equal("${LHS}" "${RHS}")
+endmacro()
+
+macro(lam_assert_not_equal LHS RHS)
+  lam_assert_str_not_equal("${LHS}" "${RHS}")
+endmacro()
+
 function(lam_assert_str_lt LHS RHS)
   lam_verbose_func()
 
