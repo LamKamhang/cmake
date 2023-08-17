@@ -524,3 +524,10 @@ function(lam_install_and_find_package)
     PATHS ${PKG_INSTALL_PREFIX}
   )
 endfunction()
+
+########################################################################
+# define some alias
+########################################################################
+macro(require_package)
+  lam_add_package(${ARGV})
+endmacro()

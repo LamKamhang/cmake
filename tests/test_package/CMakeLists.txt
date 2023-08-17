@@ -7,6 +7,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/../../utility.cmake)
 set(cases
   add_package
   install_and_find_package
+  install_and_find_package_diff_version
 )
 
 function(run_test name)
