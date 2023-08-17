@@ -6,8 +6,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/../../utility.cmake)
 
 set(cases
   add_package
-  install_and_find_package
-  install_and_find_package_diff_version
+  add_prebuild_package
+  add_prebuild_package_diff_version
+  declare_package
+  declare_prebuild_package
+  declare_package_no_prebuild
 )
 
 function(run_test name)

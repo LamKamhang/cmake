@@ -23,8 +23,8 @@ endmacro()
 ########################################################################
 option(LAM_PACKAGE_OVERRIDE_FIND_PACKAGE "override find_package with verbose" ON)
 option(LAM_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." ON)
-option(LAM_PACKAGE_PREFER_INSTALL_FIND "prefer install and find strategy" ON)
-option(LAM_PACKAGE_VERBOSE_INSTALL "Enable verbose ExternalPackage" ON)
+option(LAM_PACKAGE_PREFER_PREBUILD "prefer prebuild mode(install and then find strategy)" ON)
+option(LAM_PACKAGE_VERBOSE_INSTALL "enable verbose ExternalPackage" ON)
 option(LAM_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" ON)
 
 set(LAM_PACKAGE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
@@ -369,44 +369,71 @@ macro(lam_include_package pkg)
   endif()
 endmacro()
 
-macro(lam_declare_deps)
+# parse declare_deps format
+# [~][!]name[#tag][@version]
+# ~ indicate indicate the package is optional.
+# '!' indicate whether use prebuild mode.
+# tag used to define name_TAG.
+# version used to define name_VERSION.
+function(lam_parse_deps_format uri out_name)
+  lam_verbose_func()
+  lam_assert_num_equal(${ARGC} 2)
+
+  string(REGEX REPLACE "^(~)?(!)?([^@#!]+)" "" tag_version ${uri})
+  set(pkg_name ${CMAKE_MATCH_3})
+  set(optional_flag ${CMAKE_MATCH_1})
+  set(prebuild_flag ${CMAKE_MATCH_2})
+  string(REPLACE "~" "YES" optional_flag "${optional_flag}")
+  string(REPLACE "!" "YES" prebuild_flag "${prebuild_flag}")
+
+  lam_debug("name: ${pkg_name}")
+  lam_debug("optional: ${optional_flag}")
+  lam_debug("prebuild: ${prebuild_flag}")
+  lam_debug("tagversion: ${tag_version}")
+
+  unset(pkg_tag)
+  unset(pkg_version)
+  if ("${tag_version}" MATCHES "^(@(default)?)?$")
+    # use default. do not set tag and version.
+  elseif (${tag_version} MATCHES "^#([^#]+)$")
+    set(pkg_tag ${CMAKE_MATCH_1})
+  elseif(${tag_version} MATCHES "^@([0-9.]+)$")
+    set(pkg_version ${CMAKE_MATCH_1})
+  else()
+    lam_error("${uri} is not valid.")
+  endif()
+
+  # export variables.
+  set(${out_name} ${pkg_name} PARENT_SCOPE)
+  set(${pkg_name}_IS_OPTIONAL ${optional_flag} PARENT_SCOPE)
+  set(${pkg_name}_USE_PREBUILD ${prebuild_flag} PARENT_SCOPE)
+  set(${pkg_name}_TAG ${pkg_tag} PARENT_SCOPE)
+  set(${pkg_name}_VERSION ${pkg_version} PARENT_SCOPE)
+endfunction()
+
+function(__get_optional_dep_flag out pkg_name)
+  string(TOUPPER ${pkg_name} PKG_NAME)
+  if (NOT DEFINED OPTIONAL_PKG_PREFIX)
+    set(${out} CHAOS_USE_${PKG_NAME} PARENT_SCOPE)
+  else()
+    set(${out} ${OPTIONAL_PKG_PREFIX}_${PKG_NAME} PARENT_SCOPE)
+  endif()
+endfunction()
+
+macro(lam_use_deps)
   foreach(dep ${ARGV})
     message(STATUS "[lam_package] current dep: ${dep}")
-    if (${dep} MATCHES "^([^@#]+)#([^#]+)$")
-      # split dep into name#tag[@version]
-      set(${CMAKE_MATCH_1}_TAG ${CMAKE_MATCH_2})
-      message(STATUS "${CMAKE_MATCH_1} use ${CMAKE_MATCH_2}")
-      lam_include_package(${CMAKE_MATCH_1})
-    elseif(${dep} MATCHES "^([^@#]+)@([0-9.]+)$")
-      # split dep into name@version
-      set(${CMAKE_MATCH_1}_VERSION ${CMAKE_MATCH_2})
-      message(STATUS "${CMAKE_MATCH_1} use ${CMAKE_MATCH_2}")
-      lam_include_package(${CMAKE_MATCH_1})
-    elseif(${dep} MATCHES "^([^@#]+)(@(default)?)?$")
-      message(STATUS "${CMAKE_MATCH_1} use default")
-      # use default tag.
-      lam_include_package(${CMAKE_MATCH_1})
-    else()
-      message(FATAL_ERROR "Invalid dep format(name[#tag][@version]): ${dep}")
-    endif()
-  endforeach()
-endmacro()
+    lam_parse_deps_format(${dep} dep_name)
+    lam_assert_defined(dep_name)
 
-macro(lam_optional_pkg_deps)
-  foreach(dep ${ARGV})
-    if (${dep} MATCHES "^([^@#]*)")
-      string(TOUPPER ${CMAKE_MATCH_1} PKG_NAME)
-      if (NOT DEFINED OPTIONAL_PKG_PREFIX)
-        if (CHAOS_USE_${PKG_NAME})
-          lam_declare_deps(${dep})
-        endif()
-      else()
-        if (${OPTIONAL_PKG_PREFIX}_${PKG_NAME})
-          lam_declare_deps(${dep})
-        endif()
+    if (${dep_name}_IS_OPTIONAL)
+      __get_optional_dep_flag(__dep_flag_name ${dep_name})
+      if (${__dep_flag_name})
+        lam_include_package(${dep_name})
       endif()
+      unset(__dep_flag_name)
     else()
-      message(FATAL_ERROR "Cannot infer package name: ${dep}")
+      lam_include_package(${dep_name})
     endif()
   endforeach()
 endmacro()
@@ -442,7 +469,11 @@ macro(find_package_ext PKG)
 endmacro()
 
 # NOTE!! Only Experimentally support!!
-function(lam_install_and_find_package)
+# The external package should provide an install target.
+# and has a well-designed install and then find strategy.
+# Be aware to use this, only for advance user.
+# Only for some well known package.
+function(lam_add_prebuild_package)
   cmake_parse_arguments(PKG "" "" "CPM_ARGS" ${ARGV})
   set(find_package_args ${PKG_UNPARSED_ARGUMENTS})
   if (NOT DEFINED PKG_CPM_ARGS)
@@ -528,6 +559,21 @@ endfunction()
 ########################################################################
 # define some alias
 ########################################################################
+function(lam_check_prefer_prebuild out name)
+  # If defined ${name}_USE_PREBUILD and it's ON.
+  # or does not defined ${name}_USE_PREBUILD
+  # but the global flags LAM_PACKAGE_PREFER_PREBUILD is ON
+  if ((DEFINED ${name}_USE_PREBUILD
+        AND ${name}_USE_PREBUILD)
+      OR
+      (NOT DEFINED ${name}_USE_PREBUILD
+        AND LAM_PACKAGE_PREFER_PREBUILD))
+    set(${out} YES PARENT_SCOPE)
+  else()
+    set(${out} NO PARENT_SCOPE)
+  endif()
+endfunction()
+
 macro(require_package)
   lam_add_package(${ARGV})
 endmacro()

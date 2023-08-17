@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 project(test_package)
 
 include(utility)
-lam_install_and_find_package("gl:libeigen/eigen#3.4.0"
+lam_add_prebuild_package("gl:libeigen/eigen#3.3.9"
   NAME Eigen3
   CMAKE_ARGS
   "-DEIGEN_BUILD_DOC=OFF"

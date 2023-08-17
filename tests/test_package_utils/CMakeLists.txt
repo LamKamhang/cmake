@@ -216,3 +216,85 @@ function(check_extract_args)
   endblock()
 endfunction()
 check_extract_args()
+
+function(check_check_prefer_prebuild)
+  # global default mode is ON.
+  set(LAM_PACKAGE_PREFER_PREBUILD ON)
+  # package mode is ON.
+  set(eigen_USE_PREBUILD ON)
+  lam_check_prefer_prebuild(out eigen)
+  lam_assert_truthy(out)
+
+  # package mode is OFF
+  set(eigen_USE_PREBUILD OFF)
+  lam_check_prefer_prebuild(out eigen)
+  lam_assert_falsy(out)
+
+  # package mode is undef.
+  unset(eigen_USE_PREBUILD)
+  lam_check_prefer_prebuild(out eigen)
+  lam_assert_truthy(out)
+
+  # global default mode is ON.
+  set(LAM_PACKAGE_PREFER_PREBUILD OFF)
+  # package mode is ON.
+  set(eigen_USE_PREBUILD ON)
+  lam_check_prefer_prebuild(out eigen)
+  lam_assert_truthy(out)
+
+  # package mode is OFF
+  set(eigen_USE_PREBUILD OFF)
+  lam_check_prefer_prebuild(out eigen)
+  lam_assert_falsy(out)
+
+  # package mode is undef.
+  unset(eigen_USE_PREBUILD)
+  lam_check_prefer_prebuild(out eigen)
+  lam_assert_falsy(out)
+endfunction()
+check_check_prefer_prebuild()
+
+function(check_parse_deps_format)
+  lam_parse_deps_format(~eigen1 out)
+  lam_assert_defined(out eigen1_IS_OPTIONAL)
+  lam_assert_equal(${out} "eigen1")
+  lam_assert_truthy(eigen1_IS_OPTIONAL)
+  lam_assert_not_defined(eigen1_USE_PREBUILD eigen1_TAG eigen1_VERSION)
+
+  lam_parse_deps_format(eigen2 out)
+  lam_assert_defined(out)
+  lam_assert_equal(${out} "eigen2")
+  lam_assert_not_defined(eigen2_IS_OPTIONAL eigen2_USE_PREBUILD eigen2_TAG eigen2_VERSION)
+
+  lam_parse_deps_format("!eigen#v3.4.0@" out)
+  lam_assert_defined(out eigen_USE_PREBUILD eigen_TAG)
+  lam_assert_equal(${out} "eigen")
+  lam_assert_truthy(eigen_USE_PREBUILD)
+  lam_assert_equal(${eigen_TAG} "v3.4.0@")
+  lam_assert_not_defined(eigen_IS_OPTIONAL eigen_VERSION)
+
+  lam_parse_deps_format("!eigen#v3.4.0@3.4" out)
+  lam_assert_defined(out eigen_USE_PREBUILD eigen_TAG)
+  lam_assert_equal(${out} "eigen")
+  lam_assert_truthy(eigen_USE_PREBUILD)
+  lam_assert_equal(${eigen_TAG} "v3.4.0@3.4")
+  lam_assert_not_defined(eigen_IS_OPTIONAL eigen_VERSION)
+
+  lam_parse_deps_format("~!eigen#v3.4.0@3.4" out)
+  lam_assert_defined(out eigen_USE_PREBUILD eigen_TAG eigen_IS_OPTIONAL)
+  lam_assert_equal(${out} "eigen")
+  lam_assert_truthy(eigen_USE_PREBUILD)
+  lam_assert_truthy(eigen_IS_OPTIONAL)
+  lam_assert_equal(${eigen_TAG} "v3.4.0@3.4")
+  lam_assert_not_defined(eigen_VERSION)
+
+  lam_parse_deps_format(!eigen@3.4.0 out)
+  lam_assert_defined(out eigen_USE_PREBUILD eigen_VERSION)
+  lam_assert_equal(${out} "eigen")
+  lam_assert_truthy(eigen_USE_PREBUILD)
+  lam_assert_equal(${eigen_VERSION} "3.4.0")
+  lam_assert_not_defined(eigen_IS_OPTIONAL eigen_TAG)
+
+  # lam_parse_deps_format("!eigen@v3.4.0@" out) # failed.
+endfunction()
+check_parse_deps_format()
