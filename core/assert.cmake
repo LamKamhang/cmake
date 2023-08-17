@@ -216,6 +216,27 @@ function(lam_assert_str_ge LHS RHS)
   __lam_assert("\"${LHS}\">=\"${RHS}\"")
 endfunction()
 ##############################################################################
+# Assertion for boolean
+##############################################################################
+function(lam_assert_truthy _arg)
+  lam_verbose_func()
+
+  set(__passed FALSE)
+  if (${_arg})
+    set(__passed TRUE)
+  endif()
+  __lam_assert("key(${_arg}) should be TRUE/ON/YES")
+endfunction()
+function(lam_assert_falsy _arg)
+  lam_verbose_func()
+
+  set(__passed FALSE)
+  if (NOT ${_arg})
+    set(__passed TRUE)
+  endif()
+  __lam_assert("key(${_arg}) should be FALSE/NO/OFF")
+endfunction()
+##############################################################################
 # Assertion for lists
 ##############################################################################
 # NOTE: The VAR's name cannot be VAR/SIZE

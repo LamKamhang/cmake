@@ -1,7 +1,6 @@
 include_guard()
 
 use_cmake_core_module(assert)
-use_cmake_core_module(utils)
 register_cmake_module_path(packages)
 
 ########################################################################
@@ -150,9 +149,27 @@ function(lam_split_uri uri)
   set(lam_pkg_version ${version} PARENT_SCOPE)
 endfunction()
 
+macro(__lam_check_url url)
+  if (${url} MATCHES "@[0-9.]*$")
+    lam_warn("This is split_url function, DONT pass uri hedre, now just simply trim the version part.")
+    string(REGEX REPLACE "@[0-9.]*$" "" url ${url})
+  endif()
+  if(${url} MATCHES "#")
+    lam_warn("This is split_url function, DONT pass uri here, now just simply trim the tag part.")
+    string(REGEX REPLACE "#(.*)$" "" url ${url})
+  endif()
+  if (${url} MATCHES "@[0-9.]*$")
+    lam_warn("This is split_url function, DONT pass uri hedre, now just simply trim the version part.")
+    string(REGEX REPLACE "@[0-9.]*$" "" url ${url})
+  endif()
+endmacro()
+
 function(lam_split_url url)
   lam_verbose_func()
   lam_assert_num_equal(${ARGC} 1)
+  lam_assert_valid_uri(${url})
+  __lam_check_url(${url})
+  lam_debug("url after checking: ${url}")
 
   # output type, url, name
   if (${url} MATCHES "^([^:]+):(.+)$")
@@ -166,7 +183,7 @@ function(lam_split_url url)
   # some special schemes
   if (scheme STREQUAL "rom") # ryon.ren:mirrors
     set(type git)
-    set(url ssh://git@ryon.ren:10022/mirrors/${pkg_name})
+    set(url ssh://git@ryon.ren:10022/mirrors/${name})
   elseif(scheme STREQUAL "gh") # github
     set(type git)
     set(url https://github.com/${path})
@@ -193,6 +210,8 @@ function(lam_split_url url)
       # keep url not changed.
     else() # FIXME: other protocol: svn, cvs.
       set(type archive)
+      # the name parsed from url is not valid.
+      unset(name)
     endif()
   endif()
 
