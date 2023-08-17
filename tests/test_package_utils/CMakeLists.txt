@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.14)
 project(test_package_utils)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../../utility.cmake)
-use_cmake_core_module(package_cpm_v2)
 
 function(check_version)
   lam_is_version(out "1.2.0")

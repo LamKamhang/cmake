@@ -140,3 +140,10 @@ function(check_boolean)
   # lam_assert_falsy(${var}) # failed.
 endfunction()
 check_boolean()
+
+function(check_target_defined)
+  add_library(hello INTERFACE)
+  lam_assert_target_defined(hello)
+  lam_assert_target_not_defined(world)
+endfunction()
+check_target_defined()
