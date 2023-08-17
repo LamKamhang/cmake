@@ -2,6 +2,11 @@ include_guard()
 
 option(LAM_ENABLE_ERROR_KEEP_GOING "enable lam_error() keep going" OFF)
 set(lam_debug_indent " |")
+set(lam_status_indent "")
+
+function(lam_status)
+  message(STATUS "${lam_status_indent}${ARGV}")
+endfunction()
 
 function(lam_debug)
   message(DEBUG "[debug]${lam_debug_indent}${ARGV}")
@@ -283,6 +288,9 @@ function(lam_assert_not_defined)
   endforeach()
 endfunction()
 
+##############################################################################
+# Assertion for file/path
+##############################################################################
 macro(__path_helper)
   lam_debug("current.path: ${PATH}")
   # convert relative path to abspath.
