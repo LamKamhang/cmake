@@ -14,5 +14,6 @@ if (NOT DEFINED pybind11_TAG)
   set(pybind11_TAG "v${pybind11_VERSION}")
 endif()
 
-require_package("gh:pybind/pybind11#${pybind11_TAG}"
+lam_add_package(
+  "gh:pybind/pybind11#${pybind11_TAG}"
   CMAKE_ARGS "-DPYBIND11_TEST=OFF")

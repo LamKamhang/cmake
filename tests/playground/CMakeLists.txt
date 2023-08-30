@@ -2,23 +2,97 @@ cmake_minimum_required(VERSION 3.16)
 
 project(playground)
 
+option(LAM_PACKAGE_PREFER_PREBUILD "prefer prebuild mode(install and then find strategy)" ON)
 include(../../utility.cmake)
 
-install_and_find_package(
-  "gl:libeigen/eigen#3.4.0"
-  NAME Eigen3
-  OPTIONS "EIGEN_BUILD_DOC OFF"
+lam_use_deps(
+  Eigen3
+  autodiff
+  alglib
+  benchmark
+  Catch2
+  bgfx
+  CLI11
+  EnTT
+  eventpp
+  Fastor
+  fmt
+  csv-parser
+  glad
+  glbinding
+  glfw3
+  glm
+  happly
+  imgui
+  lbfgspp
+  libigl
+  libigl_imgui_fonts
+  magic_enum
+  msgpack
+  nameof
+  nanobind
+  nanoflann
+  nlohmann_json
+  openmesh
+  osqp
+  # polyscope
+  proxy
+  pugixml
+  pybind11
+  pybind11_json
+  spdlog
+  spectra
+  stb
+  suitesparse
+  tinyxml2
+  tl-optional
+  tl-expected
 )
 
-install_and_find_package(
-  "gh:glfw/glfw#3.3.8"
-  NAME glfw3
-  OPTIONS "GLFW_BUILD_EXAMPLES OFF"
-  OPTIONS "GLFW_BUILD_TESTS OFF"
-  CMAKE_ARGS "-DGLFW_BUILD_DOCS=OFF"
+set(osqp_DIR ${osqp_INSTALL_DIR})
+lam_use_deps(
+  osqp-eigen
 )
 
-install_and_find_package(
-  "gh:dealii/dealii#v9.5.1"
-  NAME deal.II
+lam_assert_target_defined(
+  Eigen3::Eigen
+  autodiff::autodiff
+  alglib
+  benchmark::benchmark
+  Catch2::Catch2
+  CLI11::CLI11
+  EnTT::EnTT
+  eventpp::eventpp
+  Fastor::Fastor
+  fmt::fmt
+  csv
+  glad::glad
+  glbinding::glbinding
+  glfw::glfw
+  glm::glm
+  happly::happly
+  imgui::imgui
+  lbfgspp::lbfgspp
+  igl::core
+  igl::imgui_fonts
+  magic_enum::magic_enum
+  msgpack-cxx
+  nameof::nameof
+  nanoflann::nanoflann
+  nlohmann_json::nlohmann_json
+  OpenMeshCore
+  osqp
+  OsqpEigen::OsqpEigen
+  # polyscope
+  msft_proxy
+  pugixml::pugixml
+  pybind11::module
+  pybind11_json
+  spdlog::spdlog
+  Spectra::Spectra
+  stb::stb
+  SuiteSparse::CHOLMOD
+  tinyxml2::tinyxml2
+  tl::expected
+  tl::optional
 )

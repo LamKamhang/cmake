@@ -20,4 +20,4 @@ if (NOT DEFINED glad_TAG)
   set(glad_TAG "gl-${glad_GL_CONFIG}-${glad_VERSION}")
 endif()
 
-require_package("gh:LamKamhang/glad#${glad_TAG}")
+lam_add_package("gh:LamKamhang/glad#${glad_TAG}")

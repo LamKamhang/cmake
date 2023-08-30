@@ -15,6 +15,8 @@ if (NOT DEFINED magic_enum_TAG)
   set(magic_enum_TAG "v${magic_enum_VERSION}")
 endif()
 
-require_package("gh:Neargye/magic_enum.git#${magic_enum_TAG}"
+lam_add_package_maybe_prebuild(
+  "gh:Neargye/magic_enum.git#${magic_enum_TAG}"
   CMAKE_ARGS "-DMAGIC_ENUM_OPT_BUILD_EXAMPLES=OFF"
-  CMAKE_ARGS "-DMAGIC_ENUM_OPT_BUILD_TESTS=OFF")
+  CMAKE_ARGS "-DMAGIC_ENUM_OPT_BUILD_TESTS=OFF"
+)

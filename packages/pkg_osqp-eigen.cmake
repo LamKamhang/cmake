@@ -8,12 +8,13 @@ endif()
 message(STATUS "[package/OsqpEigen]: OsqpEigen::OsqpEigen")
 
 if (NOT DEFINED osqp-eigen_VERSION)
-  set(osqp-eigen_VERSION "0.8.0")
+  set(osqp-eigen_VERSION "0.8.1")
 endif()
 if (NOT DEFINED osqp-eigen_TAG)
   set(osqp-eigen_TAG "v${osqp-eigen_VERSION}")
 endif()
 
-require_package("gh:robotology/osqp-eigen#${osqp-eigen_TAG}"
+# TODO: make it prebuild.
+lam_add_package("gh:robotology/osqp-eigen#${osqp-eigen_TAG}"
   NAME OsqpEigen
 )
