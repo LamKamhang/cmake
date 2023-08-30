@@ -20,7 +20,7 @@ endif()
 # https://cmake.org/cmake/help/latest/variable/CMAKE_POLICY_DEFAULT_CMPNNNN.html
 set(CMAKE_POLICY_DEFAULT_CMP0120 OLD)
 
-set(_args
+lam_add_package_maybe_prebuild(
   "gh:cginternals/glbinding#${glbinding_TAG}"
   CMAKE_ARGS "-DOPTION_SELF_CONTAINED=OFF"
   CMAKE_ARGS "-DOPTION_BUILD_TESTS=OFF"
@@ -32,10 +32,6 @@ set(_args
   CMAKE_ARGS "-DOPTION_BUILD_OWN_KHR_HEADERS=OFF"
   CMAKE_ARGS "-DOPTION_BUILD_WITH_LTO=ON"
   CMAKE_ARGS "-DOPTION_USE_GIT_INFORMATION=OFF"
+  # for user customize.
+  ${glbinding_USER_CMAKE_ARGS}
 )
-
-if (CHAOS_PACKAGE_PREFER_INSTALL_FIND)
-  install_and_find_package(${_args})
-else()
-  require_package(${_args})
-endif()

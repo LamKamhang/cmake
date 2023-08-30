@@ -295,6 +295,13 @@ function(check_parse_deps_format)
   lam_assert_equal(${eigen_VERSION} "3.4.0")
   lam_assert_not_defined(eigen_IS_OPTIONAL eigen_TAG)
 
+  lam_parse_deps_format(!!eigen@3.4.0 out)
+  lam_assert_defined(out eigen_USE_PREBUILD eigen_VERSION)
+  lam_assert_equal(${out} "eigen")
+  lam_assert_falsy(eigen_USE_PREBUILD)
+  lam_assert_equal(${eigen_VERSION} "3.4.0")
+  lam_assert_not_defined(eigen_IS_OPTIONAL eigen_TAG)
+
   # lam_parse_deps_format("!eigen@v3.4.0@" out) # failed.
 endfunction()
 check_parse_deps_format()

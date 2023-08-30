@@ -15,7 +15,7 @@ if (NOT DEFINED libigl_imgui_fonts_TAG)
   set(libigl_imgui_fonts_TAG "origin/master")
 endif()
 
-require_package("gh:libigl/libigl-imgui#${libigl_imgui_fonts_TAG}"
+lam_add_package("gh:libigl/libigl-imgui#${libigl_imgui_fonts_TAG}"
   DOWNLOAD_ONLY YES
   NAME libigl_imgui_fonts
 )

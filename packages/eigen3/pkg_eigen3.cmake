@@ -16,18 +16,17 @@ if (NOT DEFINED eigen_TAG)
   set(eigen_TAG "${eigen_VERSION}")
 endif()
 
-set(__args "gl:libeigen/eigen#${eigen_TAG}" NAME Eigen3)
+set(_args "gl:libeigen/eigen#${eigen_TAG}" NAME Eigen3)
 if (eigen_APPLY_CHOLMOD_PATCH)
-  list(APPEND __args
+  list(APPEND _args
     GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/cholmod.patch")
 endif()
 
-list(APPEND __args
+lam_add_package_maybe_prebuild(
+  ${_args}
   CMAKE_ARGS
   "-DEIGEN_BUILD_DOC=OFF"
   "-DBUILD_TESTING=OFF"
   # for user customize.
   ${eigen_USER_CMAKE_ARGS}
 )
-
-lam_add_package_maybe_prebuild(eigen ${__args})

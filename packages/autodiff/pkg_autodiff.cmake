@@ -16,14 +16,15 @@ if (NOT DEFINED autodiff_TAG)
   set(autodiff_TAG "v${autodiff_VERSION}")
 endif()
 
-set(__args "gh:autodiff/autodiff#${autodiff_TAG}")
+set(_args "gh:autodiff/autodiff#${autodiff_TAG}")
 if (autodiff_APPLY_NUM_TRAITS_PATCH)
-  list(APPEND __args
+  list(APPEND _args
     GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/num_traits.patch"
   )
 endif()
 
-list(APPEND __args
+lam_add_package_maybe_prebuild(
+  ${_args}
   CMAKE_ARGS
   "-DAUTODIFF_BUILD_TESTS=OFF"
   "-DAUTODIFF_BUILD_PYTHON=OFF"
@@ -32,5 +33,3 @@ list(APPEND __args
   # for user customize.
   ${autodiff_USER_CMAKE_ARGS}
 )
-
-lam_add_package_maybe_prebuild(autodiff ${__args})

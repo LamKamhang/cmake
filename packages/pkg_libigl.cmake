@@ -15,4 +15,4 @@ if (NOT DEFINED libigl_TAG)
   set(libigl_TAG "v${libigl_VERSION}")
 endif()
 
-require_package("gh:libigl/libigl#${libigl_TAG}")
+lam_add_package("gh:libigl/libigl#${libigl_TAG}")

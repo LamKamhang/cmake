@@ -78,6 +78,7 @@ function(lam_infer_version_from_tag out tag)
   endif()
 endfunction()
 
+# TODO: if the uri is archive type, then the out-name may not correct.
 function(lam_get_name_from_uri out uri)
   lam_verbose_func()
 
@@ -171,7 +172,7 @@ function(lam_split_url url)
   __lam_check_url(${url})
   lam_debug("url after checking: ${url}")
 
-  # output type, url, name
+  # output type, url
   if (${url} MATCHES "^([^:]+):(.+)$")
     string(TOLOWER "${CMAKE_MATCH_1}" scheme)
     set(path ${CMAKE_MATCH_2})
@@ -179,10 +180,10 @@ function(lam_split_url url)
     lam_debug("rest: ${path}")
   endif()
 
-  lam_get_name_from_uri(name ${url})
   # some special schemes
   if (scheme STREQUAL "rom") # ryon.ren:mirrors
     set(type git)
+    lam_get_name_from_uri(name ${url})
     set(url ssh://git@ryon.ren:10022/mirrors/${name})
   elseif(scheme STREQUAL "gh") # github
     set(type git)
@@ -210,14 +211,15 @@ function(lam_split_url url)
       # keep url not changed.
     else() # FIXME: other protocol: svn, cvs.
       set(type archive)
-      # the name parsed from url is not valid.
-      unset(name)
     endif()
   endif()
 
+  if (NOT "${type}" STREQUAL "archive")
+    lam_get_name_from_uri(name ${url})
+    set(lam_pkg_name ${name} PARENT_SCOPE)
+  endif()
   set(lam_pkg_url ${url} PARENT_SCOPE)
   set(lam_pkg_type ${type} PARENT_SCOPE)
-  set(lam_pkg_name ${name} PARENT_SCOPE)
 endfunction()
 
 function(lam_extract_args_from_uri out uri)
@@ -230,11 +232,14 @@ function(lam_extract_args_from_uri out uri)
   lam_assert_defined(lam_pkg_url)
 
   # Step2. split url.
-  lam_split_url(${lam_pkg_url}) # would defined lam_pkg_type, lam_pkg_real_url, lam_pkg_name.
-  lam_assert_defined(lam_pkg_type lam_pkg_name lam_pkg_url)
+  lam_split_url(${lam_pkg_url}) # would defined lam_pkg_type, lam_pkg_real_url.
+  lam_assert_defined(lam_pkg_type lam_pkg_url)
   lam_debug("type: ${lam_pkg_type}")
-  lam_Debug("name: ${lam_pkg_name}")
   lam_debug("url: ${lam_pkg_url}")
+  if (NOT "${lam_pkg_type}" STREQUAL "archive")
+    lam_assert_defined(lam_pkg_name)
+    set(lam_pkg_name ${lam_pkg_name} PARENT_SCOPE)
+  endif()
 
   # prepare extracted args.
   if ("${lam_pkg_type}" STREQUAL "git")
@@ -258,7 +263,6 @@ function(lam_extract_args_from_uri out uri)
   lam_debug("extract_args: ${args}")
 
   set(${out} ${args} PARENT_SCOPE)
-  set(lam_pkg_name ${lam_pkg_name} PARENT_SCOPE)
 endfunction()
 
 function(lam_convert_cmake_args_to_options out cmake_args)
@@ -294,14 +298,14 @@ endfunction()
 function(lam_add_package uri)
   lam_verbose_func()
 
-  # extract uri from args, also return lam_pkg_name.
+  # extract uri from args.
   lam_extract_args_from_uri(extra_args ${uri})
 
   # extract CMAKE_ARGS from ARGN.
   # you can use END_CMAKE_ARGS to distinguish the other CPM_ARGS
   # from CMAKE_ARGS.
   cmake_parse_arguments(PKG
-    "END_CMAKE_ARGS"
+    "END_CMAKE_ARGS;OPTIONAL"
     "GIT_PATCH;NAME"
     "CMAKE_ARGS"
     "${ARGN}"
@@ -309,7 +313,15 @@ function(lam_add_package uri)
 
   # parse Name.
   if (NOT DEFINED PKG_NAME)
-    set(PKG_NAME ${lam_pkg_name})
+    lam_get_name_from_uri(PKG_NAME ${uri})
+  endif()
+
+  # check whether is optional
+  if (PKG_OPTIONAL)
+    __get_optional_dep_flag(flag ${PKG_NAME})
+    if (NOT ${flag})
+      return()
+    endif()
   endif()
 
   # change cmake_args to options.
@@ -328,22 +340,7 @@ function(lam_add_package uri)
 endfunction()
 
 macro(lam_optional_package uri)
-  lam_get_name_from_uri(pkg ${uri})
-  string(TOUPPER ${pkg} PKG)
-
-  if (NOT DEFINED OPTIONAL_PKG_PREFIX)
-    option(CHAOS_USE_${PKG} "add optional package ${pkg}" OFF)
-    if (CHAOS_USE_${PKG})
-      lam_add_package(${ARGV})
-    endif()
-  else()
-    option(${OPTIONAL_PKG_PREFIX}_${PKG} "add optional package ${pkg}" OFF)
-    if (${OPTIONAL_PKG_PREFIX}_${PKG})
-      lam_add_package(${ARGV})
-    endif()
-  endif()
-  unset(pkg)
-  unset(PKG)
+  lam_add_package(${uri} OPTIONAL ${ARGN})
 endmacro()
 
 macro(lam_download_package uri)
@@ -356,17 +353,19 @@ endmacro()
 
 # for register packages.
 macro(lam_include_package pkg)
-  if (EXISTS ${USER_CUSTOM_PACKAGES_DIR}/pkg_${pkg}.cmake)
-    include(${USER_CUSTOM_PACKAGES_DIR}/pkg_${pkg}.cmake)
-  elseif(${USER_CUSTOM_PACKAGES_DIR}/${pkg}/pkg_${pkg}.cmake)
-    include(${USER_CUSTOM_PACKAGES_DIR}/${pkg}/pkg_${pkg}.cmake)
-  elseif (EXISTS ${_CMAKE_UTILITY_PACKAGES_DIR}/pkg_${pkg}.cmake)
-    include(${_CMAKE_UTILITY_PACKAGES_DIR}/pkg_${pkg}.cmake)
-  elseif(EXISTS ${_CMAKE_UTILITY_PACKAGES_DIR}/${pkg}/pkg_${pkg}.cmake)
-    include(${_CMAKE_UTILITY_PACKAGES_DIR}/${pkg}/pkg_${pkg}.cmake)
+  string(TOLOWER ${pkg} __pkg)
+  if (EXISTS ${USER_CUSTOM_PACKAGES_DIR}/pkg_${__pkg}.cmake)
+    include(${USER_CUSTOM_PACKAGES_DIR}/pkg_${__pkg}.cmake)
+  elseif(${USER_CUSTOM_PACKAGES_DIR}/${__pkg}/pkg_${__pkg}.cmake)
+    include(${USER_CUSTOM_PACKAGES_DIR}/${__pkg}/pkg_${__pkg}.cmake)
+  elseif (EXISTS ${_CMAKE_UTILITY_PACKAGES_DIR}/pkg_${__pkg}.cmake)
+    include(${_CMAKE_UTILITY_PACKAGES_DIR}/pkg_${__pkg}.cmake)
+  elseif(EXISTS ${_CMAKE_UTILITY_PACKAGES_DIR}/${__pkg}/pkg_${__pkg}.cmake)
+    include(${_CMAKE_UTILITY_PACKAGES_DIR}/${__pkg}/pkg_${__pkg}.cmake)
   else()
-    message(WARNING "package: ${pkg} not found. please provide `pkg_${pkg}.cmake` to {USER_CUSTOM_PACKAGE_DIR}")
+    message(WARNING "package: ${pkg} not found. please provide `pkg_${__pkg}.cmake` to {USER_CUSTOM_PACKAGE_DIR}")
   endif()
+  unset(__pkg)
 endmacro()
 
 # parse declare_deps format
@@ -379,12 +378,18 @@ function(lam_parse_deps_format uri out_name)
   lam_verbose_func()
   lam_assert_num_equal(${ARGC} 2)
 
-  string(REGEX REPLACE "^(~)?(!)?([^@#!]+)" "" tag_version ${uri})
+  string(REGEX REPLACE "^(~)?(!+)?([^@#!]+)" "" tag_version ${uri})
   set(pkg_name ${CMAKE_MATCH_3})
   set(optional_flag ${CMAKE_MATCH_1})
   set(prebuild_flag ${CMAKE_MATCH_2})
   string(REPLACE "~" "YES" optional_flag "${optional_flag}")
-  string(REPLACE "!" "YES" prebuild_flag "${prebuild_flag}")
+  if ("${prebuild_flag}" STREQUAL "")
+    unset(prebuild_flag)
+  elseif("${prebuild_flag}" STREQUAL "!")
+    set(prebuild_flag YES)
+  else()
+    set(prebuild_flag NO)
+  endif()
 
   lam_debug("name: ${pkg_name}")
   lam_debug("optional: ${optional_flag}")
@@ -435,6 +440,7 @@ macro(lam_use_deps)
     else()
       lam_include_package(${dep_name})
     endif()
+    unset(dep_name)
   endforeach()
 endmacro()
 
@@ -461,11 +467,16 @@ if (LAM_PACKAGE_OVERRIDE_FIND_PACKAGE)
   endmacro()
 endif()
 
+macro(lam_export_find_package_variable)
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
+endmacro()
+
 macro(find_package_ext PKG)
   find_package(${PKG} ${ARGN})
   if (NOT LAM_PACKAGE_OVERRIDE_FIND_PACKAGE)
     verbose_find_package(${PKG})
   endif()
+  lam_export_find_package_variable()
 endmacro()
 
 # NOTE!! Only Experimentally support!!
@@ -490,6 +501,8 @@ function(lam_add_prebuild_package)
     lam_assert_list_size_var(uri 1)
     lam_get_name_from_uri(CPM_ARGS_NAME ${uri})
   endif()
+
+  lam_status("${CPM_ARGS_NAME} use prebuild-mode.")
 
   # prepare CMAKE_ARGS for prebuild.
   foreach(arg ${CPM_ARGS_OPTIONS})
@@ -553,6 +566,7 @@ function(lam_add_prebuild_package)
 
   find_package_ext(${CPM_ARGS_NAME} ${find_package_args} NO_DEFAULT_PATH
     PATHS ${PKG_INSTALL_PREFIX}
+    REQUIRED
   )
 endfunction()
 
@@ -574,12 +588,21 @@ function(lam_check_prefer_prebuild out name)
   endif()
 endfunction()
 
-function(lam_add_package_maybe_prebuild name) # args.
+function(lam_add_package_maybe_prebuild uri) # args.
+  cmake_parse_arguments(PKG "" "NAME" "" "${ARGN}")
+  # parse Name.
+  if (NOT DEFINED PKG_NAME)
+    lam_get_name_from_uri(PKG_NAME ${uri})
+  endif()
+  # transform to lowercase.
+  string(TOLOWER ${PKG_NAME} name)
+
   lam_check_prefer_prebuild(out ${name})
   if (out)
-    lam_add_prebuild_package(${ARGN})
+    lam_add_prebuild_package(${ARGV})
+    lam_export_find_package_variable()
   else()
-    lam_add_package(${ARGN})
+    lam_add_package(${ARGV})
   endif()
 endfunction()
 

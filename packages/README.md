@@ -1,5 +1,7 @@
 For pkg_xxx.cmake
 
+NOTE: `xxx` should be the lower-case of the Name of the package.
+
 some variable can be used to control the building pipeline.
 
 - xxx_VERSION: used to define a specific version.

@@ -30,6 +30,6 @@ if (NOT DEFINED msgpack_TAG)
   set(msgpack_TAG "cpp-${msgpack_VERSION}")
 endif()
 
-require_package("gh:msgpack/msgpack-c#${msgpack_TAG}"
+lam_add_package("gh:msgpack/msgpack-c#${msgpack_TAG}"
   NAME msgpack
 )
