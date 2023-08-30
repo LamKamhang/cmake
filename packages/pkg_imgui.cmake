@@ -1,11 +1,10 @@
 include_guard()
 
 # if imgui has been found
-if (TARGET imgui::imgui)
-  return()
-endif()
 if (TARGET imgui)
-  add_library(imgui::imgui ALIAS imgui)
+  if (NOT TARGET imgui::imgui)
+    add_library(imgui::imgui ALIAS imgui)
+  endif()
   return()
 endif()
 
@@ -20,7 +19,7 @@ if (NOT DEFINED imgui_TAG)
   set(imgui_TAG "v${imgui_VERSION}")
 endif()
 
-lam_add_package("gh:ocornut/imgui#${imgui_TAG}")
+require_package("gh:ocornut/imgui#${imgui_TAG}")
 
 add_library(imgui
   ${imgui_SOURCE_DIR}/imgui.h
@@ -77,7 +76,7 @@ target_sources(imgui
 
 # add deps.
 if (${imgui_PLATFORM_BACKEND} STREQUAL glfw)
-  lam_use_deps(glfw3)
+  declare_pkg_deps(glfw)
   target_link_libraries(imgui PUBLIC glfw::glfw)
 endif()
 
@@ -92,10 +91,10 @@ if (${imgui_RENDERER_BACKEND} STREQUAL opengl3)
     glad glbinding
   )
   if (${imgui_GL_BINDING} STREQUAL glad)
-    lam_use_deps(glad)
+    declare_pkg_deps(glad)
     target_link_libraries(imgui PUBLIC glad::glad)
   elseif(${imgui_GL_BINDING} STREQUAL glbinding)
-    lam_use_deps(glbinding)
+    declare_pkg_deps(glbinding)
     target_link_libraries(imgui PUBLIC glbinding::glbinding)
   endif()
 endif()

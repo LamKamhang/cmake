@@ -15,9 +15,6 @@ if (NOT DEFINED entt_TAG)
   set(entt_TAG "v${entt_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
-  "gh:skypjack/entt#${entt_TAG}"
+require_package("gh:skypjack/entt#${entt_TAG}"
   NAME EnTT
-  # for user customize.
-  ${entt_USER_CMAKE_ARGS}
 )

@@ -1,7 +1,7 @@
 include_guard()
 
 # if nanobind has been found
-if (DEFINED nanobind_add_module)
+if (TARGET nanobind)
   return()
 endif()
 
@@ -9,15 +9,14 @@ message(STATUS "[package/nanobind]: nanobind")
 
 
 if (NOT DEFINED nanobind_VERSION)
-  set(nanobind_VERSION "1.5.2")
+  set(nanobind_VERSION "1.2.0")
 endif()
 if (NOT DEFINED nanobind_TAG)
   set(nanobind_TAG "v${nanobind_VERSION}")
 endif()
 
 find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
-lam_add_package(
-  "gh:wjakob/nanobind#${nanobind_TAG}"
+require_package("gh:wjakob/nanobind#${nanobind_TAG}"
   CMAKE_ARGS "-DNB_TEST=OFF"
   CMAKE_ARGS "-DNB_TEST_STABLE_ABI=OFF"
   CMAKE_ARGS "-DNB_TEST_SHARED_BUILD=OFF"
