@@ -50,7 +50,7 @@ function(add_unit name)
   if (DEFINED arg_GLOB_SRCS)
     file(GLOB_RECURSE glob_srcs ${arg_GLOB_SRCS})
     list(APPEND arg_SRCS ${glob_srcs})
-    ASSERT_NOT_EMPTY(arg_SRCS)
+    lam_assert_not_empty_var(arg_SRCS)
   endif()
 
   # create target.

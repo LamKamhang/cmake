@@ -27,10 +27,10 @@ option(LAM_PACKAGE_PREFER_PREBUILD "prefer prebuild mode(install and then find s
 option(LAM_PACKAGE_VERBOSE_INSTALL "enable verbose ExternalPackage" ON)
 option(LAM_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" ON)
 
-set(LAM_PACKAGE_BUILD_TYPE ${CMAKE_BUILD_TYPE}
+set(LAM_PACKAGE_BUILD_TYPE "${CMAKE_BUILD_TYPE}"
   CACHE STRING "Default ExternalPackage BuildType"
 )
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+if ("${LAM_PACKAGE_BUILD_TYPE}" STREQUAL "")
   set(LAM_PACKAGE_BUILD_TYPE "Release")
 endif()
 # BuildType to lowercase.
