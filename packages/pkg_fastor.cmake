@@ -4,6 +4,10 @@ include_guard()
 if (TARGET Fastor::Fastor)
   return()
 endif()
+if (TARGET Fastor)
+  add_library(Fastor::Fastor ALIAS Fastor)
+  return()
+endif()
 
 message(STATUS "[package/Fastor]: Fastor::Fastor")
 
@@ -15,11 +19,8 @@ if (NOT DEFINED fastor_TAG)
   set(fastor_TAG "origin/master")
 endif()
 
-lam_add_package_maybe_prebuild(
-  "gh:romeric/Fastor#${fastor_TAG}"
+require_package("gh:romeric/Fastor#${fastor_TAG}"
   CMAKE_ARGS "-DBUILD_TESTING=OFF"
-  # for user customize.
-  ${fastor_USER_CMAKE_ARGS}
 )
 
 if (NOT TARGET Fastor::Fastor)

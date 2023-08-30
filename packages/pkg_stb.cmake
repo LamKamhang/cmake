@@ -15,7 +15,9 @@ if (NOT DEFINED stb_TAG)
   set(stb_TAG "5736b15@")
 endif()
 
-lam_add_package("gh:nothings/stb#${stb_TAG}")
+require_package("gh:nothings/stb#${stb_TAG}"
+  DOWNLOAD_ONLY YES
+)
 
 function(make_stb_target target_name)
   # suppose that the source is stb_${target_name}.h

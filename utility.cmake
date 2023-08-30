@@ -1,7 +1,6 @@
 include_guard()
 
-# use native symlink. Version >= 3.14
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12)
 
 # set policy.
 # https://cmake.org/cmake/help/latest/policy/CMP0077.html

@@ -15,11 +15,6 @@ if (NOT DEFINED eventpp_TAG)
   set(eventpp_TAG "origin/master")
 endif()
 
-lam_check_prefer_prebuild(out eventpp)
-lam_add_package_maybe_prebuild(
-  "gh:wqking/eventpp#${eventpp_TAG}"
-  NAME eventpp
-  CMAKE_ARGS "-DEVENTPP_INSTALL=${out}"
-  # for user customize.
-  ${eventpp_USER_CMAKE_ARGS}
+require_package("gh:wqking/eventpp#${eventpp_TAG}"
+  CMAKE_ARGS "-DEVENTPP_INSTALL=OFF"
 )

@@ -14,13 +14,7 @@ if (NOT DEFINED cli11_TAG)
   set(cli11_TAG "v${cli11_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
-  "gh:CLIUtils/CLI11#${cli11_TAG}"
-  NAME CLI11
-  OPTIONS
-  "CLI11_BUILD_EXAMPLES OFF"
-  "CLI11_BUILD_TESTS OFF"
-  "CLI11_BUILD_DOCS OFF"
-  # for user customize.
-  ${cli11_USER_CMAKE_ARGS}
-)
+require_package("gh:CLIUtils/CLI11#${cli11_TAG}"
+  CMAKE_ARGS "-DCLI11_BUILD_EXAMPLES=OFF"
+  CMAKE_ARGS "-DCLI11_BUILD_TESTS=OFF"
+  CMAKE_ARGS "-DCLI11_BUILD_DOCS=OFF")

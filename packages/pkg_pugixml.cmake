@@ -15,5 +15,4 @@ if (NOT DEFINED pugixml_TAG)
   set(pugixml_TAG "v${pugixml_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
-  "gh:zeux/pugixml#${pugixml_TAG}")
+require_package("gh:zeux/pugixml#${pugixml_TAG}")
