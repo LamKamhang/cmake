@@ -1,221 +1,399 @@
 include_guard()
 
-macro(DEBUG_MSG)
-  if(DEBUG_MODE)
-    message("[DEBUG] ${ARGV}")
+option(LAM_ENABLE_ERROR_KEEP_GOING "enable lam_error() keep going" OFF)
+set(lam_debug_indent " |")
+set(lam_status_indent "")
+
+function(lam_status)
+  message(STATUS "${lam_status_indent}${ARGV}")
+endfunction()
+
+function(lam_debug)
+  message(DEBUG "[debug]${lam_debug_indent}${ARGV}")
+endfunction()
+
+function(lam_warn)
+  message(WARNING "${ARGV}")
+endfunction()
+
+function(lam_error)
+  if (LAM_ENABLE_ERROR_KEEP_GOING)
+    message(SEND_ERROR "${ARGV}")
+  else()
+    message(FATAL_ERROR "${ARGV}")
   endif()
-endmacro()
+endfunction()
 
-macro(WARN_MSG)
-  message(WARNING ${ARGV})
-endmacro()
-
-macro(ERROR_MSG)
+function(lam_fatal)
   message(FATAL_ERROR "${ARGV}")
+endfunction()
+
+##############################################################################
+# NOTE: cmake's macro is a very very counter-intuitive thing,
+#       you must pay attention when using it.
+# Here just use a HACK to perform verbosing.
+# ARGN, ARGC, ARGV and ARGV# are not true variables in macro.
+# any dereference of them with indirectly would replaced with the neareat true variable.
+# For example, the following case:
+#
+# macro(bar argc)
+#   lam_debug("in bar.direct: ${ARGV0}") # ==> 1
+#   foreach(i RANGE ${argc})
+#     if (${i} EQUAL ${argc})
+#       break()
+#     endif()
+#     lam_debug("in bar: ${ARGV${i}}") # ==> 1;1
+#   endforeach()
+# endmacro()
+#
+# macro(foo)
+#   lam_debug("in foo.direct: ${ARGV0}") # ==> 1;1;2
+#   bar(${ARGC})
+# endmacro()
+#
+# function(func a b)
+#   lam_debug("in func.direct: ${ARGV0}") # ==> 1;1
+#   foo("${ARGV}")
+# endfunction()
+#
+# func("1;1" 2)
+#
+# Use such "feature" to do this verbose.
+# NOTE: ${ARGV${}} is a hack to disable macro text replacement.
+macro(lam_verbose_func)
+  set(lam_debug_indent "${lam_debug_indent}-")
+  set(__argc ${ARGC${}})
+  set(__argv ${ARGV${}})
+  lam_debug("calling: ${CMAKE_CURRENT_FUNCTION}(${__argv})")
+  lam_debug("  ARGC: ${__argc}")
+  foreach(i RANGE ${__argc})
+    if (${i} EQUAL ${__argc})
+      break()
+    endif()
+    lam_debug("  ARGV${i}: ${ARGV${i}}")
+  endforeach()
+  unset(__argc)
+  unset(__argv)
 endmacro()
 
-function(ASSERT_EQUAL LHS RHS)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${LHS}, ${RHS}")
-
-  # both work in string equal or number equal.
-  # quote "" is required.
-  if(NOT "${LHS}" STREQUAL "${RHS}")
-    ERROR_MSG("assertion failed: '${LHS}' == '${RHS}'")
+macro(__lam_assert expr)
+  if (${__passed})
+    lam_debug("assertion [${CMAKE_CURRENT_FUNCTION}|${expr}] passed.")
+  else()
+    lam_error("assertion [${CMAKE_CURRENT_FUNCTION}|${expr}] failed.")
   endif()
-endfunction()
+endmacro()
+##############################################################################
+# Assertion for numbers
+##############################################################################
+function(lam_assert_num_equal LHS RHS)
+  lam_verbose_func()
 
-function(ASSERT_NOT_EQUAL LHS RHS)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${LHS}, ${RHS}")
-
-  if("${LHS}" STREQUAL "${RHS}")
-    ERROR_MSG("assertion failed: '${LHS}' != '${RHS}'")
+  set(__passed FALSE)
+  if ("${LHS}" EQUAL "${RHS}")
+    set(__passed TRUE)
   endif()
+  __lam_assert("\"${LHS}\"==\"${RHS}\"")
 endfunction()
 
-function(ASSERT_LESS LHS RHS)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${LHS}, ${RHS}")
+function(lam_assert_not_num_equal LHS RHS)
+  lam_verbose_func()
 
-  if(NOT "${LHS}" LESS ${RHS})
-    ERROR_MSG("assertion failed: '${LHS} < ${RHS}'")
+  set(__passed FALSE)
+  if (NOT ("${LHS}" EQUAL "${RHS}"))
+    set(__passed TRUE)
   endif()
+  __lam_assert("\"${LHS}\"!=\"${RHS}\"")
 endfunction()
 
-function(ASSERT_LESS_EQUAL LHS RHS)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${LHS}, ${RHS}")
+function(lam_assert_num_lt LHS RHS)
+  lam_verbose_func()
 
-  if(NOT "${LHS}" LESS_EQUAL ${RHS})
-    ERROR_MSG("assertion failed: '${LHS} <= ${RHS}'")
+  set(__passed FALSE)
+  if ("${LHS}" LESS "${RHS}")
+    set(__passed TRUE)
   endif()
+  __lam_assert("\"${LHS}\"<\"${RHS}\"")
 endfunction()
 
-function(ASSERT_GREATER LHS RHS)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${LHS}, ${RHS}")
+function(lam_assert_num_le LHS RHS)
+  lam_verbose_func()
 
-  if(NOT "${LHS}" GREATER ${RHS})
-    ERROR_MSG("assertion failed: '${LHS} > ${RHS}'")
+  set(__passed FALSE)
+  if ("${LHS}" LESS_EQUAL "${RHS}")
+    set(__passed TRUE)
   endif()
+  __lam_assert("\"${LHS}\"<=\"${RHS}\"")
 endfunction()
 
-function(ASSERT_GREATER_EQUAL LHS RHS)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${LHS}, ${RHS}")
+function(lam_assert_num_gt LHS RHS)
+  lam_verbose_func()
 
-  if(NOT "${LHS}" GREATER_EQUAL ${RHS})
-    ERROR_MSG("assertion failed: '${LHS} >= ${RHS}'")
+  set(__passed FALSE)
+  if ("${LHS}" GREATER "${RHS}")
+    set(__passed TRUE)
   endif()
+  __lam_assert("\"${LHS}\">\"${RHS}\"")
 endfunction()
 
-function(ASSERT_NOT_LESS LHS RHS)
-  ASSERT_GREATER_EQUAL(${LHS} ${RHS})
-endfunction()
+function(lam_assert_num_ge LHS RHS)
+  lam_verbose_func()
 
-function(ASSERT_NOT_LESS_EQUAL LHS RHS)
-  ASSERT_GREATER(${LHS} ${RHS})
-endfunction()
-
-function(ASSERT_NOT_GREATER LHS RHS)
-  ASSERT_LESS_EQUAL(${LHS} ${RHS})
-endfunction()
-
-function(ASSERT_NOT_GREATER_EQUAL LHS RHS)
-  ASSERT_LESS(${LHS} ${RHS})
-endfunction()
-
-function(ASSERT_LIST_SIZE VAR SIZE)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
-  ASSERT_EQUAL(${ARGC} 2)
-  list(LENGTH ${VAR} NUM)
-
-  if(NOT NUM EQUAL SIZE)
-    ERROR_MSG("assertion failed: ${VAR}: (${${VAR}}).size != ${SIZE}")
+  set(__passed FALSE)
+  if ("${LHS}" GREATER_EQUAL "${RHS}")
+    set(__passed TRUE)
   endif()
+  __lam_assert("\"${LHS}\">=\"${RHS}\"")
 endfunction()
+##############################################################################
+# Assertion for string
+##############################################################################
+function(lam_assert_str_equal LHS RHS)
+  lam_verbose_func()
 
-function(ASSERT_LIST_LE_SIZE VAR SIZE)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
-  ASSERT_EQUAL(${ARGC} 2)
-  list(LENGTH ${VAR} NUM)
-
-  if(NOT NUM LESS_EQUAL SIZE)
-    ERROR_MSG("assertion failed: ${VAR}: (${${VAR}}).size != ${SIZE}")
+  set(__passed FALSE)
+  if ("${LHS}" STREQUAL "${RHS}")
+    set(__passed TRUE)
   endif()
+   __lam_assert("\"${LHS}\"==\"${RHS}\"")
 endfunction()
 
-function(ASSERT_EMPTY VAR)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
-  ASSERT_LIST_SIZE(${VAR} 0)
-endfunction()
+function(lam_assert_str_not_equal LHS RHS)
+  lam_verbose_func()
 
-function(ASSERT_NOT_EMPTY VAR)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
-  ASSERT_EQUAL(${ARGC} 1)
-  list(LENGTH ${VAR} NUM)
-
-  if(NUM EQUAL 0)
-    ERROR_MSG("assertion failed: ${VAR}:(${${VAR}}) is empty.")
+  set(__passed FALSE)
+  if (NOT ("${LHS}" STREQUAL "${RHS}"))
+    set(__passed TRUE)
   endif()
+  __lam_assert("\"${LHS}\"!=\"${RHS}\"")
 endfunction()
 
-function(ASSERT_DEFINED)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
+macro(lam_assert_equal LHS RHS)
+  lam_assert_str_equal("${LHS}" "${RHS}")
+endmacro()
+
+macro(lam_assert_not_equal LHS RHS)
+  lam_assert_str_not_equal("${LHS}" "${RHS}")
+endmacro()
+
+function(lam_assert_str_lt LHS RHS)
+  lam_verbose_func()
+
+  set(__passed FALSE)
+  if ("${LHS}" STRLESS "${RHS}")
+    set(__passed TRUE)
+  endif()
+  __lam_assert("\"${LHS}\"<\"${RHS}\"")
+endfunction()
+
+function(lam_assert_str_le LHS RHS)
+  lam_verbose_func()
+
+  set(__passed FALSE)
+  if ("${LHS}" STRLESS_EQUAL "${RHS}")
+    set(__passed TRUE)
+  endif()
+  __lam_assert("\"${LHS}\"<=\"${RHS}\"")
+endfunction()
+
+function(lam_assert_str_gt LHS RHS)
+  lam_verbose_func()
+
+  set(__passed FALSE)
+  if ("${LHS}" STRGREATER "${RHS}")
+    set(__passed TRUE)
+  endif()
+  __lam_assert("\"${LHS}\">\"${RHS}\"")
+endfunction()
+
+function(lam_assert_str_ge LHS RHS)
+  lam_verbose_func()
+
+  set(__passed FALSE)
+  if ("${LHS}" STRGREATER_EQUAL "${RHS}")
+    set(__passed TRUE)
+  endif()
+  __lam_assert("\"${LHS}\">=\"${RHS}\"")
+endfunction()
+##############################################################################
+# Assertion for boolean
+##############################################################################
+function(lam_assert_truthy _arg)
+  lam_verbose_func()
+
+  set(__passed FALSE)
+  if (${_arg})
+    set(__passed TRUE)
+  endif()
+  __lam_assert("key(${_arg}) should be TRUE/ON/YES")
+endfunction()
+function(lam_assert_falsy _arg)
+  lam_verbose_func()
+
+  set(__passed FALSE)
+  if (NOT ${_arg})
+    set(__passed TRUE)
+  endif()
+  __lam_assert("key(${_arg}) should be FALSE/NO/OFF")
+endfunction()
+##############################################################################
+# Assertion for lists
+##############################################################################
+# NOTE: The VAR's name cannot be VAR/SIZE
+function(lam_assert_list_size_var VAR SIZE)
+  lam_verbose_func()
+  lam_assert_num_equal(${ARGC} 2)
+
+  set(__passed FALSE)
+  list(LENGTH ${VAR} N_TERMS)
+  if (${N_TERMS} EQUAL ${SIZE})
+    set(__passed TRUE)
+  endif()
+  __lam_assert("(${VAR}:=[${${VAR}}]).size(${N_TERMS})==${SIZE}")
+endfunction()
+
+function(lam_assert_list_size_lt_var VAR SIZE)
+  lam_verbose_func()
+  lam_assert_num_equal(${ARGC} 2)
+
+  set(__passed FALSE)
+  list(LENGTH ${VAR} N_TERMS)
+  if (${N_TERMS} LESS ${SIZE})
+    set(__passed TRUE)
+  endif()
+  __lam_assert("(${VAR}:=[${${VAR}}]).size(${N_TERMS})<${SIZE}")
+endfunction()
+
+function(lam_assert_list_size_gt_var VAR SIZE)
+  lam_verbose_func()
+  lam_assert_num_equal(${ARGC} 2)
+
+  set(__passed FALSE)
+  list(LENGTH ${VAR} N_TERMS)
+  if (${N_TERMS} GREATER ${SIZE})
+    set(__passed TRUE)
+  endif()
+  __lam_assert("(${VAR}:=[${${VAR}}]).size(${N_TERMS})>${SIZE}")
+endfunction()
+
+function(lam_assert_not_empty_var) #extend to arg_list
+  lam_verbose_func()
+  foreach(__arg ${ARGV})
+    lam_assert_list_size_gt_var(${__arg} 0)
+  endforeach()
+endfunction()
+
+# NOTE: LIST SHOULD BE THE VALUE OF SOME VAR.
+function(lam_assert_list_size LIST SIZE)
+  lam_verbose_func()
+  lam_assert_num_equal(${ARGC} 2)
+
+  lam_assert_list_size_var(LIST ${SIZE})
+endfunction()
+
+function(lam_assert_defined) # passed in a list of variable's name.
+  lam_verbose_func()
 
   foreach(KEY ${ARGV})
-    DEBUG_MSG("  ${CMAKE_CURRENT_FUNCTION}: ${KEY}")
+    lam_debug("  current.key: ${KEY}")
 
-    if(NOT DEFINED ${KEY})
-      ERROR_MSG("assertion failed: '${KEY}' is not defiend")
+    set(__passed FALSE)
+    if (DEFINED ${KEY})
+      set(__passed TRUE)
     endif()
+    __lam_assert("${KEY} should be defined.")
   endforeach()
 endfunction()
 
-function(ASSERT_NOT_DEFINED)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
+function(lam_assert_not_defined)
+  lam_verbose_func()
 
   foreach(KEY ${ARGV})
-    DEBUG_MSG("  ${CMAKE_CURRENT_FUNCTION}: ${KEY}")
-
-    if(DEFINED ${KEY})
-      ERROR_MSG("assertion failed: '${KEY}' is defiend (${${KEY}})")
+    set(__passed FALSE)
+    if (NOT DEFINED ${KEY})
+      set(__passed TRUE)
     endif()
+    __lam_assert("${KEY} should *NOT* be defined.")
   endforeach()
 endfunction()
 
-function(ASSERT_TRUTHY KEY)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
+##############################################################################
+# Assertion for file/path
+##############################################################################
+macro(__path_helper)
+  lam_debug("current.path: ${PATH}")
+  # convert relative path to abspath.
+  # since EXISTS check doesn't for relative path.
+  get_filename_component(PATH ${PATH} REALPATH BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
+  lam_debug("realpath: ${PATH}")
+endmacro()
 
-  if(NOT ${KEY})
-    ERROR_MSG("assertion failed: value of '${KEY}' is not truthy.")
-  endif()
-endfunction()
-
-function(ASSERT_FALSY KEY)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
-
-  if(${KEY})
-    ERROR_MSG("assertion failed: value of '${KEY}' is not falsy.")
-  endif()
-endfunction()
-
-function(ASSERT_EXISTS)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
-
-  foreach(FILE ${ARGV})
-    DEBUG_MSG("  ${CMAKE_CURRENT_FUNCTION}: ${FILE}")
-    get_filename_component(FILE ${FILE} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
-    DEBUG_MSG("  ${CMAKE_CURRENT_FUNCTION}: abs(${FILE})")
-
-    # relative to abslute based on current_list_dir.
-    if(NOT EXISTS ${FILE})
-      ERROR_MSG("assertion failed: file `${FILE}` does not exist")
-    endif()
-  endforeach()
-endfunction()
-
-function(ASSERT_NOT_EXISTS)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
-
-  foreach(FILE ${ARGV})
-    DEBUG_MSG("  ${CMAKE_CURRENT_FUNCTION}: ${FILE}")
-    get_filename_component(FILE ${FILE} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
-    DEBUG_MSG("  ${CMAKE_CURRENT_FUNCTION}: abs(${FILE})")
-
-    if(EXISTS ${FILE})
-      ERROR_MSG("assertion failed: file `${FILE}` exists")
-    endif()
-  endforeach()
-endfunction()
-
-function(ASSERT_PATH_EXISTS)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
-
+function(lam_assert_exists) # pass in a list of file which needs to check whether exists.
+  lam_verbose_func()
   foreach(PATH ${ARGV})
-    DEBUG_MSG("  ${CMAKE_CURRENT_FUNCTION}: ${PATH}")
-    get_filename_component(PATH ${PATH} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
-    DEBUG_MSG("  ${CMAKE_CURRENT_FUNCTION}: abs(${PATH})")
-
-    # set(bkp ${DEBUG_MODE})
-    # set(DEBUG_MODE FALSE)
-    # ASSERT_EXISTS(${PATH})
-    # set(DEBUG_MODE ${bkp})
-    if(NOT IS_DIRECTORY ${PATH})
-      ERROR_MSG("${CMAKE_CURRENT_FUNCTION} failed: ${PATH} is not a directory.")
+    __path_helper()
+    set(__passed FALSE)
+    if (EXISTS ${PATH})
+      set(__passed TRUE)
     endif()
+    __lam_assert("path(${PATH}) should exist.")
   endforeach()
 endfunction()
 
-function(ASSERT_FILE_EXISTS)
-  DEBUG_MSG("${CMAKE_CURRENT_FUNCTION}: ${ARGV}")
-
-  foreach(FILE ${ARGV})
-    DEBUG_MSG("  ${CMAKE_CURRENT_FUNCTION}: ${FILE}")
-    get_filename_component(FILE ${FILE} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
-    DEBUG_MSG("  ${CMAKE_CURRENT_FUNCTION}: abs(${FILE})")
-    set(bkp ${DEBUG_MODE})
-    set(DEBUG_MODE FALSE)
-    ASSERT_EXISTS(${FILE})
-    set(DEBUG_MODE ${bkp})
-
-    if(IS_DIRECTORY ${FILE})
-      ERROR_MSG("${CMAKE_CURRENT_FUNCTION} failed: ${FILE} is not a file.")
+function(lam_assert_not_exists) # pass in a list of file which needs to check whether exists.
+  lam_verbose_func()
+  foreach(PATH ${ARGV})
+    __path_helper()
+    set(__passed FALSE)
+    if (NOT EXISTS ${PATH})
+      set(__passed TRUE)
     endif()
+    __lam_assert("path(${PATH}) should *NOT* exist.")
+  endforeach()
+endfunction()
+
+function(lam_assert_dir_exists) # pass in a list of file which needs to check whether exists.
+  lam_verbose_func()
+  foreach(PATH ${ARGV})
+    __path_helper()
+    set(__passed FALSE)
+    if (IS_DIRECTORY ${PATH})
+      set(__passed TRUE)
+    endif()
+    __lam_assert("path(${PATH}) should exist and be a directory.")
+  endforeach()
+endfunction()
+
+function(lam_assert_file_exists) # pass in a list of file which needs to check whether exists.
+  lam_verbose_func()
+  foreach(PATH ${ARGV})
+    __path_helper()
+    set(__passed FALSE)
+    if ((NOT IS_DIRECTORY ${PATH}) AND (EXISTS ${PATH}))
+      set(__passed TRUE)
+    endif()
+    __lam_assert("path(${PATH}) should exist and be a file.")
+  endforeach()
+endfunction()
+
+function(lam_assert_target_defined)
+  lam_verbose_func()
+  foreach(target ${ARGV})
+    set(__passed FALSE)
+    if (TARGET ${target})
+      set(__passed TRUE)
+    endif()
+    __lam_assert("target(${target}) should be defiend.")
+  endforeach()
+endfunction()
+
+function(lam_assert_target_not_defined)
+  lam_verbose_func()
+  foreach(target ${ARGV})
+    set(__passed FALSE)
+    if (NOT TARGET ${target})
+      set(__passed TRUE)
+    endif()
+    __lam_assert("target(${target}) should *NOT* be defiend.")
   endforeach()
 endfunction()

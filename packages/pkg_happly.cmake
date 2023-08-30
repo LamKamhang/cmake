@@ -1,10 +1,11 @@
 include_guard()
 
 # if happly has been found
+if (TARGET happly::happly)
+  return()
+endif()
 if (TARGET happly)
-  if (NOT TARGET happly::happly)
-    add_library(happly::happly ALIAS happly)
-  endif()
+  add_library(happly::happly ALIAS happly)
   return()
 endif()
 
@@ -18,7 +19,10 @@ if (NOT DEFINED happly_TAG)
   set(happly_TAG "cfa2611")
 endif()
 
-require_package("gh:nmwsharp/happly#${happly_TAG}")
+lam_add_package(
+  "gh:nmwsharp/happly#${happly_TAG}"
+  GIT_SHALLOW OFF
+)
 
 add_library(happly INTERFACE)
 add_library(happly::happly ALIAS happly)

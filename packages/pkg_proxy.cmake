@@ -15,5 +15,6 @@ if (NOT DEFINED proxy_TAG)
   set(proxy_TAG "${proxy_VERSION}")
 endif()
 
-require_package("gh:microsoft/proxy.git#${proxy_TAG}"
+lam_add_package_maybe_prebuild(
+  "gh:microsoft/proxy.git#${proxy_TAG}"
   CMAKE_ARGS "-DBUILD_TESTING=OFF")

@@ -15,4 +15,5 @@ if (NOT DEFINED polyscope_TAG)
   set(polyscope_TAG "v${polyscope_VERSION}")
 endif()
 
-require_package("gh:nmwsharp/polyscope#${polyscope_TAG}")
+lam_add_package(
+  "gh:nmwsharp/polyscope#${polyscope_TAG}")
