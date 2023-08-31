@@ -5,13 +5,14 @@ project(test_package)
 include(${CMAKE_CURRENT_LIST_DIR}/../../utility.cmake)
 
 set(cases
-  # add_package
-  # add_prebuild_package
-  # add_prebuild_package_diff_version
-  # declare_package
-  # declare_prebuild_package
-  # declare_package_no_prebuild
+  add_package
+  add_prebuild_package
+  add_prebuild_package_diff_version
+  declare_package
+  declare_prebuild_package
+  declare_package_no_prebuild
   test_packages_def
+  test_not_required
 )
 
 function(run_test name)

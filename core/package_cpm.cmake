@@ -523,6 +523,14 @@ function(lam_add_prebuild_package)
     return()
   endif()
 
+  # check whether the package is REQUIRED.
+  # If this package is not required, return and does not need to download.
+  if (NOT PKG_NOT_REQUIRED)
+    set(PKG_FIND_ARGS ${PKG_FIND_ARGS} REQUIRED)
+  else()
+    return()
+  endif()
+
   # download package by cpm.
   lam_download_package(${PKG_CPM_ARGS})
 
@@ -560,11 +568,6 @@ function(lam_add_prebuild_package)
 
   if (result)
     lam_fatal("[lam_package] Failed to install external package(${CPM_ARGS_NAME}): ${result}")
-  endif()
-
-  # Though PKG is not REQUIRED, download is still necessary.
-  if (NOT PKG_NOT_REQUIRED)
-    set(PKG_FIND_ARGS ${PKG_FIND_ARGS} REQUIRED)
   endif()
 
   find_package_ext(${CPM_ARGS_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
