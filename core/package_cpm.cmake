@@ -484,13 +484,11 @@ endmacro()
 # and has a well-designed install and then find strategy.
 # Be aware to use this, only for advance user.
 # Only for some well known package.
+# FIND_PACKAGE_ARGS used to transfer args to Find_package.
+# NOT_REQUIRED
 function(lam_add_prebuild_package)
-  cmake_parse_arguments(PKG "" "" "CPM_ARGS" ${ARGV})
-  set(find_package_args ${PKG_UNPARSED_ARGUMENTS})
-  if (NOT DEFINED PKG_CPM_ARGS)
-    set(find_package_args)
-    set(PKG_CPM_ARGS ${PKG_UNPARSED_ARGUMENTS})
-  endif()
+  cmake_parse_arguments(PKG "NOT_REQUIRED;REQUIRED" "" "CPM_ARGS;FIND_ARGS" ${ARGV})
+  set(PKG_CPM_ARGS ${PKG_CPM_ARGS} ${PKG_UNPARSED_ARGUMENTS})
 
   # get package name.
   cmake_parse_arguments(CPM_ARGS "" "NAME" "OPTIONS;CMAKE_ARGS" ${PKG_CPM_ARGS})
@@ -516,7 +514,7 @@ function(lam_add_prebuild_package)
   set(PKG_INSTALL_PREFIX ${LAM_PACKAGE_INSTALL_PREFIX}/${CPM_ARGS_NAME}/${my_origin_hash})
 
   if (LAM_PACKAGE_ENABLE_TRY_FIND)
-    find_package_ext(${CPM_ARGS_NAME} ${find_package_args} NO_DEFAULT_PATH
+    find_package_ext(${CPM_ARGS_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
       PATHS ${PKG_INSTALL_PREFIX}
     )
   endif()
@@ -564,9 +562,13 @@ function(lam_add_prebuild_package)
     lam_fatal("[lam_package] Failed to install external package(${CPM_ARGS_NAME}): ${result}")
   endif()
 
-  find_package_ext(${CPM_ARGS_NAME} ${find_package_args} NO_DEFAULT_PATH
+  # Though PKG is not REQUIRED, download is still necessary.
+  if (NOT PKG_NOT_REQUIRED)
+    set(PKG_FIND_ARGS ${PKG_FIND_ARGS} REQUIRED)
+  endif()
+
+  find_package_ext(${CPM_ARGS_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
     PATHS ${PKG_INSTALL_PREFIX}
-    REQUIRED
   )
 endfunction()
 
