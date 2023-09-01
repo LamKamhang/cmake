@@ -20,4 +20,6 @@ lam_add_package_maybe_prebuild("gh:Neargye/nameof#${nameof_TAG}"
   CMAKE_ARGS "-DNAMEOF_OPT_BUILD_EXAMPLES=OFF"
   CMAKE_ARGS "-DNAMEOF_OPT_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DNAMEOF_OPT_INSTALL=${out}"
+  # for user customize.
+  ${nameof_USER_CUSTOMIZE_ARGS}
 )

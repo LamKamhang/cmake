@@ -21,7 +21,10 @@ if (NOT DEFINED osqp_TAG)
 endif()
 
 # TODO. make it prebuild.
-lam_add_package("gh:osqp/osqp#${osqp_TAG}")
+lam_add_package("gh:osqp/osqp#${osqp_TAG}"
+  # for user customize.
+  ${osqp_USER_CUSTOMIZE_ARGS}
+)
 
 if (NOT TARGET osqp::osqp)
   if (TARGET osqp)

@@ -22,5 +22,5 @@ lam_add_package_maybe_prebuild(
   "VTK_ENABLE_LOGGING OFF"
   "VTK_ENABLE_REMOTE_MODULES OFF"
   # for user customize.
-  ${vtk_USER_CMAKE_ARGS}
+  ${vtk_USER_CUSTOMIZE_ARGS}
 )

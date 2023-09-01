@@ -18,4 +18,7 @@ endif()
 
 lam_add_package_maybe_prebuild(
   "gh:sergiud/SuiteSparse#${suitesparse_TAG}"
-  CMAKE_ARGS "-DWITH_DEMOS=OFF")
+  CMAKE_ARGS "-DWITH_DEMOS=OFF"
+  # for user customize.
+  ${suitesparse_USER_CUSTOMIZE_ARGS}
+)

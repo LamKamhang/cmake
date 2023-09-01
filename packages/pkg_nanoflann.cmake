@@ -19,4 +19,6 @@ lam_add_package_maybe_prebuild(
   CMAKE_ARGS "-DNANOFLANN_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DNANOFLANN_BUILD_BENCHMARKS=OFF"
   CMAKE_ARGS "-DNANOFLANN_BUILD_EXAMPLES=OFF"
+  # for user customize.
+  ${nanoflann_USER_CUSTOMIZE_ARGS}
 )

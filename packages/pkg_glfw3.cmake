@@ -29,7 +29,7 @@ lam_add_package_maybe_prebuild(
   CMAKE_ARGS "-DGLFW_BUILD_DOCS=OFF"
   CMAKE_ARGS "-DGLFW_INSTALL=${out}"
   # for user customize.
-  ${glfw3_USER_CMAKE_ARGS}
+  ${glfw3_USER_CUSTOMIZE_ARGS}
 )
 
 add_library(glfw::glfw ALIAS glfw)

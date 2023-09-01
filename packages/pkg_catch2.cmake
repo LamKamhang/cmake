@@ -23,7 +23,7 @@ lam_add_package_maybe_prebuild(
   "CATCH_INSTALL_DOCS OFF"
   "CATCH_CONFIG_CPP17_STRING_VIEW ${catch2_USE_CPP17_STRING_VIEW}"
   # for user customize.
-  ${catch2_USER_CMAKE_ARGS}
+  ${catch2_USER_CUSTOMIZE_ARGS}
 )
 
 lam_check_prefer_prebuild(out catch2)

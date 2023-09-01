@@ -22,5 +22,5 @@ lam_add_package_maybe_prebuild(
   "FMT_TEST OFF"
   "FMT_INSTALL ${out}"
   # for user customize.
-  ${fmt_USER_CMAKE_ARGS}
+  ${fmt_USER_CUSTOMIZE_ARGS}
 )

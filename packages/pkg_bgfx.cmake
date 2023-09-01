@@ -19,5 +19,5 @@ lam_add_package(
   "gh:bkaradzic/bgfx.cmake.git#${bgfx_TAG}"
   NAME bgfx
   # for user customize.
-  ${bgfx_USER_CMAKE_ARGS}
+  ${bgfx_USER_CUSTOMIZE_ARGS}
 )

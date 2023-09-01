@@ -20,5 +20,5 @@ lam_add_package_maybe_prebuild(
   NAME nlohmann_json
   CMAKE_ARGS "-DJSON_BuildTests=OFF"
   # for user customize.
-  ${nlohmann_json_USER_CMAKE_ARGS}
+  ${nlohmann_json_USER_CUSTOMIZE_ARGS}
 )

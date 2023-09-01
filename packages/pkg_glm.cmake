@@ -17,4 +17,6 @@ endif()
 
 lam_add_package_maybe_prebuild("gh:g-truc/glm#${glm_TAG}"
   GIT_SHALLOW OFF
+  # for user customize.
+  ${glm_USER_CUSTOMIZE_ARGS}
 )

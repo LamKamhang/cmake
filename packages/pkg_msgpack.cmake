@@ -32,4 +32,6 @@ endif()
 
 lam_add_package("gh:msgpack/msgpack-c#${msgpack_TAG}"
   NAME msgpack
+  # for user customize.
+  ${msgpack_USER_CUSTOMIZE_ARGS}
 )

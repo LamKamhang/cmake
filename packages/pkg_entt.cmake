@@ -19,5 +19,5 @@ lam_add_package_maybe_prebuild(
   "gh:skypjack/entt#${entt_TAG}"
   NAME EnTT
   # for user customize.
-  ${entt_USER_CMAKE_ARGS}
+  ${entt_USER_CUSTOMIZE_ARGS}
 )

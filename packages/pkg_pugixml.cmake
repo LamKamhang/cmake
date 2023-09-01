@@ -16,4 +16,7 @@ if (NOT DEFINED pugixml_TAG)
 endif()
 
 lam_add_package_maybe_prebuild(
-  "gh:zeux/pugixml#${pugixml_TAG}")
+  "gh:zeux/pugixml#${pugixml_TAG}"
+  # for user customize.
+  ${pugixml_USER_CUSTOMIZE_ARGS}
+)

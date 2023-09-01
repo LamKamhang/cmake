@@ -21,5 +21,5 @@ lam_add_package_maybe_prebuild(
   NAME eventpp
   CMAKE_ARGS "-DEVENTPP_INSTALL=${out}"
   # for user customize.
-  ${eventpp_USER_CMAKE_ARGS}
+  ${eventpp_USER_CUSTOMIZE_ARGS}
 )

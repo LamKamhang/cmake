@@ -19,7 +19,7 @@ lam_add_package_maybe_prebuild(
   "gh:romeric/Fastor#${fastor_TAG}"
   CMAKE_ARGS "-DBUILD_TESTING=OFF"
   # for user customize.
-  ${fastor_USER_CMAKE_ARGS}
+  ${fastor_USER_CUSTOMIZE_ARGS}
 )
 
 if (NOT TARGET Fastor::Fastor)

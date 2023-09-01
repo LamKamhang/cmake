@@ -17,4 +17,6 @@ endif()
 lam_add_package_maybe_prebuild(
   "gh:leethomason/tinyxml2#${tinyxml2_TAG}"
   CMAKE_ARGS "-Dtinyxml2_BUILD_TESTING=OFF"
+  # for user customize.
+  ${tinyxml2_USER_CUSTOMIZE_ARGS}
 )

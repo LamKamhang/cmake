@@ -20,4 +20,6 @@ lam_add_package_maybe_prebuild(
   NAME tl-optional
   CMAKE_ARGS "-DOPTIONAL_BUILD_PACKAGE=OFF"
   CMAKE_ARGS "-DOPTIONAL_BUILD_TESTS=OFF"
+  # for user customize.
+  ${tl-optional_USER_CUSTOMIZE_ARGS}
 )

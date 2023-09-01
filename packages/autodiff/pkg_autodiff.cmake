@@ -31,5 +31,5 @@ lam_add_package_maybe_prebuild(
   "-DAUTODIFF_BUILD_EXAMPLES=OFF"
   "-DAUTODIFF_BUILD_DOCS=OFF"
   # for user customize.
-  ${autodiff_USER_CMAKE_ARGS}
+  ${autodiff_USER_CUSTOMIZE_ARGS}
 )

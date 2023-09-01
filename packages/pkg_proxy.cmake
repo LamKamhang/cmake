@@ -17,4 +17,7 @@ endif()
 
 lam_add_package_maybe_prebuild(
   "gh:microsoft/proxy.git#${proxy_TAG}"
-  CMAKE_ARGS "-DBUILD_TESTING=OFF")
+  CMAKE_ARGS "-DBUILD_TESTING=OFF"
+  # for user customize.
+  ${proxy_USER_CUSTOMIZE_ARGS}
+)

@@ -467,16 +467,11 @@ if (LAM_PACKAGE_OVERRIDE_FIND_PACKAGE)
   endmacro()
 endif()
 
-macro(lam_export_find_package_variable)
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} PARENT_SCOPE)
-endmacro()
-
 macro(find_package_ext PKG)
   find_package(${PKG} ${ARGN})
   if (NOT LAM_PACKAGE_OVERRIDE_FIND_PACKAGE)
     verbose_find_package(${PKG})
   endif()
-  lam_export_find_package_variable()
 endmacro()
 
 # NOTE!! Only Experimentally support!!
@@ -486,94 +481,153 @@ endmacro()
 # Only for some well known package.
 # FIND_PACKAGE_ARGS used to transfer args to Find_package.
 # NOT_REQUIRED
-function(lam_add_prebuild_package)
-  cmake_parse_arguments(PKG "NOT_REQUIRED;REQUIRED" "" "CPM_ARGS;FIND_ARGS" ${ARGV})
-  set(PKG_CPM_ARGS ${PKG_CPM_ARGS} ${PKG_UNPARSED_ARGUMENTS})
-
-  # get package name.
-  cmake_parse_arguments(CPM_ARGS "" "NAME" "OPTIONS;CMAKE_ARGS" ${PKG_CPM_ARGS})
-  if (NOT DEFINED CPM_ARGS_NAME)
-    set(uri ${PKG_CPM_ARGS})
+#
+# NOTE: find_package would define some variables,
+# so change function to macro.
+function(lam_parse_name_from_args out_name)
+  cmake_parse_arguments(PKG "" "NAME" "" "${ARGN}")
+  if (NOT DEFINED PKG_NAME)
+    set(uri ${PKG_UNPARSED_ARGUMENTS})
     list(FILTER uri INCLUDE REGEX "^([^#: ]+):([^#@ ]+)(@[0-9.]*)?(#[^#@ ]*)?(@[0-9.]*)?$")
     list(LENGTH uri NUM_URI)
     lam_assert_list_size_var(uri 1)
-    lam_get_name_from_uri(CPM_ARGS_NAME ${uri})
+    lam_get_name_from_uri(PKG_NAME ${uri})
   endif()
+  lam_assert_defined(PKG_NAME)
+  set(${out_name} ${PKG_NAME} PARENT_SCOPE)
+endfunction()
 
-  lam_status("${CPM_ARGS_NAME} use prebuild-mode.")
+function(lam_extract_cpm_and_find_args
+    out_PKG_NAME
+    out_PKG_CPM_ARGS
+    out_PKG_CMAKE_ARGS
+    out_PKG_FIND_ARGS
+    out_PKG_NOT_REQUIRED
+    out_PKG_INSTALL_PREFIX
+  )
+  # 1. split ARGN to CPM_ARGS, FIND_ARGS, and NOT_REQUIRED/REQUIRED flags.
+  cmake_parse_arguments(PKG "NOT_REQUIRED;REQUIRED" "" "CPM_ARGS;FIND_ARGS" "${ARGN}")
+  set(PKG_CPM_ARGS ${PKG_CPM_ARGS} ${PKG_UNPARSED_ARGUMENTS})
 
-  # prepare CMAKE_ARGS for prebuild.
+  # 2. get package name.
+  lam_parse_name_from_args(PKG_NAME ${PKG_CPM_ARGS})
+  cmake_parse_arguments(CPM_ARGS "" "NAME" "OPTIONS;CMAKE_ARGS" "${PKG_CPM_ARGS}")
+  set(CPM_ARGS_NAME ${PKG_NAME})
+  lam_assert_defined(CPM_ARGS_NAME)
+
+  # transform options to cmake_args.
   foreach(arg ${CPM_ARGS_OPTIONS})
     cpm_parse_option("${arg}")
     list(APPEND CPM_ARGS_CMAKE_ARGS "-D${OPTION_KEY}=${OPTION_VALUE}")
   endforeach()
 
+  # prepare cpm_args.
+  set(PKG_CPM_ARGS
+    ${CPM_ARGS_UNPARSED_ARGUMENTS}
+    NAME ${CPM_ARGS_NAME}
+    CMAKE_ARGS ${CPM_ARGS_CMAKE_ARGS}
+  )
+
+  # 3. prepare pkg_install_prefix.
   set(my_origin_parameters ${PKG_CPM_ARGS})
   list(SORT my_origin_parameters)
   string(SHA1 my_origin_hash "${my_origin_parameters}")
   set(PKG_INSTALL_PREFIX ${LAM_PACKAGE_INSTALL_PREFIX}/${CPM_ARGS_NAME}/${my_origin_hash})
 
+  # 4. output some args.
+  set(${out_PKG_NAME} ${CPM_ARGS_NAME} PARENT_SCOPE)
+  set(${out_PKG_CPM_ARGS} ${PKG_CPM_ARGS} PARENT_SCOPE)
+  set(${out_PKG_CMAKE_ARGS} ${CPM_ARGS_CMAKE_ARGS} PARENT_SCOPE)
+  set(${out_PKG_FIND_ARGS} ${PKG_FIND_ARGS} PARENT_SCOPE)
+  set(${out_PKG_NOT_REQUIRED} ${PKG_NOT_REQUIRED} PARENT_SCOPE)
+  set(${out_PKG_INSTALL_PREFIX} ${PKG_INSTALL_PREFIX} PARENT_SCOPE)
+endfunction()
+
+macro(__lam_unset_prebuild_variables)
+  unset(PKG_NAME)
+  unset(PKG_CPM_ARGS)
+  unset(PKG_CMAKE_ARGS)
+  unset(PKG_FIND_ARGS)
+  unset(PKG_NOT_REQUIRED)
+  unset(PKG_INSTALL_PREFIX)
+endmacro()
+
+macro(lam_add_prebuild_package)
+  lam_extract_cpm_and_find_args(
+    PKG_NAME
+    PKG_CPM_ARGS
+    PKG_CMAKE_ARGS
+    PKG_FIND_ARGS
+    PKG_NOT_REQUIRED
+    PKG_INSTALL_PREFIX
+    "${ARGN}"
+  )
+  lam_assert_defined(PKG_NAME PKG_NOT_REQUIRED PKG_INSTALL_PREFIX)
+  lam_status("${PKG_NAME} use prebuild-mode.")
+
   if (LAM_PACKAGE_ENABLE_TRY_FIND)
-    find_package_ext(${CPM_ARGS_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
+    find_package_ext(${PKG_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
       PATHS ${PKG_INSTALL_PREFIX}
     )
   endif()
 
-  if (${${CPM_ARGS_NAME}_FOUND})
+  if (${${PKG_NAME}_FOUND} OR PKG_NOT_REQUIRED)
+    __lam_unset_prebuild_variables()
     return()
-  endif()
-
-  # check whether the package is REQUIRED.
-  # If this package is not required, return and does not need to download.
-  if (NOT PKG_NOT_REQUIRED)
+  elseif (NOT PKG_NOT_REQUIRED)
+    # check whether the package is REQUIRED.
+    # If this package is not required, return and does not need to download.
     set(PKG_FIND_ARGS ${PKG_FIND_ARGS} REQUIRED)
-  else()
-    return()
   endif()
 
   # download package by cpm.
   lam_download_package(${PKG_CPM_ARGS})
+  lam_assert_defined(${PKG_NAME}_SOURCE_DIR)
 
-  lam_assert_defined(${CPM_ARGS_NAME}_SOURCE_DIR)
-
+  # configure package.
   execute_process(
     COMMAND ${CMAKE_COMMAND}
-    -S ${${CPM_ARGS_NAME}_SOURCE_DIR}
-    -B${CMAKE_BINARY_DIR}/deps-build/${CPM_ARGS_NAME}
+    -S ${${PKG_NAME}_SOURCE_DIR}
+    -B${CMAKE_BINARY_DIR}/deps-build/${PKG_NAME}
     -G${CMAKE_GENERATOR}
     -DCMAKE_BUILD_TYPE=${LAM_PACKAGE_BUILD_TYPE}
     -DBUILD_SHARED_LIBS=${LAM_PACKAGE_BUILD_SHARED}
     -DCMAKE_INSTALL_PREFIX=${PKG_INSTALL_PREFIX}
     -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
     -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
-    ${CPM_ARGS_CMAKE_ARGS}
-    WORKING_DIRECTORY ${${CPM_ARGS_NAME}_SOURCE_DIR}
+    ${PKG_CMAKE_ARGS}
+    WORKING_DIRECTORY ${${PKG_NAME}_SOURCE_DIR}
     OUTPUT_QUIET
     RESULT_VARIABLE result
   )
   if (result)
-    lam_fatal("[lam_package] configure external project(${CPM_ARGS_NAME}) failed: ${result}")
+    lam_fatal("[lam_package] configure external project(${PKG_NAME}) failed: ${result}")
   endif()
 
   if (NOT LAM_PACKAGE_VERBOSE_INSTALL)
     set(__ARGS OUTPUT_QUIET)
   endif()
 
+  # install package.
   execute_process(
     COMMAND ${CMAKE_COMMAND}
-    --build ${CMAKE_BINARY_DIR}/deps-build/${CPM_ARGS_NAME} --target install -j ${LAM_PACKAGE_NUM_THREADS}
+    --build ${CMAKE_BINARY_DIR}/deps-build/${PKG_NAME} --target install -j ${LAM_PACKAGE_NUM_THREADS}
     RESULT_VARIABLE result
     ${__ARGS}
   )
 
   if (result)
-    lam_fatal("[lam_package] Failed to install external package(${CPM_ARGS_NAME}): ${result}")
+    lam_fatal("[lam_package] Failed to install external package(${PKG_NAME}): ${result}")
   endif()
 
-  find_package_ext(${CPM_ARGS_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
+  # find package again.
+  find_package_ext(${PKG_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
     PATHS ${PKG_INSTALL_PREFIX}
   )
-endfunction()
+  unset(__ARGS)
+  unset(result)
+  __lam_unset_prebuild_variables()
+endmacro()
 
 ########################################################################
 # define some alias
@@ -593,23 +647,23 @@ function(lam_check_prefer_prebuild out name)
   endif()
 endfunction()
 
-function(lam_add_package_maybe_prebuild uri) # args.
-  cmake_parse_arguments(PKG "" "NAME" "" "${ARGN}")
+macro(lam_add_package_maybe_prebuild) # args.
+  set(argv ${ARGV})
   # parse Name.
-  if (NOT DEFINED PKG_NAME)
-    lam_get_name_from_uri(PKG_NAME ${uri})
-  endif()
-  # transform to lowercase.
+  lam_parse_name_from_args(PKG_NAME "${argv}")
   string(TOLOWER ${PKG_NAME} name)
 
   lam_check_prefer_prebuild(out ${name})
   if (out)
-    lam_add_prebuild_package(${ARGV})
-    lam_export_find_package_variable()
+    lam_add_prebuild_package(${argv})
   else()
-    lam_add_package(${ARGV})
+    lam_add_package(${argv})
   endif()
-endfunction()
+  unset(name)
+  unset(argv)
+  unset(PKG_NAME)
+  unset(out)
+endmacro()
 
 macro(require_package)
   lam_add_package(${ARGV})

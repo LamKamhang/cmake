@@ -19,6 +19,8 @@ endif()
 
 lam_add_package_maybe_prebuild("gh:yixuan/spectra#${spectra_TAG}"
   NAME Spectra
+  # for user customize.
+  ${spectra_USER_CUSTOMIZE_ARGS}
 )
 
 if (NOT TARGET Spectra::Spectra)

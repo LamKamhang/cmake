@@ -17,4 +17,6 @@ endif()
 lam_add_package_maybe_prebuild(
   "gh:gabime/spdlog#${spdlog_TAG}"
   CMAKE_ARGS "-DSPDLOG_BUILD_EXAMPLE=OFF"
+  # for user customize.
+  ${spdlog_USER_CUSTOMIZE_ARGS}
 )

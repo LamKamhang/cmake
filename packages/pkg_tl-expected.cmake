@@ -20,4 +20,6 @@ lam_add_package_maybe_prebuild(
   NAME tl-expected
   CMAKE_ARGS "-DEXPECTED_BUILD_PACKAGE=OFF"
   CMAKE_ARGS "-DEXPECTED_BUILD_TESTS=OFF"
+  # for user customize.
+  ${tl-expected_USER_CUSTOMIZE_ARGS}
 )

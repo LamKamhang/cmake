@@ -25,5 +25,5 @@ lam_add_package_maybe_prebuild(
   "-DBENCHMARK_USE_BUNDLED_GTEST=OFF"
   "-DBENCHMARK_ENABLE_INSTALL=${out}"
   # for user customize.
-  ${benchmark_USER_CMAKE_ARGS}
+  ${benchmark_USER_CUSTOMIZE_ARGS}
 )

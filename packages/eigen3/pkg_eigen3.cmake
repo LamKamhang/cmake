@@ -28,5 +28,5 @@ lam_add_package_maybe_prebuild(
   "-DEIGEN_BUILD_DOC=OFF"
   "-DBUILD_TESTING=OFF"
   # for user customize.
-  ${eigen_USER_CMAKE_ARGS}
+  ${eigen_USER_CUSTOMIZE_ARGS}
 )

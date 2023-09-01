@@ -19,7 +19,7 @@ lam_add_package(
   "gh:vincentlaucsb/csv-parser#${csv-parser_TAG}"
   NAME csv-parser
   # for user customize.
-  ${csv-parser_USER_CMAKE_ARGS}
+  ${csv-parser_USER_CUSTOMIZE_ARGS}
 )
 target_include_directories(csv PUBLIC
   ${csv-parser_SOURCE_DIR}/include
