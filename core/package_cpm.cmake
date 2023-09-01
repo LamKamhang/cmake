@@ -572,60 +572,59 @@ macro(lam_add_prebuild_package)
   endif()
 
   if (${${PKG_NAME}_FOUND} OR PKG_NOT_REQUIRED)
-    __lam_unset_prebuild_variables()
-    return()
-  elseif (NOT PKG_NOT_REQUIRED)
-    # check whether the package is REQUIRED.
-    # If this package is not required, return and does not need to download.
-    set(PKG_FIND_ARGS ${PKG_FIND_ARGS} REQUIRED)
+  else()
+    if (NOT PKG_NOT_REQUIRED)
+      # check whether the package is REQUIRED.
+      # If this package is not required, return and does not need to download.
+      set(PKG_FIND_ARGS ${PKG_FIND_ARGS} REQUIRED)
+    endif()
+    # download package by cpm.
+    lam_download_package(${PKG_CPM_ARGS})
+    lam_assert_defined(${PKG_NAME}_SOURCE_DIR)
+
+    # configure package.
+    execute_process(
+      COMMAND ${CMAKE_COMMAND}
+      -S ${${PKG_NAME}_SOURCE_DIR}
+      -B${CMAKE_BINARY_DIR}/deps-build/${PKG_NAME}
+      -G${CMAKE_GENERATOR}
+      -DCMAKE_BUILD_TYPE=${LAM_PACKAGE_BUILD_TYPE}
+      -DBUILD_SHARED_LIBS=${LAM_PACKAGE_BUILD_SHARED}
+      -DCMAKE_INSTALL_PREFIX=${PKG_INSTALL_PREFIX}
+      -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
+      -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
+      ${PKG_CMAKE_ARGS}
+      WORKING_DIRECTORY ${${PKG_NAME}_SOURCE_DIR}
+      OUTPUT_QUIET
+      RESULT_VARIABLE result
+    )
+    if (result)
+      lam_fatal("[lam_package] configure external project(${PKG_NAME}) failed: ${result}")
+    endif()
+
+    if (NOT LAM_PACKAGE_VERBOSE_INSTALL)
+      set(__ARGS OUTPUT_QUIET)
+    endif()
+
+    # install package.
+    execute_process(
+      COMMAND ${CMAKE_COMMAND}
+      --build ${CMAKE_BINARY_DIR}/deps-build/${PKG_NAME} --target install -j ${LAM_PACKAGE_NUM_THREADS}
+      RESULT_VARIABLE result
+      ${__ARGS}
+    )
+
+    if (result)
+      lam_fatal("[lam_package] Failed to install external package(${PKG_NAME}): ${result}")
+    endif()
+
+    # find package again.
+    find_package_ext(${PKG_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
+      PATHS ${PKG_INSTALL_PREFIX}
+    )
+    unset(__ARGS)
+    unset(result)
   endif()
-
-  # download package by cpm.
-  lam_download_package(${PKG_CPM_ARGS})
-  lam_assert_defined(${PKG_NAME}_SOURCE_DIR)
-
-  # configure package.
-  execute_process(
-    COMMAND ${CMAKE_COMMAND}
-    -S ${${PKG_NAME}_SOURCE_DIR}
-    -B${CMAKE_BINARY_DIR}/deps-build/${PKG_NAME}
-    -G${CMAKE_GENERATOR}
-    -DCMAKE_BUILD_TYPE=${LAM_PACKAGE_BUILD_TYPE}
-    -DBUILD_SHARED_LIBS=${LAM_PACKAGE_BUILD_SHARED}
-    -DCMAKE_INSTALL_PREFIX=${PKG_INSTALL_PREFIX}
-    -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
-    -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
-    ${PKG_CMAKE_ARGS}
-    WORKING_DIRECTORY ${${PKG_NAME}_SOURCE_DIR}
-    OUTPUT_QUIET
-    RESULT_VARIABLE result
-  )
-  if (result)
-    lam_fatal("[lam_package] configure external project(${PKG_NAME}) failed: ${result}")
-  endif()
-
-  if (NOT LAM_PACKAGE_VERBOSE_INSTALL)
-    set(__ARGS OUTPUT_QUIET)
-  endif()
-
-  # install package.
-  execute_process(
-    COMMAND ${CMAKE_COMMAND}
-    --build ${CMAKE_BINARY_DIR}/deps-build/${PKG_NAME} --target install -j ${LAM_PACKAGE_NUM_THREADS}
-    RESULT_VARIABLE result
-    ${__ARGS}
-  )
-
-  if (result)
-    lam_fatal("[lam_package] Failed to install external package(${PKG_NAME}): ${result}")
-  endif()
-
-  # find package again.
-  find_package_ext(${PKG_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
-    PATHS ${PKG_INSTALL_PREFIX}
-  )
-  unset(__ARGS)
-  unset(result)
   __lam_unset_prebuild_variables()
 endmacro()
 

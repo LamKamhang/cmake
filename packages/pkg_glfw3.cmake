@@ -13,16 +13,16 @@ message(STATUS "[package/glfw3]: glfw::glfw")
 enable_language(C)
 option(glfw3_DEF_INCLUDE_NONE "define GLFW_INCLUDE_NONE" ON)
 
-if (NOT DEFINED glfw_VERSION)
-  set(glfw_VERSION "3.3.8")
+if (NOT DEFINED glfw3_VERSION)
+  set(glfw3_VERSION "3.3.8")
 endif()
-if (NOT DEFINED glfw_TAG)
-  set(glfw_TAG "${glfw_VERSION}")
+if (NOT DEFINED glfw3_TAG)
+  set(glfw3_TAG "${glfw3_VERSION}")
 endif()
 
 lam_check_prefer_prebuild(out glfw3)
 lam_add_package_maybe_prebuild(
-  "gh:glfw/glfw#${glfw_TAG}"
+  "gh:glfw/glfw#${glfw3_TAG}"
   NAME glfw3
   CMAKE_ARGS "-DGLFW_BUILD_EXAMPLES=OFF"
   CMAKE_ARGS "-DGLFW_BUILD_TESTS=OFF"
