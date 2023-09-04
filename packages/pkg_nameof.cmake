@@ -16,10 +16,11 @@ if (NOT DEFINED nameof_TAG)
 endif()
 
 lam_check_prefer_prebuild(out nameof)
-lam_add_package_maybe_prebuild("gh:Neargye/nameof#${nameof_TAG}"
+lam_add_package_maybe_prebuild(nameof
+  "gh:Neargye/nameof#${nameof_TAG}"
   CMAKE_ARGS "-DNAMEOF_OPT_BUILD_EXAMPLES=OFF"
   CMAKE_ARGS "-DNAMEOF_OPT_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DNAMEOF_OPT_INSTALL=${out}"
   # for user customize.
-  ${nameof_USER_CUSTOMIZE_ARGS}
+  ${nameof_USER_CUSTOM_ARGS}
 )

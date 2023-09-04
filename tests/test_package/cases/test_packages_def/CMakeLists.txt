@@ -5,7 +5,7 @@ project(test_package)
 include(utility)
 
 lam_use_deps(
-  !eigen3
+  !eigen
   !autodiff
 )
 

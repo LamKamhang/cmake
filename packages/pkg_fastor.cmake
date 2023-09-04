@@ -15,11 +15,11 @@ if (NOT DEFINED fastor_TAG)
   set(fastor_TAG "origin/master")
 endif()
 
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(fastor
   "gh:romeric/Fastor#${fastor_TAG}"
   CMAKE_ARGS "-DBUILD_TESTING=OFF"
   # for user customize.
-  ${fastor_USER_CUSTOMIZE_ARGS}
+  ${fastor_USER_CUSTOM_ARGS}
 )
 
 if (NOT TARGET Fastor::Fastor)

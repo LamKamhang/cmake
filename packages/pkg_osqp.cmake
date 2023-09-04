@@ -23,7 +23,7 @@ endif()
 # TODO. make it prebuild.
 lam_add_package("gh:osqp/osqp#${osqp_TAG}"
   # for user customize.
-  ${osqp_USER_CUSTOMIZE_ARGS}
+  ${osqp_USER_CUSTOM_ARGS}
 )
 
 if (NOT TARGET osqp::osqp)

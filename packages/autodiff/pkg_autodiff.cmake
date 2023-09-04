@@ -23,7 +23,7 @@ if (autodiff_APPLY_NUM_TRAITS_PATCH)
   )
 endif()
 
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(autodiff
   ${_args}
   CMAKE_ARGS
   "-DAUTODIFF_BUILD_TESTS=OFF"
@@ -31,5 +31,5 @@ lam_add_package_maybe_prebuild(
   "-DAUTODIFF_BUILD_EXAMPLES=OFF"
   "-DAUTODIFF_BUILD_DOCS=OFF"
   # for user customize.
-  ${autodiff_USER_CUSTOMIZE_ARGS}
+  ${autodiff_USER_CUSTOM_ARGS}
 )

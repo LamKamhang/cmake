@@ -15,9 +15,9 @@ if (NOT DEFINED proxy_TAG)
   set(proxy_TAG "${proxy_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(proxy
   "gh:microsoft/proxy.git#${proxy_TAG}"
   CMAKE_ARGS "-DBUILD_TESTING=OFF"
   # for user customize.
-  ${proxy_USER_CUSTOMIZE_ARGS}
+  ${proxy_USER_CUSTOM_ARGS}
 )

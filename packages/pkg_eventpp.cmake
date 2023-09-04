@@ -16,10 +16,10 @@ if (NOT DEFINED eventpp_TAG)
 endif()
 
 lam_check_prefer_prebuild(out eventpp)
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(eventpp
   "gh:wqking/eventpp#${eventpp_TAG}"
   NAME eventpp
   CMAKE_ARGS "-DEVENTPP_INSTALL=${out}"
   # for user customize.
-  ${eventpp_USER_CUSTOMIZE_ARGS}
+  ${eventpp_USER_CUSTOM_ARGS}
 )

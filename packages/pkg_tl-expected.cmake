@@ -15,11 +15,11 @@ if (NOT DEFINED tl-expected_TAG)
   set(tl-expected_TAG "v${tl-expected_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(tl-expected
   "gh:TartanLlama/expected#${tl-expected_TAG}"
   NAME tl-expected
   CMAKE_ARGS "-DEXPECTED_BUILD_PACKAGE=OFF"
   CMAKE_ARGS "-DEXPECTED_BUILD_TESTS=OFF"
   # for user customize.
-  ${tl-expected_USER_CUSTOMIZE_ARGS}
+  ${tl-expected_USER_CUSTOM_ARGS}
 )

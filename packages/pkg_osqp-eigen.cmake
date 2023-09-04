@@ -18,5 +18,5 @@ endif()
 lam_add_package("gh:robotology/osqp-eigen#${osqp-eigen_TAG}"
   NAME OsqpEigen
   # for user customize.
-  ${osqp-eigen_USER_CUSTOMIZE_ARGS}
+  ${osqp-eigen_USER_CUSTOM_ARGS}
 )

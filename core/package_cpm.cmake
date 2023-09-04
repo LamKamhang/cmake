@@ -353,6 +353,9 @@ endmacro()
 
 # for register packages.
 macro(lam_include_package pkg)
+  if (DEFINED __pkg)
+    lam_debug("NOTE: {__pkg}(${__pkg}) now would be override.")
+  endif()
   string(TOLOWER ${pkg} __pkg)
   if (EXISTS ${USER_CUSTOM_PACKAGES_DIR}/pkg_${__pkg}.cmake)
     include(${USER_CUSTOM_PACKAGES_DIR}/pkg_${__pkg}.cmake)
@@ -382,6 +385,8 @@ function(lam_parse_deps_format uri out_name)
   set(pkg_name ${CMAKE_MATCH_3})
   set(optional_flag ${CMAKE_MATCH_1})
   set(prebuild_flag ${CMAKE_MATCH_2})
+  # NOTE: change the pkg_name to lower-case.
+  string(TOLOWER ${pkg_name} pkg_name)
   string(REPLACE "~" "YES" optional_flag "${optional_flag}")
   if ("${prebuild_flag}" STREQUAL "")
     unset(prebuild_flag)
@@ -396,8 +401,7 @@ function(lam_parse_deps_format uri out_name)
   lam_debug("prebuild: ${prebuild_flag}")
   lam_debug("tagversion: ${tag_version}")
 
-  unset(pkg_tag)
-  unset(pkg_version)
+  lam_assert_not_defined(pkg_tag pkg_version)
   if ("${tag_version}" MATCHES "^(@(default)?)?$")
     # use default. do not set tag and version.
   elseif (${tag_version} MATCHES "^#([^#]+)$")
@@ -635,33 +639,26 @@ function(lam_check_prefer_prebuild out name)
   # If defined ${name}_USE_PREBUILD and it's ON.
   # or does not defined ${name}_USE_PREBUILD
   # but the global flags LAM_PACKAGE_PREFER_PREBUILD is ON
-  if ((DEFINED ${name}_USE_PREBUILD
-        AND ${name}_USE_PREBUILD)
-      OR
-      (NOT DEFINED ${name}_USE_PREBUILD
-        AND LAM_PACKAGE_PREFER_PREBUILD))
-    set(${out} YES PARENT_SCOPE)
+  if (DEFINED ${name}_USE_PREBUILD)
+    set(USE_PREBUILD_FLAG ${${name}_USE_PREBUILD})
+  elseif(DEFINED __pkg AND DEFINED ${__pkg}_USE_PREBUILD)
+    set(USE_PREBUILD_FLAG ${${__pkg}_USE_PREBUILD})
   else()
-    set(${out} NO PARENT_SCOPE)
+    # default prebuild-flag.
+    set(USE_PREBUILD_FLAG ${LAM_PACKAGE_PREFER_PREBUILD})
   endif()
+
+  set(${out} ${USE_PREBUILD_FLAG} PARENT_SCOPE)
 endfunction()
 
-macro(lam_add_package_maybe_prebuild) # args.
-  set(argv ${ARGV})
-  # parse Name.
-  lam_parse_name_from_args(PKG_NAME "${argv}")
-  string(TOLOWER ${PKG_NAME} name)
-
-  lam_check_prefer_prebuild(out ${name})
-  if (out)
-    lam_add_prebuild_package(${argv})
+macro(lam_add_package_maybe_prebuild dep_name) # args.
+  lam_check_prefer_prebuild(prebuild_flag ${dep_name})
+  if (prebuild_flag)
+    lam_add_prebuild_package(${ARGN})
   else()
-    lam_add_package(${argv})
+    lam_add_package(${ARGN})
   endif()
-  unset(name)
-  unset(argv)
-  unset(PKG_NAME)
-  unset(out)
+  unset(prebuild_flag)
 endmacro()
 
 macro(require_package)

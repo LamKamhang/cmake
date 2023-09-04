@@ -14,7 +14,7 @@ if (NOT DEFINED cli11_TAG)
   set(cli11_TAG "v${cli11_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(cli11
   "gh:CLIUtils/CLI11#${cli11_TAG}"
   NAME CLI11
   OPTIONS
@@ -22,5 +22,5 @@ lam_add_package_maybe_prebuild(
   "CLI11_BUILD_TESTS OFF"
   "CLI11_BUILD_DOCS OFF"
   # for user customize.
-  ${cli11_USER_CUSTOMIZE_ARGS}
+  ${cli11_USER_CUSTOM_ARGS}
 )

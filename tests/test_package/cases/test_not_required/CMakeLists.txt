@@ -10,4 +10,4 @@ lam_add_prebuild_package(
   NOT_REQUIRED
 )
 
-lam_assert_not_defined(NotExists_FOUND)
+lam_assert_falsy(NotExists_FOUND)

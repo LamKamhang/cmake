@@ -15,10 +15,10 @@ if (NOT DEFINED nlohmann_json_TAG)
   set(nlohmann_json_TAG "v${nlohmann_json_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(nlohmann_json
   "gh:nlohmann/json#${nlohmann_json_TAG}"
   NAME nlohmann_json
   CMAKE_ARGS "-DJSON_BuildTests=OFF"
   # for user customize.
-  ${nlohmann_json_USER_CUSTOMIZE_ARGS}
+  ${nlohmann_json_USER_CUSTOM_ARGS}
 )

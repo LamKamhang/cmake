@@ -18,5 +18,5 @@ lam_add_package(
   "gh:pybind/pybind11#${pybind11_TAG}"
   CMAKE_ARGS "-DPYBIND11_TEST=OFF"
   # for user customize.
-  ${pybind11_USER_CUSTOMIZE_ARGS}
+  ${pybind11_USER_CUSTOM_ARGS}
 )

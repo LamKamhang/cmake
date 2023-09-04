@@ -15,11 +15,11 @@ if (NOT DEFINED tl-optional_TAG)
   set(tl-optional_TAG "v${tl-optional_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(tl-optional
   "gh:TartanLlama/optional#${tl-optional_TAG}"
   NAME tl-optional
   CMAKE_ARGS "-DOPTIONAL_BUILD_PACKAGE=OFF"
   CMAKE_ARGS "-DOPTIONAL_BUILD_TESTS=OFF"
   # for user customize.
-  ${tl-optional_USER_CUSTOMIZE_ARGS}
+  ${tl-optional_USER_CUSTOM_ARGS}
 )

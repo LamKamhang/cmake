@@ -16,14 +16,14 @@ if (NOT DEFINED catch2_TAG)
   set(catch2_TAG "v${catch2_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(catch2
   "gh:catchorg/Catch2#${catch2_TAG}"
   OPTIONS
   "CATCH_BUILD_TESTING OFF"
   "CATCH_INSTALL_DOCS OFF"
   "CATCH_CONFIG_CPP17_STRING_VIEW ${catch2_USE_CPP17_STRING_VIEW}"
   # for user customize.
-  ${catch2_USER_CUSTOMIZE_ARGS}
+  ${catch2_USER_CUSTOM_ARGS}
 )
 
 lam_check_prefer_prebuild(out catch2)

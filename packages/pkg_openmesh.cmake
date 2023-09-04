@@ -14,10 +14,10 @@ if (NOT DEFINED openmesh_TAG)
   set(openmesh_TAG "OpenMesh-${openmesh_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(openmesh
   "https://gitlab.vci.rwth-aachen.de:9000/OpenMesh/OpenMesh.git#${openmesh_TAG}"
   CMAKE_ARGS "-DBUILD_APPS=OFF"
   CMAKE_ARGS "-DOPENMESH_DOCS=OFF"
   # for user customize.
-  ${openmesh_USER_CUSTOMIZE_ARGS}
+  ${openmesh_USER_CUSTOM_ARGS}
 )

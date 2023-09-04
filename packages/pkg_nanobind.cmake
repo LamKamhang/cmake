@@ -22,5 +22,5 @@ lam_add_package(
   CMAKE_ARGS "-DNB_TEST_STABLE_ABI=OFF"
   CMAKE_ARGS "-DNB_TEST_SHARED_BUILD=OFF"
   # for user customize.
-  ${nanobind_USER_CUSTOMIZE_ARGS}
+  ${nanobind_USER_CUSTOM_ARGS}
 )

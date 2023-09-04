@@ -14,9 +14,9 @@ if (NOT DEFINED spdlog_TAG)
   set(spdlog_TAG "v${spdlog_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(
+lam_add_package_maybe_prebuild(spdlog
   "gh:gabime/spdlog#${spdlog_TAG}"
   CMAKE_ARGS "-DSPDLOG_BUILD_EXAMPLE=OFF"
   # for user customize.
-  ${spdlog_USER_CUSTOMIZE_ARGS}
+  ${spdlog_USER_CUSTOM_ARGS}
 )

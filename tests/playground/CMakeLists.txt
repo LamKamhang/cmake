@@ -6,7 +6,7 @@ option(LAM_PACKAGE_PREFER_PREBUILD "prefer prebuild mode(install and then find s
 include(../../utility.cmake)
 
 lam_use_deps(
-  Eigen3
+  Eigen
   autodiff
   alglib
   benchmark
@@ -20,7 +20,7 @@ lam_use_deps(
   csv-parser
   glad
   glbinding
-  glfw3
+  glfw
   glm
   happly
   imgui
@@ -47,6 +47,7 @@ lam_use_deps(
   tinyxml2
   tl-optional
   tl-expected
+  dealii
 )
 
 set(osqp_DIR ${osqp_INSTALL_DIR})
@@ -96,3 +97,7 @@ lam_assert_target_defined(
   tl::expected
   tl::optional
 )
+
+if (NOT COMMAND deal_ii_setup_target)
+  message(FATAL_ERROR "dealii not found.")
+endif()

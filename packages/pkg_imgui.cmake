@@ -77,7 +77,7 @@ target_sources(imgui
 
 # add deps.
 if (${imgui_PLATFORM_BACKEND} STREQUAL glfw)
-  lam_use_deps(glfw3)
+  lam_use_deps(glfw)
   target_link_libraries(imgui PUBLIC glfw::glfw)
 endif()
 
