@@ -122,6 +122,7 @@ function(check_boolean)
   lam_assert_truthy(Y)
   set(var YES)
   lam_assert_truthy(var)
+  lam_assert_truthy(ON on On YES Y True 1 TRUE var)
   set(var NO)
   # lam_assert_truthy(var) # failed.
 
@@ -135,6 +136,7 @@ function(check_boolean)
   set(var NO)
   lam_assert_falsy(var)
   lam_assert_falsy(${var})
+  lam_assert_falsy(No no OFF off N False FALSE var)
   set(var YES)
   # lam_assert_falsy(var) # failed.
   # lam_assert_falsy(${var}) # failed.

@@ -1,6 +1,9 @@
 include_guard()
 
-# Usage: add_unit(target_name [isLIB]
+use_cmake_core_module(assert)
+
+# Usage:
+# lam_add_target(target_name [isLIB|SHARED|STATIC|INTERFACE]
 # [SRCS         <file.cpp/file.cc>]
 # [LIBS         <libs/other_targets>]
 # [INCLUDE_DIRS <include_dirs>]
@@ -10,20 +13,37 @@ include_guard()
 # [ALIAS        alias]
 # )
 # If SRC is not specfied, ${target_name}.cc/cpp is used as the default source.
-function(add_unit name)
+function(lam_add_target name)
   # cmake_parse_arguments(<prefix> <options> <one_value_keywords> <multi_value_keywords> args...)
-  set(options isLIB INTERFACE APPEND_SOURCE EXCLUDE_FROM_ALL)
+  set(options isLIB INTERFACE APPEND_SOURCE EXCLUDE_FROM_ALL SHARED STATIC)
   set(oneValueArgs "ALIAS")
   set(multiValueArgs "GLOB_SRCS;SRCS;LIBS;INCLUDE_DIRS;LINK_DIRS;DEFS;FEATS;OPTIONS")
   cmake_parse_arguments(
     arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
   )
 
-  if (arg_APPEND_SOURCE AND NOT TARGET ${name})
-    message(FATAL_ERROR "Append Source to Target(${name}) failed, since ${name} isn't created.")
+  # Assert some conditions.
+  if (arg_APPEND_SOURCE)
+    lam_debug("Check Target Defined for APPEND_SOURCE.")
+    lam_assert_target_defined(${name})
+    lam_assert_falsy(
+      arg_isLIB arg_INTERFACE arg_EXCLUDE_FROM_ALL arg_SHARED arg_STATIC
+    )
+  else()
+    lam_debug("Check target not defined for no APPEND_SOURCE")
+    lam_assert_target_not_defined(${name})
   endif()
-  if (NOT arg_APPEND_SOURCE AND TARGET ${name})
-    message(FATAL_ERROR "Target: ${name} has been created.")
+  if (arg_EXCLUDE_FROM_ALL)
+    lam_assert_falsy(arg_INTERFACE arg_APPEND_SOURCE)
+  endif()
+  if (arg_INTERFACE)
+    lam_assert_falsy(arg_STATIC arg_isLIB arg_SHARED arg_APPEND_SOURCE)
+  endif()
+  if (arg_STATIC)
+    lam_assert_falsy(arg_INTERFACE arg_SHARED arg_APPEND_SOURCE)
+  endif()
+  if (arg_SHARED)
+    lam_assert_falsy(arg_INTERFACE arg_STATIC arg_APPEND_SOURCE)
   endif()
 
   # auto detect source base on target_name.
@@ -53,23 +73,24 @@ function(add_unit name)
     lam_assert_not_empty_var(arg_SRCS)
   endif()
 
+  # prepare arg_SRCS.
+  if (arg_EXCLUDE_FROM_ALL)
+    list(PREPEND arg_SRCS EXCLUDE_FROM_ALL)
+  endif()
+
   # create target.
   if (arg_APPEND_SOURCE)
     target_sources(${name} PRIVATE ${arg_SRCS})
-  elseif (arg_isLIB)
-    if (arg_EXCLUDE_FROM_ALL)
-      add_library(${name} EXCLUDE_FROM_ALL ${arg_SRCS})
-    else()
-      add_library(${name} ${arg_SRCS})
-    endif()
+  elseif (arg_STATIC)
+    add_library(${name} STATIC ${arg_SRCS})
+  elseif (arg_SHARED)
+    add_library(${name} SHARED ${arg_SRCS})
   elseif (arg_INTERFACE)
     add_library(${name} INTERFACE ${arg_SRCS})
-  else()
-    if (arg_EXCLUDE_FROM_ALL)
-      add_executable(${name} EXCLUDE_FROM_ALL ${arg_SRCS})
-    else()
-      add_executable(${name} ${arg_SRCS})
-    endif()
+  elseif (arg_isLIB)
+    add_library(${name} ${arg_SRCS})
+  else ()
+    add_executable(${name} ${arg_SRCS})
   endif()
 
   # refine args.

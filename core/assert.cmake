@@ -218,23 +218,28 @@ endfunction()
 ##############################################################################
 # Assertion for boolean
 ##############################################################################
-function(lam_assert_truthy _arg)
+function(lam_assert_truthy)
   lam_verbose_func()
 
-  set(__passed FALSE)
-  if (${_arg})
-    set(__passed TRUE)
-  endif()
-  __lam_assert("key(${_arg}) should be TRUE/ON/YES")
+  foreach(_arg ${ARGV})
+    set(__passed FALSE)
+    if (${_arg})
+      set(__passed TRUE)
+    endif()
+    __lam_assert("key(${_arg}) should be TRUE/ON/YES")
+  endforeach()
 endfunction()
-function(lam_assert_falsy _arg)
+
+function(lam_assert_falsy)
   lam_verbose_func()
 
-  set(__passed FALSE)
-  if (NOT ${_arg})
-    set(__passed TRUE)
-  endif()
-  __lam_assert("key(${_arg}) should be FALSE/NO/OFF")
+  foreach(_arg ${ARGV})
+    set(__passed FALSE)
+    if (NOT ${_arg})
+      set(__passed TRUE)
+    endif()
+    __lam_assert("key(${_arg}) should be FALSE/NO/OFF")
+  endforeach()
 endfunction()
 ##############################################################################
 # Assertion for lists

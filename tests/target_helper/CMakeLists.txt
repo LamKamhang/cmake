@@ -6,21 +6,21 @@ list(PREPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../../)
 include(utility)
 
 # example1: no other args.
-add_unit(demo1)
+lam_add_target(demo1)
 
 # example2: specified source.
-add_unit(demo2 SRCS demo1.cc)
+lam_add_target(demo2 SRCS demo1.cc)
 
 # example3: lib.
-add_unit(demo.lib isLIB)
+lam_add_target(demo.lib isLIB)
 
 # example4: lib with specified source.
-add_unit(demo2.lib isLIB SRCS demo.lib.cc)
+lam_add_target(demo2.lib isLIB SRCS demo.lib.cc)
 
 # example5: target_link_lib.
-add_unit(demo.with.lib LIBS demo.lib)
+lam_add_target(demo.with.lib LIBS demo.lib)
 
 # example6: interface.
-add_unit(demo.interface INTERFACE
+lam_add_target(demo.interface INTERFACE
   LIBS demo.lib
   FEATS std_cxx_17)
