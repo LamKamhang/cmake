@@ -1,3 +1,4 @@
+include_guard()
 # Source: https://github.com/StableCoder/cmake-scripts
 #
 # Copyright (C) 2018-2020 by George Cave - gcave@stablecoder.ca
@@ -74,8 +75,6 @@
 # target_code_coverage(theExe AUTO ALL EXCLUDE non_covered.cpp test/*) # As an executable target, adds to the 'ccov' and ccov-all' targets, and the reports will exclude the non-covered.cpp file, and any files in a test/ folder.
 # ~~~
 
-include_guard()
-
 # Options
 option(
   CODE_COVERAGE
@@ -103,8 +102,20 @@ if(CODE_COVERAGE AND NOT CODE_COVERAGE_ADDED)
 
   if(CMAKE_C_COMPILER_ID MATCHES "(Apple)?[Cc]lang"
      OR CMAKE_CXX_COMPILER_ID MATCHES "(Apple)?[Cc]lang")
-    # Messages
-    message(STATUS "Building with llvm Code Coverage Tools")
+
+    if(CMAKE_C_COMPILER_ID MATCHES "AppleClang" OR CMAKE_CXX_COMPILER_ID
+                                                   MATCHES "AppleClang")
+      # When on macOS and using the Apple-provided toolchain, use the
+      # XCode-provided llvm toolchain via `xcrun`
+      message(
+        STATUS
+          "Building with XCode-provided llvm code coverage tools (via `xcrun`)")
+      set(LLVM_COV_PATH xcrun llvm-cov)
+      set(LLVM_PROFDATA_PATH xcrun llvm-profdata)
+    else()
+      # Use the regular llvm toolchain
+      message(STATUS "Building with llvm code coverage tools")
+    endif()
 
     if(NOT LLVM_COV_PATH)
       message(FATAL_ERROR "llvm-cov not found! Aborting.")
@@ -570,7 +581,7 @@ function(add_code_coverage_all_targets)
             powershell -Command $$FILELIST = Get-Content
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list\; llvm-cov.exe
             report $$FILELIST
-            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-coverage.profdata
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
             ${EXCLUDE_REGEX}
           DEPENDS ccov-all-processing)
       else()
@@ -579,22 +590,35 @@ function(add_code_coverage_all_targets)
           COMMAND
             ${LLVM_COV_PATH} report `cat
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
-            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-coverage.profdata
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
             ${EXCLUDE_REGEX}
           DEPENDS ccov-all-processing)
       endif()
 
       # Export coverage information so continuous integration tools (e.g.
       # Jenkins) can consume it
-      add_custom_target(
-        ccov-all-export
-        COMMAND
-          ${LLVM_COV_PATH} export `cat
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
-          -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-coverage.profdata
-          -format="text" ${EXCLUDE_REGEX} >
-          ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
-        DEPENDS ccov-all-processing)
+      if(WIN32)
+        add_custom_target(
+          ccov-all-export
+          COMMAND
+            powershell -Command $$FILELIST = Get-Content
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list\; llvm-cov.exe
+            export $$FILELIST
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            -format="text" ${EXCLUDE_REGEX} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
+          DEPENDS ccov-all-processing)
+      else()
+        add_custom_target(
+          ccov-all-export
+          COMMAND
+            ${LLVM_COV_PATH} export `cat
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
+            -format="text" ${EXCLUDE_REGEX} >
+            ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/coverage.json
+          DEPENDS ccov-all-processing)
+      endif()
 
       # Generate HTML output of all added targets for perusal
       if(WIN32)
@@ -604,9 +628,9 @@ function(add_code_coverage_all_targets)
             powershell -Command $$FILELIST = Get-Content
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list\; llvm-cov.exe show
             $$FILELIST
-            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-coverage.profdata
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
             -show-line-counts-or-regions
-            -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-coverage
+            -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
             -format="html" ${EXCLUDE_REGEX}
           DEPENDS ccov-all-processing)
       else()
@@ -615,16 +639,16 @@ function(add_code_coverage_all_targets)
           COMMAND
             ${LLVM_COV_PATH} show `cat
             ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/binaries.list`
-            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-coverage.profdata
+            -instr-profile=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.profdata
             -show-line-counts-or-regions
-            -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-coverage
+            -output-dir=${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
             -format="html" ${EXCLUDE_REGEX}
           DEPENDS ccov-all-processing)
       endif()
 
     elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES
                                                 "GNU")
-      set(COVERAGE_INFO "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-coverage.info")
+      set(COVERAGE_INFO "${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged.info")
 
       # Nothing required for gcov
       add_custom_target(ccov-all-processing COMMAND ;)
@@ -665,7 +689,7 @@ function(add_code_coverage_all_targets)
       # Generates HTML output of all targets for perusal
       add_custom_target(
         ccov-all
-        COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-coverage
+        COMMAND ${GENHTML_PATH} -o ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged
                 ${COVERAGE_INFO} -p ${CMAKE_SOURCE_DIR}
         DEPENDS ccov-all-capture)
 
@@ -676,7 +700,7 @@ function(add_code_coverage_all_targets)
       POST_BUILD
       COMMAND ;
       COMMENT
-        "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-coverage/index.html in your browser to view the coverage report."
+        "Open ${CMAKE_COVERAGE_OUTPUT_DIRECTORY}/all-merged/index.html in your browser to view the coverage report."
     )
   endif()
 endfunction()
