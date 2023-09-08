@@ -21,6 +21,6 @@ lam_add_target(demo2.lib isLIB SRCS demo.lib.cc)
 lam_add_target(demo.with.lib LIBS demo.lib)
 
 # example6: interface.
-lam_add_target(demo.interface INTERFACE
+lam_add_target(demo.interface isINTERFACE
   LIBS demo.lib
   FEATS std_cxx_17)
