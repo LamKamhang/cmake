@@ -23,6 +23,7 @@ endmacro()
 ########################################################################
 option(LAM_PACKAGE_OVERRIDE_FIND_PACKAGE "override find_package with verbose" ON)
 option(LAM_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." ON)
+option(LAM_PACKAGE_ENABLE_DEFAULT_SEARCH_PATH "enable find_package with default search strategy" OFF)
 option(LAM_PACKAGE_PREFER_PREBUILD "prefer prebuild mode(install and then find strategy)" ON)
 option(LAM_PACKAGE_VERBOSE_INSTALL "enable verbose ExternalPackage" ON)
 option(LAM_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" ON)
@@ -554,6 +555,7 @@ macro(__lam_unset_prebuild_variables)
   unset(PKG_FIND_ARGS)
   unset(PKG_NOT_REQUIRED)
   unset(PKG_INSTALL_PREFIX)
+  unset(_EXTRA_FIND_ARGS)
 endmacro()
 
 macro(lam_add_prebuild_package)
@@ -569,9 +571,15 @@ macro(lam_add_prebuild_package)
   lam_assert_defined(PKG_NAME PKG_NOT_REQUIRED PKG_INSTALL_PREFIX)
   lam_status("${PKG_NAME} use prebuild-mode.")
 
+  # set find_package extra args.
+  set(_EXTRA_FIND_ARGS PATHS ${PKG_INSTALL_PREFIX})
+  if (NOT LAM_PACKAGE_ENABLE_DEFAULT_SEARCH_PATH)
+    list(APPEND _EXTRA_FIND_ARGS NO_DEFAULT_PATH)
+  endif()
+
   if (LAM_PACKAGE_ENABLE_TRY_FIND)
-    find_package_ext(${PKG_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
-      PATHS ${PKG_INSTALL_PREFIX}
+    find_package_ext(${PKG_NAME} ${PKG_FIND_ARGS}
+      ${_EXTRA_FIND_ARGS}
     )
   endif()
 
@@ -580,7 +588,7 @@ macro(lam_add_prebuild_package)
     if (NOT PKG_NOT_REQUIRED)
       # check whether the package is REQUIRED.
       # If this package is not required, return and does not need to download.
-      set(PKG_FIND_ARGS ${PKG_FIND_ARGS} REQUIRED)
+      list(APPEND _EXTRA_FIND_ARGS REQUIRED)
     endif()
     # download package by cpm.
     lam_download_package(${PKG_CPM_ARGS})
@@ -623,8 +631,8 @@ macro(lam_add_prebuild_package)
     endif()
 
     # find package again.
-    find_package_ext(${PKG_NAME} ${PKG_FIND_ARGS} NO_DEFAULT_PATH
-      PATHS ${PKG_INSTALL_PREFIX}
+    find_package_ext(${PKG_NAME} ${PKG_FIND_ARGS}
+      ${_EXTRA_FIND_ARGS}
     )
     unset(__ARGS)
     unset(result)
@@ -659,8 +667,4 @@ macro(lam_add_package_maybe_prebuild dep_name) # args.
     lam_add_package(${ARGN})
   endif()
   unset(prebuild_flag)
-endmacro()
-
-macro(require_package)
-  lam_add_package(${ARGV})
 endmacro()
