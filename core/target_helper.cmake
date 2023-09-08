@@ -3,7 +3,7 @@ include_guard()
 use_cmake_core_module(assert)
 
 # Usage:
-# lam_add_target(target_name [isLIB|SHARED|STATIC|INTERFACE]
+# lam_add_target(target_name [isLIB|SHARED|STATIC|isINTERFACE]
 # [SRCS         <file.cpp/file.cc>]
 # [LIBS         <libs/other_targets>]
 # [INCLUDE_DIRS <include_dirs>]
@@ -15,7 +15,7 @@ use_cmake_core_module(assert)
 # If SRC is not specfied, ${target_name}.cc/cpp is used as the default source.
 function(lam_add_target name)
   # cmake_parse_arguments(<prefix> <options> <one_value_keywords> <multi_value_keywords> args...)
-  set(options isLIB INTERFACE APPEND_SOURCE EXCLUDE_FROM_ALL SHARED STATIC)
+  set(options isLIB isINTERFACE APPEND_SOURCE EXCLUDE_FROM_ALL SHARED STATIC)
   set(multiValueArgs "GLOB_SRCS;SRCS;LIBS;INCLUDE_DIRS;LINK_DIRS;DEFS;FEATS;OPTIONS;ALIAS")
   cmake_parse_arguments(
     arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
@@ -26,27 +26,27 @@ function(lam_add_target name)
     lam_debug("Check Target Defined for APPEND_SOURCE.")
     lam_assert_target_defined(${name})
     lam_assert_falsy(
-      arg_isLIB arg_INTERFACE arg_EXCLUDE_FROM_ALL arg_SHARED arg_STATIC
+      arg_isLIB arg_isINTERFACE arg_EXCLUDE_FROM_ALL arg_SHARED arg_STATIC
     )
   else()
     lam_debug("Check target not defined for no APPEND_SOURCE")
     lam_assert_target_not_defined(${name})
   endif()
   if (arg_EXCLUDE_FROM_ALL)
-    lam_assert_falsy(arg_INTERFACE arg_APPEND_SOURCE)
+    lam_assert_falsy(arg_isINTERFACE arg_APPEND_SOURCE)
   endif()
-  if (arg_INTERFACE)
+  if (arg_isINTERFACE)
     lam_assert_falsy(arg_STATIC arg_isLIB arg_SHARED arg_APPEND_SOURCE)
   endif()
   if (arg_STATIC)
-    lam_assert_falsy(arg_INTERFACE arg_SHARED arg_APPEND_SOURCE)
+    lam_assert_falsy(arg_isINTERFACE arg_SHARED arg_APPEND_SOURCE)
   endif()
   if (arg_SHARED)
-    lam_assert_falsy(arg_INTERFACE arg_STATIC arg_APPEND_SOURCE)
+    lam_assert_falsy(arg_isINTERFACE arg_STATIC arg_APPEND_SOURCE)
   endif()
 
   # auto detect source base on target_name.
-  if(NOT arg_INTERFACE AND NOT DEFINED arg_SRCS AND NOT DEFINED arg_GLOB_SRCS)
+  if(NOT arg_isINTERFACE AND NOT DEFINED arg_SRCS AND NOT DEFINED arg_GLOB_SRCS)
     foreach(src ${arg_UNPARSED_ARGUMENTS})
       if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/${src})
         list(APPEND arg_SRCS ${src})
@@ -84,7 +84,7 @@ function(lam_add_target name)
     add_library(${name} STATIC ${arg_SRCS})
   elseif (arg_SHARED)
     add_library(${name} SHARED ${arg_SRCS})
-  elseif (arg_INTERFACE)
+  elseif (arg_isINTERFACE)
     add_library(${name} INTERFACE ${arg_SRCS})
   elseif (arg_isLIB)
     add_library(${name} ${arg_SRCS})
@@ -109,7 +109,7 @@ function(lam_add_target name)
           ${FIRST_ARG} STREQUAL INTERFACE)
         # continue.
       else()
-        if (arg_INTERFACE)
+        if (arg_isINTERFACE)
           list(PREPEND ${args} INTERFACE)
         elseif(arg_isLIB OR arg_STATIC OR arg_SHARED)
           list(PREPEND ${args} PUBLIC)
