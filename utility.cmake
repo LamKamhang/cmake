@@ -1,3 +1,5 @@
+include_guard()
+
 # use native symlink. Version >= 3.14
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
@@ -32,7 +34,7 @@ macro(register_cmake_module_path path)
     if (NOT EXISTS ${LAM_CMAKE_UTILITY_BASE_DIR}/${path})
       message(WARNING "[cmake/utility] path(${LAM_CMAKE_UTILITY_BASE_DIR}/${path}) not found!")
     else()
-      list(PREPEND CMAKE_MODULE_PATH ${_CMAKE_UTILITY_BASE_DIR}/${path})
+      list(PREPEND CMAKE_MODULE_PATH ${LAM_CMAKE_UTILITY_BASE_DIR}/${path})
     endif()
   endif()
 
