@@ -296,6 +296,11 @@ function(lam_handle_git_patch cmd patch_file)
   endif()
 endfunction()
 
+function(lam_save_args out_path)
+  string(REPLACE ";" "\n" pretty_content "${ARGN}")
+  file(WRITE ${out_path} ${pretty_content})
+endfunction()
+
 function(lam_add_package uri)
   lam_verbose_func()
 
@@ -337,6 +342,18 @@ function(lam_add_package uri)
     ${PKG_UNPARSED_ARGUMENTS}
     OPTIONS ${OPTIONS}
   )
+
+  # Save configs in ${PKG_NAME}_SOURCE_DIR
+  lam_save_args(
+    ${${PKG_NAME}_SOURCE_DIR}/../${PKG_NAME}.cpm_args
+    EXCLUDE_FROM_ALL YES
+    NAME ${PKG_NAME};
+    ${extra_args}
+    ${patch_cmd}
+    ${PKG_UNPARSED_ARGUMENTS}
+    OPTIONS ${OPTIONS}
+  )
+
   cpm_export_variables(${PKG_NAME})
 endfunction()
 
@@ -537,7 +554,13 @@ function(lam_extract_cpm_and_find_args
   set(my_origin_parameters ${PKG_CPM_ARGS})
   list(SORT my_origin_parameters)
   string(SHA1 my_origin_hash "${my_origin_parameters}")
-  set(PKG_INSTALL_PREFIX ${LAM_PACKAGE_INSTALL_PREFIX}/${CPM_ARGS_NAME}/${my_origin_hash})
+  string(SUBSTRING "${my_origin_hash}" 0 8 my_origin_hash)
+  set(PKG_INSTALL_PREFIX ${LAM_PACKAGE_INSTALL_PREFIX}/${CPM_ARGS_NAME}-${my_origin_hash})
+  # save PKG_CPM_ARGS in ${LAM_PACKAGE_INSTALL_PREFIX}/${CPM_ARGS_NAME}-${my_origin_hash}
+  lam_save_args(
+    ${LAM_PACKAGE_INSTALL_PREFIX}/${CPM_ARGS_NAME}-${my_origin_hash}/cpm_args
+    "${PKG_CPM_ARGS}"
+  )
 
   # 4. output some args.
   set(${out_PKG_NAME} ${CPM_ARGS_NAME} PARENT_SCOPE)
