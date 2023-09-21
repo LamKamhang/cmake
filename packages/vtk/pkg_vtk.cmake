@@ -35,7 +35,7 @@ lam_add_package_maybe_prebuild(vtk
 if (NOT TARGET vtk::vtkio-all-in-one)
   if (NOT TARGET vtkio-all-in-one)
     add_library(vtkio-all-in-one INTERFACE)
-    target_link_libraries(vtkio-all-in-one
+    target_link_libraries(vtkio-all-in-one INTERFACE
       VTK::IOLegacy
       # TODO. list some necessary libs here.
     )
