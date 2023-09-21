@@ -334,7 +334,7 @@ function(lam_add_package uri)
   lam_convert_cmake_args_to_options(OPTIONS "${PKG_CMAKE_ARGS}")
   lam_handle_git_patch(patch_cmd "${PKG_GIT_PATCH}")
 
-  CPMAddPackage(
+  set(PKG_CPM_ARGS
     EXCLUDE_FROM_ALL YES
     NAME ${PKG_NAME}
     ${extra_args}
@@ -342,16 +342,11 @@ function(lam_add_package uri)
     ${PKG_UNPARSED_ARGUMENTS}
     OPTIONS ${OPTIONS}
   )
-
+  CPMAddPackage(${PKG_CPM_ARGS})
   # Save configs in ${PKG_NAME}_SOURCE_DIR
   lam_save_args(
     ${${PKG_NAME}_SOURCE_DIR}/../${PKG_NAME}.cpm_args
-    EXCLUDE_FROM_ALL YES
-    NAME ${PKG_NAME};
-    ${extra_args}
-    ${patch_cmd}
-    ${PKG_UNPARSED_ARGUMENTS}
-    OPTIONS ${OPTIONS}
+    ${PKG_CPM_ARGS}
   )
 
   cpm_export_variables(${PKG_NAME})
