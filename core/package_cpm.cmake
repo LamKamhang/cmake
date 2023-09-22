@@ -349,6 +349,16 @@ function(lam_add_package uri)
     ${${PKG_NAME}_SOURCE_DIR}/../${PKG_NAME}.cpm_args
     ${PKG_CPM_ARGS}
   )
+  # execute_process(
+  #   COMMAND git tag --sort=-creatordate
+  #   OUTPUT_VARIABLE tags
+  #   WORKING_DIRECTORY ${${PKG_NAME}_SOURCE_DIR}
+  # )
+  # string(REPLACE "\n" ";" tags "${tags}")
+  # if (NOT "${tags}" STREQUAL "")
+  #   list(GET tags 0 tags)
+  # endif()
+  # message(WARNING "[package]: ${PKG_NAME}(${extra_args}): ${tags}")
 
   cpm_export_variables(${PKG_NAME})
 endfunction()

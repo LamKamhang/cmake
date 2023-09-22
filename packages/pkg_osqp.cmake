@@ -14,7 +14,7 @@ endif()
 message(STATUS "[package/osqp]: osqp::osqp osqp::osqpstatic")
 
 if (NOT DEFINED osqp_VERSION)
-  set(osqp_VERSION "0.6.3")
+  set(osqp_VERSION "1.0.0.beta1")
 endif()
 if (NOT DEFINED osqp_TAG)
   set(osqp_TAG "v${osqp_VERSION}")

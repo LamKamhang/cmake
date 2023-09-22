@@ -8,7 +8,7 @@ endif()
 message(STATUS "[package/benchmark]: benchmark::benchmark")
 
 if (NOT DEFINED benchmark_VERSION)
-  set(benchmark_VERSION "1.8.2")
+  set(benchmark_VERSION "1.8.3")
 endif()
 if (NOT DEFINED benchmark_TAG)
   set(benchmark_TAG "v${benchmark_VERSION}")

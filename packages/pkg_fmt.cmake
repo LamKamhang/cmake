@@ -8,7 +8,7 @@ endif()
 message(STATUS "[package/fmt]: fmt::fmt")
 
 if (NOT DEFINED fmt_VERSION)
-  set(fmt_VERSION "9.1.0")
+  set(fmt_VERSION "10.1.1")
 endif()
 if (NOT DEFINED fmt_TAG)
   set(fmt_TAG "${fmt_VERSION}")

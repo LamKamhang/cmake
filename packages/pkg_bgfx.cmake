@@ -12,7 +12,7 @@ if (NOT ${bgfx_VERSION} STREQUAL "")
 endif()
 
 if (NOT DEFINED bgfx_TAG)
-  set(bgfx_TAG "v1.118.8455-425")
+  set(bgfx_TAG "v1.122.8572-455")
 endif()
 
 lam_add_package(
