@@ -27,6 +27,7 @@ option(LAM_PACKAGE_ENABLE_DEFAULT_SEARCH_PATH "enable find_package with default 
 option(LAM_PACKAGE_PREFER_PREBUILD "prefer prebuild mode(install and then find strategy)" ON)
 option(LAM_PACKAGE_VERBOSE_INSTALL "enable verbose ExternalPackage" ON)
 option(LAM_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" ON)
+option(LAM_PACKAGE_BUILD_WITH_PIC "External Package Build with PIC flags" ON)
 
 set(LAM_PACKAGE_BUILD_TYPE "${CMAKE_BUILD_TYPE}"
   CACHE STRING "Default ExternalPackage BuildType"
@@ -620,6 +621,7 @@ macro(lam_add_prebuild_package)
       -G${CMAKE_GENERATOR}
       -DCMAKE_BUILD_TYPE=${LAM_PACKAGE_BUILD_TYPE}
       -DBUILD_SHARED_LIBS=${LAM_PACKAGE_BUILD_SHARED}
+      -DCMAKE_POSITION_INDEPENDENT_CODE=${LAM_PACKAGE_BUILD_WITH_PIC}
       -DCMAKE_INSTALL_PREFIX=${PKG_INSTALL_PREFIX}
       -DCMAKE_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}
       -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
