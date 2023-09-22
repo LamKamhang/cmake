@@ -42,7 +42,7 @@ function(add_maxima_f90_library target)
   message(STATUS "MAC2F90.h  : ${MAC2F90_HH}")
 
   # add library.
-  add_library(${target} EXCLUDE_FROM_ALL ${MAC2F90_F90})
+  add_library(${target} ${MAC2F90_F90})
   if (NOT EXISTS ${MAC2F90_F90})
     # error prompt.
     message(FATAL_ERROR "${MAC2F90_F90} not found!")
