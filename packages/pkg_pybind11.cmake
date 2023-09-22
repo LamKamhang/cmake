@@ -1,8 +1,5 @@
 include_guard()
 
-cmake_policy(SET CMP0148 NEW)
-set(CMAKE_POLICY_DEFAULT_CMP0148 NEW)
-
 # if pybind11::module has been found
 if (TARGET pybind11::module)
   return()
