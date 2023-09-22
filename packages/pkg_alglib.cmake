@@ -31,5 +31,5 @@ lam_add_package(
 file(GLOB headers "${alglib_SOURCE_DIR}/src/*.h")
 file(GLOB sources "${alglib_SOURCE_DIR}/src/*.cpp")
 
-add_library(alglib ${headers} ${sources})
+add_library(alglib EXCLUDE_FROM_ALL ${headers} ${sources})
 add_library(alglib::alglib ALIAS alglib)

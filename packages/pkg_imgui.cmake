@@ -23,6 +23,7 @@ endif()
 lam_add_package("gh:ocornut/imgui#${imgui_TAG}")
 
 add_library(imgui
+  EXCLUDE_FROM_ALL
   ${imgui_SOURCE_DIR}/imgui.h
   ${imgui_SOURCE_DIR}/imgui_internal.h
   ${imgui_SOURCE_DIR}/imstb_rectpack.h
