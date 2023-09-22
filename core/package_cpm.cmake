@@ -26,7 +26,7 @@ option(LAM_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." 
 option(LAM_PACKAGE_ENABLE_DEFAULT_SEARCH_PATH "enable find_package with default search strategy" OFF)
 option(LAM_PACKAGE_PREFER_PREBUILD "prefer prebuild mode(install and then find strategy)" ON)
 option(LAM_PACKAGE_VERBOSE_INSTALL "enable verbose ExternalPackage" ON)
-option(LAM_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" ON)
+option(LAM_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" OFF)
 option(LAM_PACKAGE_BUILD_WITH_PIC "External Package Build with PIC flags" ON)
 
 set(LAM_PACKAGE_BUILD_TYPE "${CMAKE_BUILD_TYPE}"
