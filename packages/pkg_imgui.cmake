@@ -22,36 +22,46 @@ endif()
 
 lam_add_package("gh:ocornut/imgui#${imgui_TAG}")
 
-add_library(imgui
-  EXCLUDE_FROM_ALL
+set(imgui_headers
   ${imgui_SOURCE_DIR}/imgui.h
   ${imgui_SOURCE_DIR}/imgui_internal.h
   ${imgui_SOURCE_DIR}/imstb_rectpack.h
   ${imgui_SOURCE_DIR}/imstb_textedit.h
   ${imgui_SOURCE_DIR}/imstb_truetype.h
+)
+set(imgui_sources
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_demo.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp
   ${imgui_SOURCE_DIR}/imgui_widgets.cpp
 )
+add_library(imgui EXCLUDE_FROM_ALL)
 add_library(imgui::imgui ALIAS imgui)
-target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR})
-target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR}/../)
-target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR}/backends/)
+target_include_directories(imgui PUBLIC
+  $<BUILD_INTERFACE:${imgui_SOURCE_DIR}>
+)
+target_include_directories(imgui PUBLIC
+  $<BUILD_INTERFACE:${imgui_SOURCE_DIR}/../>
+)
+target_include_directories(imgui PUBLIC
+  $<BUILD_INTERFACE:${imgui_SOURCE_DIR}/backends/>
+)
 
 if (imgui_ENABLE_STDLIB)
-  target_sources(imgui
-    PRIVATE
+  list(APPEND imgui_sources
     ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
+  )
+  list(APPEND imgui_headers
     ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.h
   )
 endif()
 
 if (imgui_ENABLE_FREETYPE)
-  target_sources(imgui
-    PRIVATE
+  list(APPEND imgui_sources
     ${imgui_SOURCE_DIR}/misc/freetype/imgui_freetype.cpp
+  )
+  list(APPEND imgui_headers
     ${imgui_SOURCE_DIR}/misc/freetype/imgui_freetype.h
   )
   target_compile_definitions(imgui PUBLIC IMGUI_ENABLE_FREETYPE)
@@ -68,12 +78,17 @@ set_property(CACHE imgui_RENDERER_BACKEND PROPERTY STRINGS
 )
 
 # add backends sources.
-target_sources(imgui
-  PRIVATE
-  ${imgui_SOURCE_DIR}/backends/imgui_impl_${imgui_PLATFORM_BACKEND}.h
+list(APPEND imgui_sources
   ${imgui_SOURCE_DIR}/backends/imgui_impl_${imgui_PLATFORM_BACKEND}.cpp
-  ${imgui_SOURCE_DIR}/backends/imgui_impl_${imgui_RENDERER_BACKEND}.h
   ${imgui_SOURCE_DIR}/backends/imgui_impl_${imgui_RENDERER_BACKEND}.cpp
+)
+list(APPEND imgui_headers
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_${imgui_PLATFORM_BACKEND}.h
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_${imgui_RENDERER_BACKEND}.h
+)
+target_sources(imgui
+  PRIVATE ${imgui_sources}
+  ${imgui_headers}
 )
 
 # add deps.
@@ -100,3 +115,25 @@ if (${imgui_RENDERER_BACKEND} STREQUAL opengl3)
     target_link_libraries(imgui PUBLIC glbinding::glbinding)
   endif()
 endif()
+
+# message(STATUS "IMGUI: ${imgui_headers}")
+
+foreach(header ${imgui_headers})
+  string(REPLACE "${imgui_SOURCE_DIR}/" "" header "${header}")
+  lam_install(
+    PACKAGE imgui
+    TARGETS imgui
+    SUFFIX -${imgui_TAG}
+    # keep directory structure.
+    DIRECTORY ${imgui_SOURCE_DIR}
+    EXTRAS_ARGS
+    FILES_MATCHING
+    PATTERN "examples" EXCLUDE
+    PATTERN ".git*" EXCLUDE
+    PATTERN "docs" EXCLUDE
+    PATTERN ${header}
+  )
+endforeach()
+
+unset(imgui_headers)
+unset(imgui_sources)

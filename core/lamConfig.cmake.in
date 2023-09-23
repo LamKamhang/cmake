@@ -2,7 +2,7 @@
 include(CMakeFindDependencyMacro)
 
 # TODO: change to perform better args separation.
-string(REGEX MATCHALL "[^;]+" SEPARATE_DEPENDENCIES "@lam_project_deps@")
+string(REGEX MATCHALL "[^;]+" SEPARATE_DEPENDENCIES "@package_deps@")
 
 foreach(dependency ${SEPARATE_DEPENDENCIES})
   string(REPLACE " " ";" args "${dependency}")

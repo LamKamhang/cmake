@@ -21,3 +21,44 @@ macro(lam_may_include file)
     include(${file})
   endif()
 endmacro()
+
+function(lam_is_version out v)
+  lam_verbose_func()
+
+  # major[.minor[.patch[.tweak]]]
+  if (${v} MATCHES "^[0-9]+(\\.[0-9]+)?(\\.[0-9]+)?(\\.[0-9]+)?$")
+    set(${out} YES PARENT_SCOPE)
+  else()
+    set(${out} NO PARENT_SCOPE)
+  endif()
+endfunction()
+
+function(lam_infer_version_from_tag out tag)
+  lam_verbose_func()
+
+  # extract version pattern from tag.
+  # NOTE: to avoid mismatching, here assume that the version at least
+  #       contains major.minor[.patch[.tweak]] part.
+  if (${tag} MATCHES "[0-9]+\\.[0-9]+(\\.[0-9]+)?(\\.[0-9]+)?")
+    lam_debug("matched version: ${CMAKE_MATCH_0}") # the matched part.
+    set(${out} ${CMAKE_MATCH_0} PARENT_SCOPE)
+  else()
+    unset(${out} PARENT_SCOPE)
+    lam_debug("infer version failed: ${tag}")
+  endif()
+endfunction()
+
+function(lam_convert_cmake_args_to_options out cmake_args)
+  set(result "")
+  foreach(arg ${cmake_args})
+    if (${arg} MATCHES "^-D([^ ]+)(:[^ ]+)?=([^ ]+)$")
+      lam_debug("Key: ${CMAKE_MATCH_1}, Value: ${CMAKE_MATCH_3}, Type: ${CMAKE_MATCH_2}")
+      set(result ${result} "${CMAKE_MATCH_1} ${CMAKE_MATCH_3}")
+    else()
+      lam_fatal("Unknown cmake_arg: ${arg}, should be specified as: -D<var>[:<type>]=<value>")
+    endif()
+  endforeach()
+  lam_debug("Converted CMakeArgs:  ${result}")
+
+  set(${out} ${result} PARENT_SCOPE)
+endfunction()
