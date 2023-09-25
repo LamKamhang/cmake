@@ -45,9 +45,10 @@ endmacro()
 # register modules.
 use_cmake_core_module(fs)
 use_cmake_core_module(package_cpm)
-use_cmake_core_module(target_helper)
-use_cmake_core_module(utils)
+use_cmake_core_module(lam_add_target)
+use_cmake_core_module(lam_add_unittest)
 use_cmake_core_module(lam_install)
+use_cmake_core_module(utils)
 # register path.
 register_cmake_module_path(find_modules)
 register_cmake_module_path(tools)
