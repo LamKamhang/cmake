@@ -28,9 +28,9 @@ function(lam_try_get_package_version out Package)
   elseif(DEFINED ${package}_VERSION) # lower case
     set(${out} ${package}_VERSION PARENT_SCOPE)
   elseif(DEFINED ${Package}_VERSION) # normal
-    set(${out} ${Package}_VERSION)
-  elseif(DEFINED ${PROJECT_VERSION})
-    set(${out} ${PROJECT_VERSION})
+    set(${out} ${Package}_VERSION PARENT_SCOPE)
+  elseif(DEFINED PROJECT_VERSION)
+    set(${out} ${PROJECT_VERSION} PARENT_SCOPE)
   else()
     message(WARNING "cannot determine the version of ${Package}.")
     set(${out} "" PARENT_SCOPE)
@@ -70,7 +70,7 @@ function(lam_install)
   endif()
   set(PACKAGE_NAME ${PKG_PACKAGE})
 
-  # check export_rename.
+ # check export_rename.
   if (DEFINED PKG_EXPORT_NAME)
     if (NOT ${N_TARGETS} EQUAL 1)
       message(FATAL_ERROR "Cannot determine which target(${PKG_TARGETS}) needs to rename as (${PKG_EXPORT_NAME}).")

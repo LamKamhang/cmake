@@ -148,6 +148,14 @@ function(lam_add_target name)
   endif()
 endfunction()
 
+function(lam_add_interface name)
+  lam_add_target(${ARGV} isINTERFACE)
+endfunction()
+
+function(lam_add_library name)
+  lam_add_target(${ARGV} isLIB)
+endfunction()
+
 function(lam_add_example name)
   lam_add_target(${ARGV})
   set_target_properties(${name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/examples")
