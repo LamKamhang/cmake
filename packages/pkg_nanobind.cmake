@@ -7,7 +7,6 @@ endif()
 
 message(STATUS "[package/nanobind]: nanobind")
 
-
 if (NOT DEFINED nanobind_VERSION)
   set(nanobind_VERSION "1.5.2")
 endif()
@@ -15,7 +14,7 @@ if (NOT DEFINED nanobind_TAG)
   set(nanobind_TAG "v${nanobind_VERSION}")
 endif()
 
-find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 lam_add_package(
   "gh:wjakob/nanobind#${nanobind_TAG}"
   CMAKE_ARGS "-DNB_TEST=OFF"
