@@ -121,6 +121,7 @@ endif()
 foreach(header ${imgui_headers})
   string(REPLACE "${imgui_SOURCE_DIR}/" "" header "${header}")
   lam_install(
+    EXCLUDE_FROM_ALL
     PACKAGE imgui
     TARGETS imgui
     SUFFIX -${imgui_TAG}

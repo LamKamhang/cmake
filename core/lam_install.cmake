@@ -49,7 +49,7 @@ endmacro()
 
 function(lam_install)
   lam_verbose_func()
-  set(options)
+  set(options "EXCLUDE_FROM_ALL")
   set(oneValueArgs "PACKAGE;EXPORT_NAME;SUFFIX")
   set(multiValueArgs "TARGETS;DIRECTORY;FILES")
   cmake_parse_arguments(PKG "${options}" "${oneValueArgs}" "${multiValueArgs}" "${ARGN}")
@@ -88,8 +88,16 @@ function(lam_install)
   # add name#suffix to avoid conflicts.
   lam_define_package_install_dir("${PACKAGE_NAME}" "${PKG_SUFFIX}" PACKAGE)
 
+  # prepare extra_args.
+  if (PKG_EXCLUDE_FROM_ALL)
+    set(PKG_EXCLUDE_FROM_ALL EXCLUDE_FROM_ALL)
+  else()
+    set(PKG_EXCLUDE_FROM_ALL)
+  endif()
+
   if (DEFINED PKG_TARGETS)
     install(TARGETS ${PKG_TARGETS}
+      ${PKG_EXCLUDE_FROM_ALL}
       EXPORT ${PACKAGE_NAME}_Targets
       RUNTIME DESTINATION ${PACKAGE_INSTALL_BINDIR}
       COMPONENT ${PACKAGE_NAME}_Runtime
