@@ -32,6 +32,7 @@ lam_add_package_maybe_prebuilt(glbinding
   CMAKE_ARGS "-DOPTION_BUILD_OWN_KHR_HEADERS=OFF"
   CMAKE_ARGS "-DOPTION_BUILD_WITH_LTO=ON"
   CMAKE_ARGS "-DOPTION_USE_GIT_INFORMATION=OFF"
+  CMAKE_ARGS "-DBUILD_SHARED_LIBS=ON"
   # for user customize.
   ${glbinding_USER_CUSTOM_ARGS}
 )
