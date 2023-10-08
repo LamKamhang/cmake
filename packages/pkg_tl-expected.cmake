@@ -15,7 +15,7 @@ if (NOT DEFINED tl-expected_TAG)
   set(tl-expected_TAG "v${tl-expected_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(tl-expected
+lam_add_package_maybe_prebuilt(tl-expected
   "gh:TartanLlama/expected#${tl-expected_TAG}"
   NAME tl-expected
   CMAKE_ARGS "-DEXPECTED_BUILD_PACKAGE=OFF"

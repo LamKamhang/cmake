@@ -14,7 +14,7 @@ if (NOT DEFINED nanoflann_TAG)
   set(nanoflann_TAG "v${nanoflann_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(nanoflann
+lam_add_package_maybe_prebuilt(nanoflann
   "gh:jlblancoc/nanoflann#${nanoflann_TAG}"
   CMAKE_ARGS "-DNANOFLANN_BUILD_TESTS=OFF"
   CMAKE_ARGS "-DNANOFLANN_BUILD_BENCHMARKS=OFF"

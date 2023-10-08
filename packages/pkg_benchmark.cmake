@@ -14,9 +14,9 @@ if (NOT DEFINED benchmark_TAG)
   set(benchmark_TAG "v${benchmark_VERSION}")
 endif()
 
-lam_check_prefer_prebuild(out benchmark)
+lam_check_prefer_prebuilt(out benchmark)
 
-lam_add_package_maybe_prebuild(benchmark
+lam_add_package_maybe_prebuilt(benchmark
   "gh:google/benchmark#${benchmark_TAG}"
   CMAKE_ARGS
   "-DBENCHMARK_ENABLE_TESTING=OFF"

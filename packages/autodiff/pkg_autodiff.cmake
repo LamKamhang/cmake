@@ -23,7 +23,7 @@ if (autodiff_APPLY_NUM_TRAITS_PATCH)
   )
 endif()
 
-lam_add_package_maybe_prebuild(autodiff
+lam_add_package_maybe_prebuilt(autodiff
   ${_args}
   CMAKE_ARGS
   "-DAUTODIFF_BUILD_TESTS=OFF"

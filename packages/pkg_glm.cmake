@@ -15,7 +15,7 @@ if (NOT DEFINED glm_TAG)
   endif()
 endif()
 
-lam_add_package_maybe_prebuild(glm
+lam_add_package_maybe_prebuilt(glm
   "gh:g-truc/glm#${glm_TAG}"
   GIT_SHALLOW OFF
   # for user customize.

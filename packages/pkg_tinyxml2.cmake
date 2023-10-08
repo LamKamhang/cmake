@@ -14,7 +14,7 @@ if (NOT DEFINED tinyxml2_TAG)
   set(tinyxml2_TAG "${tinyxml2_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(tinyxml2
+lam_add_package_maybe_prebuilt(tinyxml2
   "gh:leethomason/tinyxml2#${tinyxml2_TAG}"
   CMAKE_ARGS "-Dtinyxml2_BUILD_TESTING=OFF"
   # for user customize.

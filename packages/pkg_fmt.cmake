@@ -14,8 +14,8 @@ if (NOT DEFINED fmt_TAG)
   set(fmt_TAG "${fmt_VERSION}")
 endif()
 
-lam_check_prefer_prebuild(out fmt)
-lam_add_package_maybe_prebuild(fmt
+lam_check_prefer_prebuilt(out fmt)
+lam_add_package_maybe_prebuilt(fmt
   "gh:fmtlib/fmt#${fmt_TAG}"
   OPTIONS
   "FMT_DOC OFF"

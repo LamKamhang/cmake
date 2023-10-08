@@ -5,7 +5,7 @@
       "name": "Eigen3",
       "targets": "Eigen3::Eigen",
       "url": "gl:libeigen/eigen",
-      "enable_prebuild": true,
+      "enable_prebuilt": true,
       "version": "3.4.0",
       "tag": "${version}",
       "cmake_args": [
@@ -20,7 +20,7 @@
       "name": "autodiff",
       "targets": "autodiff::autodiff",
       "url": "gh:autodiff/autodiff",
-      "enable_prebuild": true,
+      "enable_prebuilt": true,
       "version": "1.0.3",
       "tag": "v${version}",
       "cmake_args": [
@@ -37,17 +37,17 @@
       "name": "fmt",
       "targets": "fmt::fmt",
       "url": "gh:fmtlib/fmt",
-      "enable_prebuild": true,
+      "enable_prebuilt": true,
       "version": "9.1.0",
       "tag": "${version}",
       "cmake_args": [
         "FMT_DOC OFF",
         "FMT_TEST OFF"
       ],
-      "prebuild_cmake_args": [
+      "prebuilt_cmake_args": [
         "FMT_INSTALL ON"
       ],
-      "non_prebuild_cmake_args": [
+      "non_prebuilt_cmake_args": [
         "FMT_INSTALL OFF"
       ]
     }

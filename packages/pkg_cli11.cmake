@@ -14,7 +14,7 @@ if (NOT DEFINED cli11_TAG)
   set(cli11_TAG "v${cli11_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(cli11
+lam_add_package_maybe_prebuilt(cli11
   "gh:CLIUtils/CLI11#${cli11_TAG}"
   NAME CLI11
   OPTIONS

@@ -18,8 +18,8 @@ if (NOT DEFINED alglib_TAG)
   set(alglib_TAG "alglib-${alglib_VERSION}.cpp.gpl.zip")
 endif()
 
-if (alglib_USE_PREBUILD)
-  message(WARNING "alglib currently does not support prebuild.")
+if (alglib_USE_PREBUILT)
+  message(WARNING "alglib currently does not support prebuilt.")
 endif()
 
 # TODO: move it to a standalone project to enable installing.

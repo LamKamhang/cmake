@@ -20,7 +20,7 @@ if (NOT DEFINED osqp_TAG)
   set(osqp_TAG "v${osqp_VERSION}")
 endif()
 
-# TODO. make it prebuild.
+# TODO. make it prebuilt.
 lam_add_package("gh:osqp/osqp#${osqp_TAG}"
   # for user customize.
   ${osqp_USER_CUSTOM_ARGS}

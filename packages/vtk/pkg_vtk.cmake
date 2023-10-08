@@ -21,7 +21,7 @@ if (NOT DEFINED vtk_TAG)
   set(vtk_TAG "v${vtk_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(vtk
+lam_add_package_maybe_prebuilt(vtk
   "gh:Kitware/VTK#${vtk_TAG}"
   NAME VTK
   OPTIONS

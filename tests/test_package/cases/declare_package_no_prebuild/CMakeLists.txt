@@ -4,6 +4,6 @@ project(test_package)
 
 include(utility)
 
-set(eigen_USE_PREBUILD OFF)
+set(eigen_USE_PREBUILT OFF)
 lam_use_deps(eigen@3.4.0)
 lam_assert_target_defined(Eigen3::Eigen)

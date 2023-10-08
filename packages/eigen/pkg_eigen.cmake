@@ -22,7 +22,7 @@ if (eigen_APPLY_CHOLMOD_PATCH)
     GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/cholmod.patch")
 endif()
 
-lam_add_package_maybe_prebuild(eigen
+lam_add_package_maybe_prebuilt(eigen
   ${_args}
   CMAKE_ARGS
   "-DEIGEN_BUILD_DOC=OFF"

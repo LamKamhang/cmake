@@ -14,7 +14,7 @@ if (NOT DEFINED osqp-eigen_TAG)
   set(osqp-eigen_TAG "v${osqp-eigen_VERSION}")
 endif()
 
-# TODO: make it prebuild.
+# TODO: make it prebuilt.
 lam_add_package("gh:robotology/osqp-eigen#${osqp-eigen_TAG}"
   NAME OsqpEigen
   # for user customize.

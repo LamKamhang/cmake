@@ -15,8 +15,8 @@ if (NOT DEFINED nameof_TAG)
   set(nameof_TAG "v${nameof_VERSION}")
 endif()
 
-lam_check_prefer_prebuild(out nameof)
-lam_add_package_maybe_prebuild(nameof
+lam_check_prefer_prebuilt(out nameof)
+lam_add_package_maybe_prebuilt(nameof
   "gh:Neargye/nameof#${nameof_TAG}"
   CMAKE_ARGS "-DNAMEOF_OPT_BUILD_EXAMPLES=OFF"
   CMAKE_ARGS "-DNAMEOF_OPT_BUILD_TESTS=OFF"

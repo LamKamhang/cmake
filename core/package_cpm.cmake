@@ -25,7 +25,7 @@ endmacro()
 option(LAM_PACKAGE_OVERRIDE_FIND_PACKAGE "override find_package with verbose" ON)
 option(LAM_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." ON)
 option(LAM_PACKAGE_ENABLE_DEFAULT_SEARCH_PATH "enable find_package with default search strategy" OFF)
-option(LAM_PACKAGE_PREFER_PREBUILD "prefer prebuild mode(install and then find strategy)" ON)
+option(LAM_PACKAGE_PREFER_PREBUILT "prefer prebuilt mode(install and then find strategy)" ON)
 option(LAM_PACKAGE_VERBOSE_INSTALL "enable verbose ExternalPackage" ON)
 option(LAM_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" OFF)
 option(LAM_PACKAGE_BUILD_WITH_PIC "External Package Build with PIC flags" ON)
@@ -368,7 +368,7 @@ endmacro()
 # parse declare_deps format
 # [~][!]name[#tag][@version]
 # ~ indicate indicate the package is optional.
-# '!' indicate whether use prebuild mode.
+# '!' indicate whether use prebuilt mode.
 # tag used to define name_TAG.
 # version used to define name_VERSION.
 function(lam_parse_deps_format uri out_name)
@@ -378,21 +378,21 @@ function(lam_parse_deps_format uri out_name)
   string(REGEX REPLACE "^(~)?(!+)?([^@#!]+)" "" tag_version ${uri})
   set(pkg_name ${CMAKE_MATCH_3})
   set(optional_flag ${CMAKE_MATCH_1})
-  set(prebuild_flag ${CMAKE_MATCH_2})
+  set(prebuilt_flag ${CMAKE_MATCH_2})
   # NOTE: change the pkg_name to lower-case.
   string(TOLOWER ${pkg_name} pkg_name)
   string(REPLACE "~" "YES" optional_flag "${optional_flag}")
-  if ("${prebuild_flag}" STREQUAL "")
-    unset(prebuild_flag)
-  elseif("${prebuild_flag}" STREQUAL "!")
-    set(prebuild_flag YES)
+  if ("${prebuilt_flag}" STREQUAL "")
+    unset(prebuilt_flag)
+  elseif("${prebuilt_flag}" STREQUAL "!")
+    set(prebuilt_flag YES)
   else()
-    set(prebuild_flag NO)
+    set(prebuilt_flag NO)
   endif()
 
   lam_debug("name: ${pkg_name}")
   lam_debug("optional: ${optional_flag}")
-  lam_debug("prebuild: ${prebuild_flag}")
+  lam_debug("prebuilt: ${prebuilt_flag}")
   lam_debug("tagversion: ${tag_version}")
 
   lam_assert_not_defined(pkg_tag pkg_version)
@@ -409,7 +409,7 @@ function(lam_parse_deps_format uri out_name)
   # export variables.
   set(${out_name} ${pkg_name} PARENT_SCOPE)
   set(${pkg_name}_IS_OPTIONAL ${optional_flag} PARENT_SCOPE)
-  set(${pkg_name}_USE_PREBUILD ${prebuild_flag} PARENT_SCOPE)
+  set(${pkg_name}_USE_PREBUILT ${prebuilt_flag} PARENT_SCOPE)
   set(${pkg_name}_TAG ${pkg_tag} PARENT_SCOPE)
   set(${pkg_name}_VERSION ${pkg_version} PARENT_SCOPE)
 endfunction()
@@ -548,7 +548,7 @@ function(lam_extract_cpm_and_find_args
   set(${out_PKG_INSTALL_PREFIX} ${PKG_INSTALL_PREFIX} PARENT_SCOPE)
 endfunction()
 
-macro(__lam_unset_prebuild_variables)
+macro(__lam_unset_prebuilt_variables)
   unset(PKG_NAME)
   unset(PKG_CPM_ARGS)
   unset(PKG_CMAKE_ARGS)
@@ -558,7 +558,7 @@ macro(__lam_unset_prebuild_variables)
   unset(_EXTRA_FIND_ARGS)
 endmacro()
 
-macro(lam_add_prebuild_package)
+macro(lam_add_prebuilt_package)
   lam_extract_cpm_and_find_args(
     PKG_NAME
     PKG_CPM_ARGS
@@ -569,7 +569,7 @@ macro(lam_add_prebuild_package)
     "${ARGN}"
   )
   lam_assert_defined(PKG_NAME PKG_NOT_REQUIRED PKG_INSTALL_PREFIX)
-  lam_status("${PKG_NAME} use prebuild-mode.")
+  lam_status("${PKG_NAME} use prebuilt-mode.")
 
   # set find_package extra args.
   set(_EXTRA_FIND_ARGS PATHS ${PKG_INSTALL_PREFIX})
@@ -638,34 +638,34 @@ macro(lam_add_prebuild_package)
     unset(__ARGS)
     unset(result)
   endif()
-  __lam_unset_prebuild_variables()
+  __lam_unset_prebuilt_variables()
 endmacro()
 
 ########################################################################
 # define some alias
 ########################################################################
-function(lam_check_prefer_prebuild out name)
-  # If defined ${name}_USE_PREBUILD and it's ON.
-  # or does not defined ${name}_USE_PREBUILD
-  # but the global flags LAM_PACKAGE_PREFER_PREBUILD is ON
-  if (DEFINED ${name}_USE_PREBUILD)
-    set(USE_PREBUILD_FLAG ${${name}_USE_PREBUILD})
-  elseif(DEFINED __pkg AND DEFINED ${__pkg}_USE_PREBUILD)
-    set(USE_PREBUILD_FLAG ${${__pkg}_USE_PREBUILD})
+function(lam_check_prefer_prebuilt out name)
+  # If defined ${name}_USE_PREBUILT and it's ON.
+  # or does not defined ${name}_USE_PREBUILT
+  # but the global flags LAM_PACKAGE_PREFER_PREBUILT is ON
+  if (DEFINED ${name}_USE_PREBUILT)
+    set(USE_PREBUILT_FLAG ${${name}_USE_PREBUILT})
+  elseif(DEFINED __pkg AND DEFINED ${__pkg}_USE_PREBUILT)
+    set(USE_PREBUILT_FLAG ${${__pkg}_USE_PREBUILT})
   else()
-    # default prebuild-flag.
-    set(USE_PREBUILD_FLAG ${LAM_PACKAGE_PREFER_PREBUILD})
+    # default prebuilt-flag.
+    set(USE_PREBUILT_FLAG ${LAM_PACKAGE_PREFER_PREBUILT})
   endif()
 
-  set(${out} ${USE_PREBUILD_FLAG} PARENT_SCOPE)
+  set(${out} ${USE_PREBUILT_FLAG} PARENT_SCOPE)
 endfunction()
 
-macro(lam_add_package_maybe_prebuild dep_name) # args.
-  lam_check_prefer_prebuild(prebuild_flag ${dep_name})
-  if (prebuild_flag)
-    lam_add_prebuild_package(${ARGN})
+macro(lam_add_package_maybe_prebuilt dep_name) # args.
+  lam_check_prefer_prebuilt(prebuilt_flag ${dep_name})
+  if (prebuilt_flag)
+    lam_add_prebuilt_package(${ARGN})
   else()
     lam_add_package(${ARGN})
   endif()
-  unset(prebuild_flag)
+  unset(prebuilt_flag)
 endmacro()

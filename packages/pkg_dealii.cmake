@@ -14,10 +14,10 @@ if (NOT DEFINED dealii_TAG)
   set(dealii_TAG "v${dealii_VERSION}")
 endif()
 
-lam_check_prefer_prebuild(out dealii)
-# dealII only support prebuild mode.
+lam_check_prefer_prebuilt(out dealii)
+# dealII only support prebuilt mode.
 lam_assert_truthy(out)
-lam_add_prebuild_package(
+lam_add_prebuilt_package(
   "gh:dealii/dealii#${dealii_TAG}"
   NAME deal.II
   # for user customize.

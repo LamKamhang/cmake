@@ -17,7 +17,7 @@ if (NOT DEFINED spectra_TAG)
   set(spectra_TAG "v${spectra_VERSION}")
 endif()
 
-lam_add_package_maybe_prebuild(spectra
+lam_add_package_maybe_prebuilt(spectra
   "gh:yixuan/spectra#${spectra_TAG}"
   NAME Spectra
   # for user customize.

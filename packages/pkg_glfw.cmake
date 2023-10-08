@@ -20,8 +20,8 @@ if (NOT DEFINED glfw_TAG)
   set(glfw_TAG "${glfw_VERSION}")
 endif()
 
-lam_check_prefer_prebuild(out glfw)
-lam_add_package_maybe_prebuild(glfw
+lam_check_prefer_prebuilt(out glfw)
+lam_add_package_maybe_prebuilt(glfw
   "gh:glfw/glfw#${glfw_TAG}"
   NAME glfw3
   CMAKE_ARGS "-DGLFW_BUILD_EXAMPLES=OFF"
