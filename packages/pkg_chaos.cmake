@@ -15,7 +15,7 @@ if(NOT DEFINED chaos_TAG)
 endif()
 
 lam_add_package_maybe_prebuilt(
-  chaos "gh:suitechaos#${chaos_TAG}" NAME chaos
+  chaos "gh:suitechaos/chaos#${chaos_TAG}" NAME chaos
   OPTIONS
   "CHAOS_BUILD_EXAMPLES OFF"
   "CHAOS_BUILD_DOCS OFF"
