@@ -39,10 +39,11 @@ endif()
 # BuildType to lowercase.
 string(TOLOWER ${LAM_PACKAGE_BUILD_TYPE} LAM_PACKAGE_BUILD_TYPE_LC)
 lam_status("ExternalBuildType: ${LAM_PACKAGE_BUILD_TYPE}")
-
-set(LAM_PACKAGE_INSTALL_PREFIX ${CPM_SOURCE_CACHE}/installed/${LAM_PACKAGE_BUILD_TYPE_LC}
+lam_get_cxx_compiler_name(LAM_COMPILER_NAME)
+set(LAM_PACKAGE_INSTALL_PREFIX ${CPM_SOURCE_CACHE}/installed/${LAM_COMPILER_NAME}-${LAM_PACKAGE_BUILD_TYPE_LC}
   CACHE PATH "Directory to install external package."
 )
+unset(LAM_COMPILER_NAME)
 
 set(LAM_PACKAGE_NUM_THREADS 0 CACHE STRING "Number of Threads used to compile.")
 if (${LAM_PACKAGE_NUM_THREADS} LESS 1)

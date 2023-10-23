@@ -62,3 +62,17 @@ function(lam_convert_cmake_args_to_options out cmake_args)
 
   set(${out} ${result} PARENT_SCOPE)
 endfunction()
+
+function(lam_get_cxx_compiler_name out)
+  # only get the major version.
+  string(REGEX MATCHALL "[0-9]+" COMPILER_VERSION_COMPONENTS ${CMAKE_CXX_COMPILER_VERSION})
+  list(GET COMPILER_VERSION_COMPONENTS 0 COMPILER_MAJOR_VERSION)
+
+  lam_debug("COMPILER_MAJOR_VERSION: ${COMPILER_MAJOR_VERSION}")
+
+  if ("${COMPILER_MAJOR_VERSION}" STREQUAL "")
+    set(${out} ${CMAKE_CXX_COMPILER_ID} PARENT_SCOPE)
+  else()
+    set(${out} ${CMAKE_CXX_COMPILER_ID}-${COMPILER_MAJOR_VERSION} PARENT_SCOPE)
+  endif()
+endfunction()
