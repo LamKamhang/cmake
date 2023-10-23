@@ -15,16 +15,21 @@ if (NOT DEFINED benchmark_TAG)
 endif()
 
 lam_check_prefer_prebuilt(out benchmark)
-
+if (out)
+  set(n_out OFF)
+else()
+  set(n_out ON)
+endif()
 lam_add_package_maybe_prebuilt(benchmark
   "gh:google/benchmark#${benchmark_TAG}"
   CMAKE_ARGS
   "-DBENCHMARK_ENABLE_TESTING=OFF"
   "-DBENCHMARK_INSTALL_DOCS=OFF"
-  "-DBENCHMARK_ENABLE_LTO=ON"
+  "-DBENCHMARK_ENABLE_LTO=${n_out}"
   "-DBENCHMARK_ENABLE_GTEST_TESTS=OFF"
   "-DBENCHMARK_USE_BUNDLED_GTEST=OFF"
   "-DBENCHMARK_ENABLE_INSTALL=${out}"
   # for user customize.
   ${benchmark_USER_CUSTOM_ARGS}
 )
+unset(n_out)
