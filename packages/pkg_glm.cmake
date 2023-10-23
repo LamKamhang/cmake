@@ -18,6 +18,8 @@ endif()
 lam_add_package_maybe_prebuilt(glm
   "gh:g-truc/glm#${glm_TAG}"
   GIT_SHALLOW OFF
+  OPTIONS
+  "BUILD_TESTING OFF"
   # for user customize.
   ${glm_USER_CUSTOM_ARGS}
 )
