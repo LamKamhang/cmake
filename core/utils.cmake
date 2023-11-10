@@ -22,6 +22,19 @@ macro(lam_may_include file)
   endif()
 endmacro()
 
+function(lam_get_subdirs result basedir)
+  lam_verbose_func()
+
+  file(GLOB children RELATIVE ${basedir} ${basedir}/*)
+  set(dirlist "")
+  foreach(child ${children})
+    if (IS_DIRECTORY "${basedir}/${child}")
+      list(APPEND dirlist ${child})
+    endif()
+  endforeach()
+  set(${result} ${dirlist} PARENT_SCOPE)
+endfunction()
+
 function(lam_is_version out v)
   lam_verbose_func()
 
