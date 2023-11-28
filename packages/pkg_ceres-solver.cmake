@@ -8,7 +8,7 @@ endif()
 message(STATUS "[package/ceres-solver]: Ceres::ceres")
 
 if (NOT DEFINED ceres-solver_VERSION)
-  set(ceres-solver_VERSION "2.1.0")
+  set(ceres-solver_VERSION "2.2.0")
 endif()
 if (NOT DEFINED ceres-solver_TAG)
   set(ceres-solver_TAG "${ceres-solver_VERSION}")
@@ -20,6 +20,17 @@ lam_add_package_maybe_prebuilt(ceres-solver
   NAME Ceres
   OPTIONS
   "USE_CUDA OFF"
+  "GFLAGS OFF"
+  "BUILD_TESTING OFF"
+  "MINIGLOG ON"
   # for user customize.
   ${ceres-solver_USER_CUSTOM_ARGS}
 )
+
+if (NOT TARGET ceres)
+  message(FATAL_ERROR "failed to find target ceres")
+endif()
+
+if (NOT TARGET Ceres::ceres)
+  add_library(Ceres::ceres ALIAS ceres)
+endif()
