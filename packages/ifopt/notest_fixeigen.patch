@@ -1,0 +1,50 @@
+diff --git a/ifopt_core/CMakeLists.txt b/ifopt_core/CMakeLists.txt
+index 74d2bc1..973e880 100644
+--- a/ifopt_core/CMakeLists.txt
++++ b/ifopt_core/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
++# set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+ find_package(Eigen3 REQUIRED)
+ 
+ 
+@@ -56,21 +56,21 @@ install(
+ #############
+ ## Testing ##
+ #############
+-find_package(GTest QUIET)
+-if (TARGET GTest::GTest) # only build when modern target exists
+-  add_executable(${LIB_CORE}-test 
+-    test/composite_test.cc
+-    test/problem_test.cc
+-  )  
+-  target_link_libraries(${LIB_CORE}-test  
+-    PRIVATE 
+-      ${LIB_CORE} 
+-      GTest::GTest GTest::Main
+-  )    
+-  add_test(${LIB_CORE}-test  ${LIB_CORE}-test)
+-  
+-  install(
+-    TARGETS ${LIB_CORE}-test
+-    RUNTIME DESTINATION ${IFOPT_INSTALL_BINDIR}
+-  )
+-endif()
++# find_package(GTest QUIET)
++# if (TARGET GTest::GTest) # only build when modern target exists
++#   add_executable(${LIB_CORE}-test
++#     test/composite_test.cc
++#     test/problem_test.cc
++#   )
++#   target_link_libraries(${LIB_CORE}-test
++#     PRIVATE
++#       ${LIB_CORE}
++#       GTest::GTest GTest::Main
++#   )
++#   add_test(${LIB_CORE}-test  ${LIB_CORE}-test)
++
++#   install(
++#     TARGETS ${LIB_CORE}-test
++#     RUNTIME DESTINATION ${IFOPT_INSTALL_BINDIR}
++#   )
++# endif()
