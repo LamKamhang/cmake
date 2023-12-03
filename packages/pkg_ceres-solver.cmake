@@ -22,7 +22,11 @@ lam_add_package_maybe_prebuilt(ceres-solver
   "USE_CUDA OFF"
   "GFLAGS OFF"
   "BUILD_TESTING OFF"
+  "BUILD_EXAMPLES OFF"
+  "BUILD_BENCHMARKS OFF"
   "MINIGLOG ON"
+  CMAKE_ARGS
+  "-DCMAKE_PREFIX_PATH=${LAM_PACKAGE_INSTALL_PREFIX}"
   # for user customize.
   ${ceres-solver_USER_CUSTOM_ARGS}
 )
