@@ -264,6 +264,7 @@ endfunction()
 
 function(replace_abs_utility_to_rel var)
   string(REPLACE "${LAM_CMAKE_UTILITY_BASE_DIR}" "\${utility}" out "${${var}}")
+  string(REPLACE "${LAM_PACKAGE_INSTALL_PREFIX}" "\${install_prefix}" out "${out}")
   set(${var} ${out} PARENT_SCOPE)
 endfunction()
 
