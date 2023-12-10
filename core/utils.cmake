@@ -9,12 +9,13 @@ function(lam_check_toplevel_project out_name)
   endif()
 endfunction()
 
-macro(assert_not_build_in_source_path)
+function(lam_assert_not_build_in_source_path)
   if (PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     message(FATAL_ERROR "In-source builds are not allowed")
   endif()
-endmacro()
+endfunction()
 
+# include may have side-effect, so use macro here.
 macro(lam_may_include file)
   if (EXISTS ${file})
     message(DEBUG "[cmake/utility] may_include: ${file}")
@@ -87,5 +88,28 @@ function(lam_get_cxx_compiler_name out)
     set(${out} ${CMAKE_CXX_COMPILER_ID} PARENT_SCOPE)
   else()
     set(${out} ${CMAKE_CXX_COMPILER_ID}-${COMPILER_MAJOR_VERSION} PARENT_SCOPE)
+  endif()
+endfunction()
+
+function(lam_get_latest_tag_of_a_git_repo url num)
+  find_package(Git REQUIRED)
+  lam_assert_defined(GIT_EXECUTABLE)
+
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} ls-remote --tags --refs --sort=-v:refname ${url}
+    OUTPUT_VARIABLE tags
+  )
+
+  string(REPLACE "\n" ";" tags "${tags}")
+
+  if (NOT "${tags}" STREQUAL "")
+    foreach(i RANGE ${num})
+      if (${i} EQUAL ${num})
+        break()
+      endif()
+      list(GET tags ${i} tag)
+      string(REGEX REPLACE "^.*refs/tags/" "" tag "${tag}")
+      lam_status("latest(${url}).tag${i}: ${tag}")
+    endforeach()
   endif()
 endfunction()

@@ -8,7 +8,7 @@ endif()
 message(STATUS "[package/nanobind]: nanobind")
 
 if (NOT DEFINED nanobind_VERSION)
-  set(nanobind_VERSION "1.5.2")
+  set(nanobind_VERSION "1.8.0")
 endif()
 if (NOT DEFINED nanobind_TAG)
   set(nanobind_TAG "v${nanobind_VERSION}")

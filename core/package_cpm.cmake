@@ -30,15 +30,15 @@ option(LAM_PACKAGE_VERBOSE_INSTALL "enable verbose ExternalPackage" ON)
 option(LAM_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" OFF)
 option(LAM_PACKAGE_BUILD_WITH_PIC "External Package Build with PIC flags" ON)
 
-set(LAM_PACKAGE_BUILD_TYPE "${CMAKE_BUILD_TYPE}"
-  CACHE STRING "Default ExternalPackage BuildType"
-)
+set(LAM_PACKAGE_BUILD_TYPE "Release" CACHE STRING "Default ExternalPackage BuildType")
 if ("${LAM_PACKAGE_BUILD_TYPE}" STREQUAL "")
   set(LAM_PACKAGE_BUILD_TYPE "Release")
 endif()
 # BuildType to lowercase.
 string(TOLOWER ${LAM_PACKAGE_BUILD_TYPE} LAM_PACKAGE_BUILD_TYPE_LC)
-lam_status("ExternalBuildType: ${LAM_PACKAGE_BUILD_TYPE}")
+lam_pkg_status("ExternalBuildType: ${LAM_PACKAGE_BUILD_TYPE}")
+
+# Set Package Install Prefix.
 lam_get_cxx_compiler_name(LAM_COMPILER_NAME)
 set(LAM_PACKAGE_INSTALL_PREFIX ${CPM_SOURCE_CACHE}/installed/${LAM_COMPILER_NAME}-${LAM_PACKAGE_BUILD_TYPE_LC}
   CACHE PATH "Directory to install external package."
@@ -279,7 +279,6 @@ function(lam_add_package uri)
 
   # extract uri from args.
   lam_extract_args_from_uri(extra_args ${uri})
-
   # extract CMAKE_ARGS from ARGN.
   # you can use END_CMAKE_ARGS to distinguish the other CPM_ARGS
   # from CMAKE_ARGS.
@@ -321,6 +320,7 @@ function(lam_add_package uri)
     ${${PKG_NAME}_SOURCE_DIR}/../${PKG_NAME}.cpm_args
     ${PKG_CPM_ARGS}
   )
+  # TODO: Enable Fetch latest tag without cloning.
   # execute_process(
   #   COMMAND git tag --sort=-creatordate
   #   OUTPUT_VARIABLE tags
@@ -571,7 +571,7 @@ macro(lam_add_prebuilt_package)
     "${ARGN}"
   )
   lam_assert_defined(PKG_NAME PKG_NOT_REQUIRED PKG_INSTALL_PREFIX)
-  lam_status("${PKG_NAME} use prebuilt-mode.")
+  lam_pkg_status("${PKG_NAME} use prebuilt-mode.")
 
   # set find_package extra args.
   set(_EXTRA_FIND_ARGS PATHS ${PKG_INSTALL_PREFIX})

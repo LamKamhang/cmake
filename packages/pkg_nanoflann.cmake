@@ -8,7 +8,7 @@ endif()
 message(STATUS "[package/nanoflann]: nanoflann::nanoflann")
 
 if (NOT DEFINED nanoflann_VERSION)
-  set(nanoflann_VERSION "1.5.0")
+  set(nanoflann_VERSION "1.5.3")
 endif()
 if (NOT DEFINED nanoflann_TAG)
   set(nanoflann_TAG "v${nanoflann_VERSION}")
