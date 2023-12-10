@@ -194,7 +194,9 @@ function(lam_install_package_config package_name)
   )
 
   include(CMakePackageConfigHelpers)
-  configure_file("${package_config_in}" "${package_config_out}" @ONLY)
+  configure_package_config_file("${package_config_in}" "${package_config_out}"
+    INSTALL_DESTINATION "${export_dest_dir}"
+  )
 
   if (IS_VERSION)
     list(APPEND extra_args VERSION ${PKG_VERSION})

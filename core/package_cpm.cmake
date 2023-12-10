@@ -448,7 +448,7 @@ function(verbose_find_package PKG)
   # verbose some infos.
   if (${PKG}_FOUND)
     string(TOUPPER ${PKG} tmp)
-    if (DEFINED ${${PKG}_VERSION})
+    if (DEFINED ${PKG}_VERSION)
       message(STATUS "[package/${PKG}]: find version: ${${PKG}_VERSION}")
     endif()
 

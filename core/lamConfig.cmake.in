@@ -1,4 +1,17 @@
+@PACKAGE_INIT@
+
 # TODO: maybe change to use lam_use_deps.
+# if (NOT COMMAND lam_use_deps)
+#   message(FATAL_ERROR "Please use lam-cmake-scripts suite to include lam_use_deps.")
+# else()
+#   # HACK: use var to avoid '#'
+#   set(chaos_runtime_deps "@chaos_runtime_deps@")
+#   lam_use_deps(${xxx_runtime_deps})
+#   if (@XXX_USE_YYY@ AND XXX_USE_YYY)
+#     set(xxx_yyy_runtime_deps "@xxx_yyy_runtime_deps@")
+#     lam_use_deps(${xxx_yyy_runtime_deps})
+#   endif()
+# endif()
 include(CMakeFindDependencyMacro)
 
 # TODO: change to perform better args separation.
