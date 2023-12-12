@@ -1,0 +1,4 @@
+#+title: Todo
+
+* BUGS: [0/1] [0%]
+- [ ] When lam_use_deps is used in the Config.cmake file, a major bug occurs where the variables in the father scope are replaced by variables in the son scope! For example, package A needs to reference package B, and lam_use_deps is used in the config.cmake file in package A to find package B. At this time, the outermost PKG_NAME is A. After calling lam_use_deps(B), PKG_NAME is unset, causing problems with the outermost lam_use_deps(A).
