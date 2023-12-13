@@ -85,6 +85,8 @@ function(lam_assert_valid_uri uri)
     lam_error("uri [${uri}] cannot has more than 1 '#'")
   elseif(${uri} MATCHES "@[0-9.]*(#[^#]*)?@[0-9.]*")
     lam_error("uri [${uri}] cannot has more than 1 '@[0-9.]*' to define version part")
+  elseif(NOT ${uri} MATCHES ":")
+    lam_error("uri [${uri}] maybe not correct! expected: xxx:yyy")
   endif()
 endfunction()
 
