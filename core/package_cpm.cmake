@@ -603,7 +603,7 @@ macro(lam_add_prebuilt_package)
     )
   endif()
 
-  if (${${PKG_NAME}_FOUND} OR PKG_NOT_REQUIRED)
+  if (${PKG_NAME}_FOUND OR PKG_NOT_REQUIRED)
   else()
     if (NOT PKG_NOT_REQUIRED)
       # check whether the package is REQUIRED.
