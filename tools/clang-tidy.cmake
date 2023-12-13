@@ -1,5 +1,11 @@
 include_guard()
 
+if ((DEFINED LAM_USE_CLANG_TOOLS AND NOT LAM_USE_CLANG_TOOLS) OR
+    (DEFINED LAM_USE_CLANG_TIDY AND NOT LAM_USE_CLANG_TIDY))
+  return()
+endif()
+message(STATUS "[cmake/clang-tidy]: Enable clang-tidy.")
+
 find_program(CLANG_TIDY clang-tidy)
 
 if(CLANG_TIDY)

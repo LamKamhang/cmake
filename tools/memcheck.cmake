@@ -1,5 +1,11 @@
 include_guard()
 
+if (NOT LAM_USE_MEMCHECK)
+  return()
+endif()
+
+message(STATUS "[cmake/memcheck]: Enable valgrind.")
+
 find_program(VALGRIND valgrind)
 
 if(VALGRIND)

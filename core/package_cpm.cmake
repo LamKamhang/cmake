@@ -26,7 +26,7 @@ option(LAM_PACKAGE_OVERRIDE_FIND_PACKAGE "override find_package with verbose" ON
 option(LAM_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." ON)
 option(LAM_PACKAGE_ENABLE_DEFAULT_SEARCH_PATH "enable find_package with default search strategy" OFF)
 option(LAM_PACKAGE_PREFER_PREBUILT "prefer prebuilt mode(install and then find strategy)" ON)
-option(LAM_PACKAGE_VERBOSE_INSTALL "enable verbose ExternalPackage" ON)
+option(LAM_PACKAGE_VERBOSE_INSTALL "enable verbose ExternalPackage" OFF)
 option(LAM_PACKAGE_BUILD_SHARED "External Package Build as a shared lib" OFF)
 option(LAM_PACKAGE_BUILD_WITH_PIC "External Package Build with PIC flags" ON)
 

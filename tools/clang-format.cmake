@@ -1,5 +1,11 @@
 include_guard()
 
+if ((DEFINED LAM_USE_CLANG_TOOLS AND NOT LAM_USE_CLANG_TOOLS) OR
+    (DEFINED LAM_USE_CLANG_FORMAT AND NOT LAM_USE_CLANG_FORMAT))
+  return()
+endif()
+message(STATUS "[cmake/clang-format]: Enable clang-tidy.")
+
 find_program(CLANG_FORMAT clang-format)
 
 if(CLANG_FORMAT)

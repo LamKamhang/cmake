@@ -14,10 +14,24 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 include_guard()
+
+set(LAM_USE_SANITIZER
+    ""
+    CACHE
+      STRING
+      "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined', CFI"
+)
+
+if (LAM_USE_SANTIZER)
+  return()
+endif()
+
+message(STATUS "[cmake/tools]: Enable sanitizers, please to set LAM_USE_SANITIZER. current options(USE_SANITIZER): ${USE_SANITIZER}.")
+
 include(CheckCXXSourceCompiles)
 
 set(USE_SANITIZER
-    ""
+    "${LAM_USE_SANITIZER}"
     CACHE
       STRING
       "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined', CFI"

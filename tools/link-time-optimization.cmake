@@ -14,6 +14,9 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 include_guard()
+
+message(STATUS "[cmake/tools]: Try to Enable link time optimization")
+
 include(CheckIPOSupported)
 
 # Checks for, and enables IPO/LTO for all following targets
@@ -82,3 +85,7 @@ function(target_link_time_optimization TARGET_NAME)
     endif()
   endif()
 endfunction()
+
+if (LAM_USE_LTO)
+  link_time_optimization()
+endif()

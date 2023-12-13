@@ -1,5 +1,10 @@
 include_guard()
 
+if (NOT LAM_USE_CPPCHECK)
+  return()
+endif()
+message(STATUS "[cmake/cppcheck]: Enable cppcheck.")
+
 find_program(CPPCHECK cppcheck)
 
 if(CPPCHECK)
