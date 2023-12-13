@@ -461,10 +461,14 @@ function(verbose_find_package PKG)
 endfunction()
 
 if (LAM_PACKAGE_OVERRIDE_FIND_PACKAGE)
-  macro(find_package PKG)
-    _find_package(${PKG} ${ARGN})
-    verbose_find_package(${PKG})
-  endmacro()
+  # flags to mark the overridded find_package.
+  if (NOT _LAM_PACKAGE_OVERRIDED_FIND_PACKAGE)
+    macro(find_package PKG)
+      _find_package(${PKG} ${ARGN})
+      verbose_find_package(${PKG})
+    endmacro()
+  endif()
+  set(_LAM_PACKAGE_OVERRIDED_FIND_PACKAGE ON)
 endif()
 
 macro(find_package_ext PKG)
@@ -551,30 +555,43 @@ function(lam_extract_cpm_and_find_args
 endfunction()
 
 macro(__lam_unset_prebuilt_variables)
-  unset(PKG_NAME)
-  unset(PKG_CPM_ARGS)
-  unset(PKG_CMAKE_ARGS)
-  unset(PKG_FIND_ARGS)
-  unset(PKG_NOT_REQUIRED)
-  unset(PKG_INSTALL_PREFIX)
-  unset(_EXTRA_FIND_ARGS)
+  lam_pop_variable(PKG_NAME)
+  lam_pop_variable(PKG_CPM_ARGS)
+  lam_pop_variable(PKG_CMAKE_ARGS)
+  lam_pop_variable(PKG_FIND_ARGS)
+  lam_pop_variable(PKG_NOT_REQUIRED)
+  lam_pop_variable(PKG_INSTALL_PREFIX)
+  lam_pop_variable(_EXTRA_FIND_ARGS)
 endmacro()
 
 macro(lam_add_prebuilt_package)
   lam_extract_cpm_and_find_args(
-    PKG_NAME
-    PKG_CPM_ARGS
-    PKG_CMAKE_ARGS
-    PKG_FIND_ARGS
-    PKG_NOT_REQUIRED
-    PKG_INSTALL_PREFIX
+    _PKG_NAME
+    _PKG_CPM_ARGS
+    _PKG_CMAKE_ARGS
+    _PKG_FIND_ARGS
+    _PKG_NOT_REQUIRED
+    _PKG_INSTALL_PREFIX
     "${ARGN}"
   )
-  lam_assert_defined(PKG_NAME PKG_NOT_REQUIRED PKG_INSTALL_PREFIX)
-  lam_pkg_status("${PKG_NAME} use prebuilt-mode.")
+  lam_assert_defined(_PKG_NAME _PKG_NOT_REQUIRED _PKG_INSTALL_PREFIX)
+  lam_pkg_status("${_PKG_NAME} use prebuilt-mode.")
+
+  unset(_PKG_NAME)
+  unset(_PKG_CPM_ARGS)
+  unset(_PKG_CMAKE_ARGS)
+  unset(_PKG_FIND_ARGS)
+  unset(_PKG_NOT_REQUIRED)
+  unset(_PKG_INSTALL_PREFIX)
+  lam_push_variable(PKG_NAME "${_PKG_NAME}")
+  lam_push_variable(PKG_CPM_ARGS "${_PKG_CPM_ARGS}")
+  lam_push_variable(PKG_CMAKE_ARGS "${_PKG_CMAKE_ARGS}")
+  lam_push_variable(PKG_FIND_ARGS "${_PKG_FIND_ARGS}")
+  lam_push_variable(PKG_NOT_REQUIRED "${_PKG_NOT_REQUIRED}")
+  lam_push_variable(PKG_INSTALL_PREFIX "${_PKG_INSTALL_PREFIX}")
 
   # set find_package extra args.
-  set(_EXTRA_FIND_ARGS PATHS ${PKG_INSTALL_PREFIX})
+  lam_push_variable(_EXTRA_FIND_ARGS "PATHS;${PKG_INSTALL_PREFIX}")
   if (NOT LAM_PACKAGE_ENABLE_DEFAULT_SEARCH_PATH)
     list(APPEND _EXTRA_FIND_ARGS NO_DEFAULT_PATH)
   endif()
@@ -632,13 +649,13 @@ macro(lam_add_prebuilt_package)
     if (result)
       lam_fatal("[lam_package] Failed to install external package(${PKG_NAME}): ${result}")
     endif()
+    unset(__ARGS)
+    unset(result)
 
     # find package again.
     find_package_ext(${PKG_NAME} ${PKG_FIND_ARGS}
       ${_EXTRA_FIND_ARGS}
     )
-    unset(__ARGS)
-    unset(result)
   endif()
   __lam_unset_prebuilt_variables()
 endmacro()
@@ -658,7 +675,6 @@ function(lam_check_prefer_prebuilt out name)
     # default prebuilt-flag.
     set(USE_PREBUILT_FLAG ${LAM_PACKAGE_PREFER_PREBUILT})
   endif()
-
   set(${out} ${USE_PREBUILT_FLAG} PARENT_SCOPE)
 endfunction()
 
