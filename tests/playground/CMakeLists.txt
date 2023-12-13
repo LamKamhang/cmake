@@ -4,7 +4,7 @@ project(playground)
 
 option(LAM_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." OFF)
 option(LAM_PACKAGE_PREFER_PREBUILT "prefer prebuilt mode(install and then find strategy)" OFF)
-
+set(LAM_PACKAGE_FETCH_LATEST_TAG ON)
 include(../../utility.cmake)
 
 lam_use_deps(
@@ -13,7 +13,7 @@ lam_use_deps(
   alglib
   benchmark
   Catch2
-  bgfx
+  #bgfx
   CLI11
   EnTT
   eventpp

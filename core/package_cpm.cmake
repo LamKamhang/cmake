@@ -322,16 +322,18 @@ function(lam_add_package uri)
     ${PKG_CPM_ARGS}
   )
   # TODO: Enable Fetch latest tag without cloning.
-  # execute_process(
-  #   COMMAND git tag --sort=-creatordate
-  #   OUTPUT_VARIABLE tags
-  #   WORKING_DIRECTORY ${${PKG_NAME}_SOURCE_DIR}
-  # )
-  # string(REPLACE "\n" ";" tags "${tags}")
-  # if (NOT "${tags}" STREQUAL "")
-  #   list(GET tags 0 tags)
-  # endif()
-  # message(WARNING "[package]: ${PKG_NAME}(${extra_args}): ${tags}")
+  if (LAM_PACKAGE_FETCH_LATEST_TAG)
+    execute_process(
+      COMMAND git tag --sort=-creatordate
+      OUTPUT_VARIABLE tags
+      WORKING_DIRECTORY ${${PKG_NAME}_SOURCE_DIR}
+    )
+    string(REPLACE "\n" ";" tags "${tags}")
+    if (NOT "${tags}" STREQUAL "")
+      list(GET tags 0 tags)
+    endif()
+    message(WARNING "[package]: ${PKG_NAME}(${extra_args}): ${tags}")
+  endif()
 
   cpm_export_variables(${PKG_NAME})
 endfunction()

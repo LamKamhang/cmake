@@ -7,9 +7,8 @@ endif()
 
 message(STATUS "[package/nlohmann_json]: nlohmann_json::nlohmann_json")
 
-
 if (NOT DEFINED nlohmann_json_VERSION)
-  set(nlohmann_json_VERSION "3.11.2")
+  set(nlohmann_json_VERSION "3.11.3")
 endif()
 if (NOT DEFINED nlohmann_json_TAG)
   set(nlohmann_json_TAG "v${nlohmann_json_VERSION}")

@@ -9,7 +9,7 @@ message(STATUS "[package/pugixml]: pugixml::pugixml")
 
 
 if (NOT DEFINED pugixml_VERSION)
-  set(pugixml_VERSION "1.13")
+  set(pugixml_VERSION "1.14")
 endif()
 if (NOT DEFINED pugixml_TAG)
   set(pugixml_TAG "v${pugixml_VERSION}")
