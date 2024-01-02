@@ -27,4 +27,7 @@ add_library(tinyexprpp EXCLUDE_FROM_ALL
   ${tinyexprpp_SOURCE_DIR}/tinyexpr.h
   ${tinyexprpp_SOURCE_DIR}/tinyexpr.cpp
 )
+target_include_directories(tinyexprpp PUBLIC
+  $<BUILD_INTERFACE:${tinyexprpp_SOURCE_DIR}>
+)
 add_library(tinyexprpp::tinyexprpp ALIAS tinyexprpp)
