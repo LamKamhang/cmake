@@ -49,6 +49,7 @@ use_cmake_core_module(lam_add_target)
 use_cmake_core_module(lam_add_unittest)
 use_cmake_core_module(lam_install)
 use_cmake_core_module(lam_utils)
+use_cmake_core_module(lam_glob_source_as_target)
 # register path.
 register_cmake_module_path(find_modules)
 register_cmake_module_path(tools)
