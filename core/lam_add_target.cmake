@@ -1,6 +1,6 @@
 include_guard()
 
-use_cmake_core_module(assert)
+use_cmake_core_module(lam_assert)
 
 # Usage:
 # lam_add_target(target_name [isLIB|SHARED|STATIC|isINTERFACE]

@@ -1,9 +1,9 @@
 include_guard()
 
-use_cmake_core_module(assert)
-use_cmake_core_module(utils)
+use_cmake_core_module(lam_assert)
+use_cmake_core_module(lam_utils)
 use_cmake_core_module(lam_add_target)
-use_cmake_core_module(package_cpm)
+use_cmake_core_module(lam_package_cpm)
 
 function(lam_add_unittest name)
   if (NOT TARGET Catch2::Catch2)

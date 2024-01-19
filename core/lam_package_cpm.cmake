@@ -1,7 +1,7 @@
 include_guard()
 
-use_cmake_core_module(assert)
-use_cmake_core_module(utils)
+use_cmake_core_module(lam_assert)
+use_cmake_core_module(lam_utils)
 register_cmake_module_path(packages)
 
 ########################################################################
