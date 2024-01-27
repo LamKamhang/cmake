@@ -27,6 +27,7 @@ lam_add_package_maybe_prebuilt(ceres-solver
   "PROVIDE_UNINSTALL_TARGET OFF"
   "MINIGLOG ON"
   CMAKE_ARGS
+  "-DCMAKE_MODULE_PATH=${LAM_CMAKE_UTILITY_BASE_DIR}/find_modules"
   "-DCMAKE_PREFIX_PATH=${LAM_PACKAGE_INSTALL_PREFIX}"
   # for user customize.
   ${ceres-solver_USER_CUSTOM_ARGS}

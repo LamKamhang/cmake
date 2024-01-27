@@ -7,17 +7,16 @@ endif()
 
 message(STATUS "[package/glm]: glm::glm")
 
+if (NOT DEFINED glm_VERSION)
+  set(glm_VERSION "1.0.0")
+endif()
+
 if (NOT DEFINED glm_TAG)
-  if (NOT DEFINED glm_VERSION)
-    set(glm_TAG "47585fd@0.9.9.9") # 0.9.9.9 still on development.
-  else()
-    set(glm_TAG "${glm_VERSION}")
-  endif()
+  set(glm_TAG "${glm_VERSION}")
 endif()
 
 lam_add_package_maybe_prebuilt(glm
   "gh:g-truc/glm#${glm_TAG}"
-  GIT_SHALLOW OFF
   OPTIONS
   "BUILD_TESTING OFF"
   # for user customize.

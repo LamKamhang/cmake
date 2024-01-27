@@ -50,7 +50,7 @@ if (${LAM_PACKAGE_NUM_THREADS} LESS 1)
   include(ProcessorCount)
   ProcessorCount(LAM_PACKAGE_NUM_THREADS)
 endif()
-lam_pkg_status("#THreads: ${LAM_PACKAGE_NUM_THREADS}")
+lam_pkg_status("#Threads: ${LAM_PACKAGE_NUM_THREADS}")
 ########################################################################
 # Core Implementation
 ########################################################################
