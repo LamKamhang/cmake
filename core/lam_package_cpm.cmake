@@ -17,10 +17,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/CPM.cmake)
 # Options/CacheVariables
 ########################################################################
 # status helper
-macro(lam_pkg_status)
-  set(lam_status_indent "[lam_package] ")
+function(lam_pkg_status)
+  set(lam_status_indent "[cmake/package] ")
   lam_status(${ARGV})
-endmacro()
+endfunction()
 ########################################################################
 option(LAM_PACKAGE_OVERRIDE_FIND_PACKAGE "override find_package with verbose" ON)
 option(LAM_PACKAGE_ENABLE_TRY_FIND "enable find_package first before download." ON)
@@ -432,7 +432,7 @@ endfunction()
 
 macro(lam_use_deps)
   foreach(dep ${ARGV})
-    message(STATUS "[lam_package] current dep: ${dep}")
+    lam_pkg_status("current dep: ${dep}")
     lam_parse_deps_format(${dep} dep_name)
     lam_assert_defined(dep_name)
 
@@ -637,7 +637,7 @@ macro(lam_add_prebuilt_package)
       RESULT_VARIABLE result
     )
     if (result)
-      lam_fatal("[lam_package] configure external project(${PKG_NAME}) failed: ${result}")
+      lam_fatal("[cmake/package] configure external project(${PKG_NAME}) failed: ${result}")
     endif()
 
     if (NOT LAM_PACKAGE_VERBOSE_INSTALL)
@@ -653,7 +653,7 @@ macro(lam_add_prebuilt_package)
     )
 
     if (result)
-      lam_fatal("[lam_package] Failed to install external package(${PKG_NAME}): ${result}")
+      lam_fatal("[cmake/package] Failed to install external package(${PKG_NAME}): ${result}")
     endif()
     unset(__ARGS)
     unset(result)
