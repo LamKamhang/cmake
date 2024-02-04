@@ -1,0 +1,41 @@
+#include "git_meta.hpp"
+
+// clang-format off
+namespace @GIT_PROJECT_NAME@::git_meta {
+  // clang-format on
+
+  // store the meta infos in a singleton class.
+  inline namespace internal {
+  struct GitMetaInfo {
+    // clang-format off
+    static constexpr bool has_git_info = @GIT_RETRIEVED_STATE@;
+    static constexpr bool git_is_dirty = @GIT_IS_DIRTY@;
+    static constexpr const char* git_commit_hash = "@GIT_HEAD_SHA1@";
+    static constexpr const char* git_commit_date = "@GIT_COMMIT_DATE_ISO8601@";
+    static constexpr const char* git_commit_subject = "@GIT_COMMIT_SUBJECT@";
+    static constexpr const char* git_commit_body = "@GIT_COMMIT_BODY@";
+    static constexpr const char* git_describe = "@GIT_DESCRIBE@";
+    static constexpr const char* git_branch = "@GIT_BRANCH@";
+    // clang-format on
+  };
+  }  // namespace internal
+
+  bool has_git_info() { return GitMetaInfo::has_git_info; }
+
+  bool git_is_dirty() { return GitMetaInfo::git_is_dirty; }
+
+  StringOrView git_commit_hash() { return GitMetaInfo::git_commit_hash; }
+
+  StringOrView git_commit_date() { return GitMetaInfo::git_commit_date; }
+
+  StringOrView git_commit_subject() { return GitMetaInfo::git_commit_subject; }
+
+  StringOrView git_commit_body() { return GitMetaInfo::git_commit_body; }
+
+  StringOrView git_describe() { return GitMetaInfo::git_describe; }
+
+  StringOrView git_branch() { return GitMetaInfo::git_branch; }
+
+  // clang-format off
+}
+// clang-format on
