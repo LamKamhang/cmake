@@ -14,7 +14,7 @@ function(lam_generate_git_meta name)
   set(POST_SOURCE_CONFIGURE_FILE "${GIT_META_OUTDIR}/${name}/git_meta.cpp")
   lam_assert_defined(LAM_CMAKE_UTILITY_CORE_DIR)
   include(${LAM_CMAKE_UTILITY_CORE_DIR}/git_meta/git_watcher.cmake)
-  Main()
+  lam_git_watcher_main()
 
   set(target_name ${name}_git_meta)
   add_library(${target_name}

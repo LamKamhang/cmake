@@ -70,6 +70,8 @@ namespace @GIT_PROJECT_NAME@::git_meta {
 
   StringOrView git_branch();
 
+  StringOrView git_preamble();
+
   // clang-format off
 }
 // clang-format on

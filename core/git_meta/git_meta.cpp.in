@@ -16,6 +16,10 @@ namespace @GIT_PROJECT_NAME@::git_meta {
     static constexpr const char* git_commit_body = "@GIT_COMMIT_BODY@";
     static constexpr const char* git_describe = "@GIT_DESCRIBE@";
     static constexpr const char* git_branch = "@GIT_BRANCH@";
+    static constexpr const char* git_preamble =
+    git_is_dirty ?
+    "run @GIT_PROJECT_NAME@[@GIT_BRANCH@] at @GIT_HEAD_SHA1@(dirty)":
+    "run @GIT_PROJECT_NAME@[@GIT_BRANCH@] at @GIT_HEAD_SHA1@";
     // clang-format on
   };
   }  // namespace internal
@@ -35,6 +39,8 @@ namespace @GIT_PROJECT_NAME@::git_meta {
   StringOrView git_describe() { return GitMetaInfo::git_describe; }
 
   StringOrView git_branch() { return GitMetaInfo::git_branch; }
+
+  StringOrView git_preamble() { return GitMetaInfo::git_preamble; }
 
   // clang-format off
 }

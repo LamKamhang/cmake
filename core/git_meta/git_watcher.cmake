@@ -36,7 +36,7 @@
 #
 # DESIGN
 #   - This script was designed similar to a Python application
-#     with a Main() function. I wanted to keep it compact to
+#     with a lam_git_watcher_main() function. I wanted to keep it compact to
 #     simplify "copy + paste" usage.
 #
 #   - This script is invoked under two CMake contexts:
@@ -80,42 +80,6 @@ macro(CHECK_OPTIONAL_VARIABLE var_name default_value)
     CHECK_OPTIONAL_VARIABLE_NOPATH(${var_name} ${default_value})
     PATH_TO_ABSOLUTE(${var_name})
 endmacro()
-
-CHECK_REQUIRED_VARIABLE_AND_SET_ABSOLUTE(PRE_HEADER_CONFIGURE_FILE)
-CHECK_REQUIRED_VARIABLE_AND_SET_ABSOLUTE(POST_HEADER_CONFIGURE_FILE)
-CHECK_REQUIRED_VARIABLE_AND_SET_ABSOLUTE(PRE_SOURCE_CONFIGURE_FILE)
-CHECK_REQUIRED_VARIABLE_AND_SET_ABSOLUTE(POST_SOURCE_CONFIGURE_FILE)
-CHECK_REQUIRED_VARIABLE_AND_SET_ABSOLUTE(GIT_META_OUTDIR)
-CHECK_REQUIRED_VARIABLE(GIT_PROJECT_NAME)
-CHECK_OPTIONAL_VARIABLE(GIT_STATE_FILE "${GIT_META_OUTDIR}/${GIT_PROJECT_NAME}-git-state-hash")
-CHECK_OPTIONAL_VARIABLE(GIT_WORKING_DIR "${CMAKE_SOURCE_DIR}")
-CHECK_OPTIONAL_VARIABLE_NOPATH(GIT_FAIL_IF_NONZERO_EXIT TRUE)
-CHECK_OPTIONAL_VARIABLE_NOPATH(GIT_IGNORE_UNTRACKED FALSE)
-
-# Check the optional git variable.
-# If it's not set, we'll try to find it using the CMake packaging system.
-if(NOT DEFINED GIT_EXECUTABLE)
-    find_package(Git QUIET REQUIRED)
-endif()
-CHECK_REQUIRED_VARIABLE(GIT_EXECUTABLE)
-
-
-set(_state_variable_names
-    GIT_RETRIEVED_STATE
-    GIT_HEAD_SHA1
-    GIT_IS_DIRTY
-    GIT_AUTHOR_NAME
-    GIT_AUTHOR_EMAIL
-    GIT_COMMIT_DATE_ISO8601
-    GIT_COMMIT_SUBJECT
-    GIT_COMMIT_BODY
-    GIT_DESCRIBE
-    GIT_BRANCH
-    # >>>
-    # 1. Add the name of the additional git variable you're interested in monitoring
-    #    to this list.
-)
-
 
 
 # Macro: RunGitCommand
@@ -178,7 +142,7 @@ function(GetGitState _working_dir)
 
     # There's a long list of attributes grabbed from git show.
     set(object HEAD)
-    RunGitCommand(show -s "--format=%H" ${object})
+    RunGitCommand(show -s "--format=%h" ${object})
     if(exit_code EQUAL 0)
         set(ENV{GIT_HEAD_SHA1} ${output})
     endif()
@@ -356,10 +320,44 @@ endfunction()
 
 
 
-# Function: Main
+# Function: lam_git_watcher_main
 # Description: primary entry-point to the script. Functions are selected based
 #              on whether it's configure or build time.
-function(Main)
+function(lam_git_watcher_main)
+    CHECK_REQUIRED_VARIABLE_AND_SET_ABSOLUTE(PRE_HEADER_CONFIGURE_FILE)
+    CHECK_REQUIRED_VARIABLE_AND_SET_ABSOLUTE(POST_HEADER_CONFIGURE_FILE)
+    CHECK_REQUIRED_VARIABLE_AND_SET_ABSOLUTE(PRE_SOURCE_CONFIGURE_FILE)
+    CHECK_REQUIRED_VARIABLE_AND_SET_ABSOLUTE(POST_SOURCE_CONFIGURE_FILE)
+    CHECK_REQUIRED_VARIABLE_AND_SET_ABSOLUTE(GIT_META_OUTDIR)
+    CHECK_REQUIRED_VARIABLE(GIT_PROJECT_NAME)
+    CHECK_OPTIONAL_VARIABLE(GIT_STATE_FILE "${GIT_META_OUTDIR}/${GIT_PROJECT_NAME}-git-state-hash")
+    CHECK_OPTIONAL_VARIABLE(GIT_WORKING_DIR "${CMAKE_SOURCE_DIR}")
+    CHECK_OPTIONAL_VARIABLE_NOPATH(GIT_FAIL_IF_NONZERO_EXIT TRUE)
+    CHECK_OPTIONAL_VARIABLE_NOPATH(GIT_IGNORE_UNTRACKED FALSE)
+
+    # Check the optional git variable.
+    # If it's not set, we'll try to find it using the CMake packaging system.
+    if(NOT DEFINED GIT_EXECUTABLE)
+        find_package(Git QUIET REQUIRED)
+    endif()
+    CHECK_REQUIRED_VARIABLE(GIT_EXECUTABLE)
+
+
+    set(_state_variable_names
+        GIT_RETRIEVED_STATE
+        GIT_HEAD_SHA1
+        GIT_IS_DIRTY
+        GIT_AUTHOR_NAME
+        GIT_AUTHOR_EMAIL
+        GIT_COMMIT_DATE_ISO8601
+        GIT_COMMIT_SUBJECT
+        GIT_COMMIT_BODY
+        GIT_DESCRIBE
+        GIT_BRANCH
+        # >>>
+        # 1. Add the name of the additional git variable you're interested in monitoring
+        #    to this list.
+    )
     if (NOT EXISTS "${POST_HEADER_CONFIGURE_FILE}")
         configure_file("${PRE_HEADER_CONFIGURE_FILE}" "${POST_HEADER_CONFIGURE_FILE}" @ONLY)
     endif()
