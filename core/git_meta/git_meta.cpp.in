@@ -1,4 +1,4 @@
-#include "git_meta.hpp"
+#include <@GIT_PROJECT_NAME@/git_meta.hpp>
 
 // clang-format off
 namespace @GIT_PROJECT_NAME@::git_meta {
