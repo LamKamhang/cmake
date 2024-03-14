@@ -1,0 +1,11 @@
+diff --git a/cmake/macros/macro_deal_ii_setup_target.cmake b/cmake/macros/macro_deal_ii_setup_target.cmake
+index 66ca7940c..dc7a6c203 100644
+--- a/cmake/macros/macro_deal_ii_setup_target.cmake
++++ b/cmake/macros/macro_deal_ii_setup_target.cmake
+@@ -101,5 +101,5 @@ macro(deal_ii_setup_target _target)
+       )
+   endif()
+ 
+-  target_link_libraries(${_target} ${DEAL_II_TARGET_${_build}})
++  target_link_libraries(${_target} PUBLIC ${DEAL_II_TARGET_${_build}})
+ endmacro()

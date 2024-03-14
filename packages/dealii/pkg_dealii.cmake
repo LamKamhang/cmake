@@ -20,6 +20,17 @@ lam_assert_truthy(out)
 lam_add_prebuilt_package(
   "gh:dealii/dealii#${dealii_TAG}"
   NAME deal.II
+  GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/dealii_setup_target.patch"
+  CMAKE_ARGS
+  "-DBUILD_SHARED_LIBS=ON"
+  "-DDEAL_II_COMPONENT_EXAMPLES=OFF"
+  "-DDEAL_II_COMPONENT_DOCUMENTATION=OFF"
+  "-DDEAL_II_COMPONENT_PYTHON_BINDINGS=OFF"
   # for user customize.
   ${dealii_USER_CMAKE_ARGS}
 )
+if (NOT TARGET dealii::dealii)
+  add_library(dealii::dealii ALIAS ${DEAL_II_TARGET})
+endif()
+
+deal_ii_initialize_cached_variables()
