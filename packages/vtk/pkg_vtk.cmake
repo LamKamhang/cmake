@@ -9,6 +9,7 @@ message(STATUS "[package/VTK]: VTK::IOLegacy")
 
 set(vtk_DEFAULT_OPTIONS_PRESET io-only CACHE STRING "preset for vtk cofigure options")
 set_property(CACHE vtk_DEFAULT_OPTIONS_PRESET PROPERTY STRINGS
+  default
   io-only
 )
 

@@ -117,6 +117,8 @@ endfunction()
 # Stack mechanism to set/unset variable
 macro(lam_push_variable var value)
   if (DEFINED ${var})
+    # replace ';' to ' '
+    string(REPLACE ";" " " ${var} "${${var}}")
     list(APPEND __${var}_STACK "${${var}}")
   endif()
   set(${var} "${value}")
@@ -128,5 +130,7 @@ macro(lam_pop_variable var)
     unset(${var})
   else()
     list(POP_BACK __${var}_STACK ${var})
+    # replace ' ' to ';'
+    string(REPLACE " " ";" ${var} "${${var}}")
   endif()
 endmacro()
