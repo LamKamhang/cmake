@@ -4,7 +4,7 @@ if ((DEFINED LAM_USE_CLANG_TOOLS AND NOT LAM_USE_CLANG_TOOLS) OR
     (DEFINED LAM_USE_CLANG_FORMAT AND NOT LAM_USE_CLANG_FORMAT))
   return()
 endif()
-message(STATUS "[cmake/clang-format]: Enable clang-tidy.")
+message(STATUS "[cmake/clang-format]: Enable clang-format.")
 
 find_program(CLANG_FORMAT clang-format)
 

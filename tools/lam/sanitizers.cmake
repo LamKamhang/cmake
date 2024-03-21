@@ -22,7 +22,7 @@ set(LAM_USE_SANITIZER
       "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined', CFI"
 )
 
-if (LAM_USE_SANTIZER)
+if ("${LAM_USE_SANITIZER}" STREQUAL "")
   return()
 endif()
 
