@@ -1,6 +1,6 @@
 include_guard()
 
-if (NOT LAM_USE_CPPCHECK)
+if (DEFINED LAM_USE_CPPCHECK AND NOT LAM_USE_CPPCHECK)
   return()
 endif()
 message(STATUS "[cmake/cppcheck]: Enable cppcheck.")

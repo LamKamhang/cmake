@@ -30,6 +30,10 @@ function(lam_generate_git_meta name)
       $<BUILD_INTERFACE:${GIT_META_HEADER}>
       # TODO. register the install_interface.
   )
+  message(STATUS "target(${target_name}) depends on a generated include path: ${GIT_META_HEADER}\n"
+    "\tWhen you want to install the target, please install the headers either.\n"
+    "\tAnd you are also required to include the directories(INSTALL_INCLUDEDIR) as INSTALL_INTERFACE to the target(${target_name})"
+  )
   set_property(TARGET ${target_name} PROPERTY GENERATED_INCLUDE_DIRECTORIES "${GIT_META_HEADER}")
   add_dependencies(${target_name}
     ${name}_check_git
