@@ -21,8 +21,16 @@ set(LAM_USE_SANITIZER
       STRING
       "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined', CFI"
 )
+set_property(CACHE LAM_USE_SANITIZER PROPERTY STRINGS
+  Address Memory MemoryWithOrigins Undefined Thread Leak CFI)
 
-if ("${LAM_USE_SANITIZER}" STREQUAL "")
+if (("${LAM_USE_SANITIZER}" STREQUAL "") OR
+    (NOT LAM_USE_SANITIZER MATCHES "([Aa]ddress)") OR
+    (NOT LAM_USE_SANITIZER MATCHES "([Mm]emory([Ww]ith[Oo]rigins)?)") OR
+    (NOT LAM_USE_SANITIZER MATCHES "([Uu]ndefined)") OR
+    (NOT LAM_USE_SANITIZER MATCHES "([Tt]hread)") OR
+    (NOT LAM_USE_SANITIZER MATCHES "([Ll]eak)") OR
+    (NOT LAM_USE_SANITIZER MATCHES "([Cc][Ff][Ii])"))
   return()
 endif()
 
@@ -30,12 +38,7 @@ message(STATUS "[cmake/tools]: Enable sanitizers, please to set LAM_USE_SANITIZE
 
 include(CheckCXXSourceCompiles)
 
-set(USE_SANITIZER
-    "${LAM_USE_SANITIZER}"
-    CACHE
-      STRING
-      "Compile with a sanitizer. Options are: Address, Memory, MemoryWithOrigins, Undefined, Thread, Leak, 'Address;Undefined', CFI"
-)
+set(USE_SANITIZER "${LAM_USE_SANITIZER}")
 
 function(append value)
   foreach(variable ${ARGN})
