@@ -25,16 +25,17 @@ set_property(CACHE LAM_USE_SANITIZER PROPERTY STRINGS
   Address Memory MemoryWithOrigins Undefined Thread Leak CFI)
 
 if (("${LAM_USE_SANITIZER}" STREQUAL "") OR
-    (NOT LAM_USE_SANITIZER MATCHES "([Aa]ddress)") OR
-    (NOT LAM_USE_SANITIZER MATCHES "([Mm]emory([Ww]ith[Oo]rigins)?)") OR
-    (NOT LAM_USE_SANITIZER MATCHES "([Uu]ndefined)") OR
-    (NOT LAM_USE_SANITIZER MATCHES "([Tt]hread)") OR
-    (NOT LAM_USE_SANITIZER MATCHES "([Ll]eak)") OR
-    (NOT LAM_USE_SANITIZER MATCHES "([Cc][Ff][Ii])"))
+    NOT
+    (LAM_USE_SANITIZER MATCHES "([Aa]ddress)") OR
+    (LAM_USE_SANITIZER MATCHES "([Mm]emory([Ww]ith[Oo]rigins)?)") OR
+    (LAM_USE_SANITIZER MATCHES "([Uu]ndefined)") OR
+    (LAM_USE_SANITIZER MATCHES "([Tt]hread)") OR
+    (LAM_USE_SANITIZER MATCHES "([Ll]eak)") OR
+    (LAM_USE_SANITIZER MATCHES "([Cc][Ff][Ii])"))
   return()
 endif()
 
-message(STATUS "[cmake/tools]: Enable sanitizers, please to set LAM_USE_SANITIZER. current options(USE_SANITIZER): ${USE_SANITIZER}.")
+message(STATUS "[cmake/tools]: Enable sanitizers, current options(LAM_USE_SANITIZER): ${LAM_USE_SANITIZER}.")
 
 include(CheckCXXSourceCompiles)
 
