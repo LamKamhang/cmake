@@ -597,7 +597,7 @@ macro(lam_add_prebuilt_package)
 
   # set find_package extra args.
   lam_push_variable(_EXTRA_FIND_ARGS "PATHS;${PKG_INSTALL_PREFIX}")
-  lam_push_variable(CMAKE_PREFIX_PATH "${PKG_INSTALL_PREFIX}")
+  # lam_push_variable(CMAKE_PREFIX_PATH "${PKG_INSTALL_PREFIX}")
   if (NOT LAM_PACKAGE_ENABLE_DEFAULT_SEARCH_PATH)
     list(APPEND _EXTRA_FIND_ARGS NO_DEFAULT_PATH)
   endif()
@@ -664,7 +664,7 @@ macro(lam_add_prebuilt_package)
     )
   endif()
   __lam_unset_prebuilt_variables()
-  lam_pop_variable(CMAKE_PREFIX_PATH)
+  # lam_pop_variable(CMAKE_PREFIX_PATH)
 endmacro()
 
 ########################################################################
