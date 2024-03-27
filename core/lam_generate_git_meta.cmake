@@ -20,7 +20,6 @@ function(lam_generate_git_meta name)
 
   set(target_name ${name}_git_meta)
   add_library(${target_name}
-    STATIC
     ${POST_SOURCE_CONFIGURE_FILE}
     ${POST_HEADER_CONFIGURE_FILE}
   )
