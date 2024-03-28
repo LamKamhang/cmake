@@ -19,10 +19,11 @@ function(lam_generate_git_meta name)
   lam_git_watcher_main()
 
   set(target_name ${name}_git_meta)
-  add_library(${target_name}
+  add_library(${target_name} STATIC
     ${POST_SOURCE_CONFIGURE_FILE}
     ${POST_HEADER_CONFIGURE_FILE}
   )
+  set_target_properties(${target_name} PROPERTIES POSITION_INDEPENDENT_CODE ON)
   add_library(${name}::git_meta ALIAS ${target_name})
   target_include_directories(${target_name}
     PUBLIC
