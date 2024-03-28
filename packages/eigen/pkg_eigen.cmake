@@ -7,6 +7,7 @@ endif()
 
 message(STATUS "[package/Eigen3]: Eigen3::Eigen")
 
+option(eigen_DISABLE_DEFAULT_PATH "disable default search path" ON)
 option(eigen_APPLY_CHOLMOD_PATCH "Apply cholmod patch for eigen" ON)
 
 if (NOT DEFINED eigen_VERSION)
@@ -20,6 +21,13 @@ set(_args "gl:libeigen/eigen#${eigen_TAG}" NAME Eigen3)
 if (eigen_APPLY_CHOLMOD_PATCH)
   list(APPEND _args
     GIT_PATCH "${CMAKE_CURRENT_LIST_DIR}/cholmod.patch")
+endif()
+
+if (eigen_DISABLE_DEFAULT_PATH)
+  list(APPEND _args
+    FIND_ARGS NO_DEFAULT_PATH
+    CPM_ARGS
+  )
 endif()
 
 lam_add_package_maybe_prebuilt(eigen
